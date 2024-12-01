@@ -6,7 +6,7 @@ import ErrorPage from "@/pages/common/ErrorPage";
 
 export const CommonRouter = [
   {
-    path: "/dashboard",
+    path: "/",
     element: <Dashboard />,
   },
   {
