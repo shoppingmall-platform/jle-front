@@ -18,5 +18,14 @@ export const adminTheme = createTheme({
         color: "primary",
       },
     },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          width: "100%",
+          margin: "0",
+          padding: "0",
+        },
+      },
+    },
   },
 });

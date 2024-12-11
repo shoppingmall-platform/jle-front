@@ -17,5 +17,13 @@ export const userTheme = createTheme({
         color: "primary",
       },
     },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          maxWidth: "1280px",
+          margin: "0 auto",
+        },
+      },
+    },
   },
 });
