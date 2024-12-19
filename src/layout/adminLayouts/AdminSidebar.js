@@ -16,7 +16,7 @@ import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
 import navigation from '../../_nav'
-import useSidebarStore from '../../store/sidebarStore'
+import useSidebarStore from '../../store/common/sidebarStore'
 
 const AdminSidebar = () => {
   const { sidebarShow, unfoldable, setSidebarShow, toggleUnfoldable } = useSidebarStore()
