@@ -1,15 +1,15 @@
 import React from 'react'
 
-const Dashboard = React.lazy(() => import('../pages/adminPages/dashboard/Dashboard'))
-const ProductMain = React.lazy(() => import('../pages/adminPages/product/ProductMain'))
-const ProductAdd = React.lazy(() => import('../pages/adminPages/product/ProductAdd'))
-const ProductList = React.lazy(() => import('../pages/adminPages/product/ProductList'))
-const ProductManage = React.lazy(() => import('../pages/adminPages/product/ProductManage'))
-const ProductCategories = React.lazy(() => import('../pages/adminPages/product/ProductCategories'))
-const CustomerMain = React.lazy(() => import('../pages/adminPages/customer/CustomerMain'))
-const CustomerList = React.lazy(() => import('../pages/adminPages/customer/CustomerList'))
-const OrderMain = React.lazy(() => import('../pages/adminPages/order/OrderMain'))
-const OrderList = React.lazy(() => import('../pages/adminPages/order/OrderList'))
+const Dashboard = React.lazy(() => import('@/pages/adminPages/dashboard/Dashboard'))
+const ProductMain = React.lazy(() => import('@/pages/adminPages/product/ProductMain'))
+const ProductAdd = React.lazy(() => import('@/pages/adminPages/product/ProductAdd'))
+const ProductList = React.lazy(() => import('@/pages/adminPages/product/ProductList'))
+const ProductManage = React.lazy(() => import('@/pages/adminPages/product/ProductManage'))
+const ProductCategories = React.lazy(() => import('@/pages/adminPages/product/ProductCategories'))
+const CustomerMain = React.lazy(() => import('@/pages/adminPages/customer/CustomerMain'))
+const CustomerList = React.lazy(() => import('@/pages/adminPages/customer/CustomerList'))
+const OrderMain = React.lazy(() => import('@/pages/adminPages/order/OrderMain'))
+const OrderList = React.lazy(() => import('@/pages/adminPages/order/OrderList'))
 
 export const adminRouter = [
   { path: '', element: Dashboard },

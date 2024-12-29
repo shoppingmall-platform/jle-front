@@ -3,8 +3,8 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
 
 // routes config
-//import routes from '../routes'
-import { adminRouter } from '../../routers/AdminRouter'
+//import routes from '@/routers/routes'
+import { adminRouter } from '@/routers/AdminRouter'
 
 const AdminContent = () => {
   return (

@@ -24,10 +24,10 @@ import {
   cilSun,
 } from '@coreui/icons'
 
-import { AppBreadcrumb } from './../../components/index'
-import { AppHeaderDropdown } from '../../components/common/index'
+import { AppBreadcrumb } from '@/components/index'
+import { AppHeaderDropdown } from '@/components/common/index'
 
-import useSidebarStore from '../../store/common/sidebarStore' // Import zustand store
+import useSidebarStore from '@/store/common/sidebarStore' // Import zustand store
 
 const AdminHeader = () => {
   const headerRef = useRef()
