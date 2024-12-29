@@ -4,7 +4,7 @@ import { StrictMode } from 'react'
 import { PrimeReactProvider } from 'primereact/api'
 import 'core-js'
 
-import App from './App'
+import App from '@/App'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -9,10 +9,10 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 
-import { AdminSidebarNav } from './AdminSidebarNav'
+import { AdminSidebarNav } from '@/layout/adminLayouts/AdminSidebarNav'
 
-import { logo } from 'src/assets/brand/logo'
-import { sygnet } from 'src/assets/brand/sygnet'
+import { logo } from '@/assets/brand/logo'
+import { sygnet } from '@/assets/brand/sygnet'
 
 // sidebar nav config
 import navigation from '@/_nav'
