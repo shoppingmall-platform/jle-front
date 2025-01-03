@@ -1,55 +1,55 @@
 import React from 'react'
 
-const Dashboard = React.lazy(() => import('../pages/dashboard/Dashboard'))
-const Colors = React.lazy(() => import('../pages/theme/colors/Colors'))
-const Typography = React.lazy(() => import('../pages/theme/typography/Typography'))
+const Dashboard = React.lazy(() => import('@/pages/dashboard/Dashboard'))
+const Colors = React.lazy(() => import('@/pages/theme/colors/Colors'))
+const Typography = React.lazy(() => import('@/pages/theme/typography/Typography'))
 
 // Base
-const Accordion = React.lazy(() => import('../pages/base/accordion/Accordion'))
-const Breadcrumbs = React.lazy(() => import('../pages/base/breadcrumbs/Breadcrumbs'))
-const Cards = React.lazy(() => import('../pages/base/cards/Cards'))
-const Carousels = React.lazy(() => import('../pages/base/carousels/Carousels'))
-const Collapses = React.lazy(() => import('../pages/base/collapses/Collapses'))
-const ListGroups = React.lazy(() => import('../pages/base/list-groups/ListGroups'))
-const Navs = React.lazy(() => import('../pages/base/navs/Navs'))
-const Paginations = React.lazy(() => import('../pages/base/paginations/Paginations'))
-const Placeholders = React.lazy(() => import('../pages/base/placeholders/Placeholders'))
-const Popovers = React.lazy(() => import('../pages/base/popovers/Popovers'))
-const Progress = React.lazy(() => import('../pages/base/progress/Progress'))
-const Spinners = React.lazy(() => import('../pages/base/spinners/Spinners'))
-const Tabs = React.lazy(() => import('../pages/base/tabs/Tabs'))
-const Tables = React.lazy(() => import('../pages/base/tables/Tables'))
-const Tooltips = React.lazy(() => import('../pages/base/tooltips/Tooltips'))
+const Accordion = React.lazy(() => import('@/pages/base/accordion/Accordion'))
+const Breadcrumbs = React.lazy(() => import('@/pages/base/breadcrumbs/Breadcrumbs'))
+const Cards = React.lazy(() => import('@/pages/base/cards/Cards'))
+const Carousels = React.lazy(() => import('@/pages/base/carousels/Carousels'))
+const Collapses = React.lazy(() => import('@/pages/base/collapses/Collapses'))
+const ListGroups = React.lazy(() => import('@/pages/base/list-groups/ListGroups'))
+const Navs = React.lazy(() => import('@/pages/base/navs/Navs'))
+const Paginations = React.lazy(() => import('@/pages/base/paginations/Paginations'))
+const Placeholders = React.lazy(() => import('@/pages/base/placeholders/Placeholders'))
+const Popovers = React.lazy(() => import('@/pages/base/popovers/Popovers'))
+const Progress = React.lazy(() => import('@/pages/base/progress/Progress'))
+const Spinners = React.lazy(() => import('@/pages/base/spinners/Spinners'))
+const Tabs = React.lazy(() => import('@/pages/base/tabs/Tabs'))
+const Tables = React.lazy(() => import('@/pages/base/tables/Tables'))
+const Tooltips = React.lazy(() => import('@/pages/base/tooltips/Tooltips'))
 
 // Buttons
-const Buttons = React.lazy(() => import('../pages/buttons/buttons/Buttons'))
-const ButtonGroups = React.lazy(() => import('../pages/buttons/button-groups/ButtonGroups'))
-const Dropdowns = React.lazy(() => import('../pages/buttons/dropdowns/Dropdowns'))
+const Buttons = React.lazy(() => import('@/pages/buttons/buttons/Buttons'))
+const ButtonGroups = React.lazy(() => import('@/pages/buttons/button-groups/ButtonGroups'))
+const Dropdowns = React.lazy(() => import('@/pages/buttons/dropdowns/Dropdowns'))
 
 //Forms
-const ChecksRadios = React.lazy(() => import('../pages/forms/checks-radios/ChecksRadios'))
-const FloatingLabels = React.lazy(() => import('../pages/forms/floating-labels/FloatingLabels'))
-const FormControl = React.lazy(() => import('../pages/forms/form-control/FormControl'))
-const InputGroup = React.lazy(() => import('../pages/forms/input-group/InputGroup'))
-const Layout = React.lazy(() => import('../pages/forms/layout/Layout'))
-const Range = React.lazy(() => import('../pages/forms/range/Range'))
-const Select = React.lazy(() => import('../pages/forms/select/Select'))
-const Validation = React.lazy(() => import('../pages/forms/validation/Validation'))
+const ChecksRadios = React.lazy(() => import('@/pages/forms/checks-radios/ChecksRadios'))
+const FloatingLabels = React.lazy(() => import('@/pages/forms/floating-labels/FloatingLabels'))
+const FormControl = React.lazy(() => import('@/pages/forms/form-control/FormControl'))
+const InputGroup = React.lazy(() => import('@/pages/forms/input-group/InputGroup'))
+const Layout = React.lazy(() => import('@/pages/forms/layout/Layout'))
+const Range = React.lazy(() => import('@/pages/forms/range/Range'))
+const Select = React.lazy(() => import('@/pages/forms/select/Select'))
+const Validation = React.lazy(() => import('@/pages/forms/validation/Validation'))
 
-const Charts = React.lazy(() => import('../pages/charts/Charts'))
+const Charts = React.lazy(() => import('@/pages/charts/Charts'))
 
 // Icons
-const CoreUIIcons = React.lazy(() => import('../pages/icons/coreui-icons/CoreUIIcons'))
-const Flags = React.lazy(() => import('../pages/icons/flags/Flags'))
-const Brands = React.lazy(() => import('../pages/icons/brands/Brands'))
+const CoreUIIcons = React.lazy(() => import('@/pages/icons/coreui-icons/CoreUIIcons'))
+const Flags = React.lazy(() => import('@/pages/icons/flags/Flags'))
+const Brands = React.lazy(() => import('@/pages/icons/brands/Brands'))
 
 // Notifications
-const Alerts = React.lazy(() => import('../pages/notifications/alerts/Alerts'))
-const Badges = React.lazy(() => import('../pages/notifications/badges/Badges'))
-const Modals = React.lazy(() => import('../pages/notifications/modals/Modals'))
-const Toasts = React.lazy(() => import('../pages/notifications/toasts/Toasts'))
+const Alerts = React.lazy(() => import('@/pages/notifications/alerts/Alerts'))
+const Badges = React.lazy(() => import('@/pages/notifications/badges/Badges'))
+const Modals = React.lazy(() => import('@/pages/notifications/modals/Modals'))
+const Toasts = React.lazy(() => import('@/pages/notifications/toasts/Toasts'))
 
-const Widgets = React.lazy(() => import('../pages/widgets/Widgets'))
+const Widgets = React.lazy(() => import('@/pages/widgets/Widgets'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },

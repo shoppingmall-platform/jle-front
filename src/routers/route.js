@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
-import ErrorPage from '../pages/ErrorPage'
-import UserLayout from '../layout/userLayouts/UserLayout'
-import AdminLayout from '../layout/adminLayouts/AdminLayout'
+import ErrorPage from '@/pages/ErrorPage'
+import UserLayout from '@/layout/userLayouts/UserLayout'
+import AdminLayout from '@/layout/adminLayouts/AdminLayout'
 import { userRouter } from './UserRouter'
 import { adminRouter } from './AdminRouter'
 

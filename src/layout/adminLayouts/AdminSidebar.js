@@ -9,7 +9,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 
-import { AdminSidebarNav } from './AdminSidebarNav'
+import { AdminSidebarNav } from '@/layout/adminLayouts/AdminSidebarNav'
 
 import { logo } from '@/assets/brand/logo'
 import { sygnet } from '@/assets/brand/sygnet'
