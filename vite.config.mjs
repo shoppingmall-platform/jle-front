@@ -39,7 +39,7 @@ export default defineConfig(() => {
     resolve: {
       alias: [
         {
-          find: 'src/',
+          find: '@',
           replacement: `${path.resolve(__dirname, 'src')}/`,
         },
       ],

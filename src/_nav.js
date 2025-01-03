@@ -55,7 +55,7 @@ const _nav = [
       {
         component: CNavItem,
         name: '카테고리',
-        to: 'products/categoies',
+        to: 'products/categories',
       },
     ],
   },
