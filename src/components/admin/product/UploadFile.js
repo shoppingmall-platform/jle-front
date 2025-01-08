@@ -1,5 +1,15 @@
 import React, { useState, useRef } from 'react'
-import { CAlert, CButton, CImage, CCloseButton } from '@coreui/react'
+import { CButton, CAlert, CImage, CCloseButton } from '@coreui/react'
+import AWS from 'aws-sdk'
+
+AWS.config.update({
+  region: import.meta.env.VITE_AWS_REGION,
+  credentials: new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: import.meta.env.VITE_AWS_IDENTITY_POOL_ID,
+  }),
+})
+
+const s3 = new AWS.S3()
 
 const UploadFile = ({ maxImages }) => {
   const [images, setImages] = useState([])
@@ -10,13 +20,12 @@ const UploadFile = ({ maxImages }) => {
     const files = Array.from(e.target.files)
     const currentImageCount = images.length
 
-    // 파일이 maxImages 이상일 경우 경고 메시지를 표시
     if (currentImageCount + files.length > maxImages) {
       setError(`최대 ${maxImages}개의 이미지만 업로드할 수 있습니다.`)
-      e.target.value = '' // 입력 초기화
+      e.target.value = ''
       return
     } else {
-      setError('') // 경고 메시지 초기화
+      setError('')
     }
 
     const validImages = files
@@ -28,10 +37,10 @@ const UploadFile = ({ maxImages }) => {
       reader.onloadend = () => {
         setImages((prevImages) => [...prevImages, reader.result])
       }
-      reader.readAsDataURL(file) // Convert the image file to base64
+      reader.readAsDataURL(file)
     })
 
-    e.target.value = '' // Clear the input
+    e.target.value = ''
   }
 
   const handleRemoveImage = (index) => {
@@ -41,6 +50,29 @@ const UploadFile = ({ maxImages }) => {
   const handleButtonClick = () => {
     if (inputRef.current) {
       inputRef.current.click()
+    }
+  }
+
+  const saveEventHandler = async () => {
+    try {
+      const uploadedUrls = await Promise.all(
+        images.map(async (image) => {
+          const params = {
+            Bucket: import.meta.env.VITE_BUCKET_NAME,
+            Key: `uploads/${Date.now()}-${image.name}`,
+            Body: image,
+            ContentType: image.type,
+          }
+
+          const { Location } = await s3.upload(params).promise()
+          return Location
+        }),
+      )
+
+      console.log('Uploaded URLs:', uploadedUrls)
+    } catch (err) {
+      console.error('S3 Upload Error:', err)
+      setError('이미지 업로드 중 오류가 발생했습니다.')
     }
   }
 
@@ -63,13 +95,11 @@ const UploadFile = ({ maxImages }) => {
       >
         파일 선택
       </CButton>
-      {/* 경고 메시지 표시 */}
       {error && (
         <CAlert color="danger" dismissible>
           {error}
         </CAlert>
       )}
-
       <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
         {images.map((image, index) => (
           <div
@@ -88,6 +118,14 @@ const UploadFile = ({ maxImages }) => {
           </div>
         ))}
       </div>
+
+      <CButton
+        color="primary"
+        onClick={saveEventHandler}
+        style={{ marginLeft: 'auto', display: 'block', marginTop: '10px' }}
+      >
+        저장
+      </CButton>
     </div>
   )
 }

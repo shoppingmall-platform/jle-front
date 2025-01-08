@@ -50,7 +50,9 @@ const ProductAdd = () => {
 
   return (
     <div className="container mt-4">
-      <h3>상품 등록</h3>
+      <CRow className="my-4 justify-content-center">
+        <h3>상품 등록</h3>
+      </CRow>
       <CCard className="mb-4">
         <CCardHeader>표시 설정</CCardHeader>
         <CCardBody>

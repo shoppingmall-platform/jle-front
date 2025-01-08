@@ -9,6 +9,9 @@ export default defineConfig(() => {
     build: {
       outDir: 'build',
     },
+    define: {
+      global: {},
+    },
     css: {
       postcss: {
         plugins: [

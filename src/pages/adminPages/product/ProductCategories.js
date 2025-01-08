@@ -5,6 +5,11 @@ import {
   CCol,
   CButton,
   CFormInput,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CListGroup,
+  CListGroupItem,
   CTable,
   CTableRow,
   CTableDataCell,
@@ -13,7 +18,6 @@ import {
 } from '@coreui/react'
 import { CIcon } from '@coreui/icons-react'
 import { cilFolder, cilFolderOpen, cilDescription } from '@coreui/icons'
-import { CListGroup, CListGroupItem } from '@coreui/react'
 
 const initialCategories = [
   { categoryId: 1, categoryParent: null, categoryName: '대분류1', categoryDepth: 1 },
@@ -29,11 +33,13 @@ const ProductCategories = () => {
   const [editCategoryName, setEditCategoryName] = useState('')
   const [addingSubcategory, setAddingSubcategory] = useState(false)
   const [newMainCategoryName, setNewMainCategoryName] = useState('')
+  const [showCategoryDetails, setShowCategoryDetails] = useState(false) // 내용 토글 상태 추가
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category)
     setEditCategoryName(category.categoryName)
     setAddingSubcategory(false)
+    setShowCategoryDetails(!showCategoryDetails) // 카테고리 클릭 시 내용 토글
   }
 
   const findParentCategoryName = (parentId) => {
@@ -107,105 +113,104 @@ const ProductCategories = () => {
   }
 
   return (
-    <CContainer fluid>
-      <CRow className="my-5 justify-content-center">
+    <CContainer fluid className="mb-4">
+      <CRow className="my-4 justify-content-center">
         <h3>카테고리 관리</h3>
       </CRow>
-      <CRow>
-        <CCol xs={4}>
-          <CContainer
-            style={{
-              paddingLeft: '20px',
-              backgroundColor: '#f0f0f0',
-              borderRadius: '10px',
-              height: '100%',
-            }}
-          >
-            {renderCategoryTree()}
-          </CContainer>
+      <CRow className="d-flex">
+        <CCol xs={4} className="d-flex flex-column">
+          <CCard className="flex-grow-1">
+            <CCardHeader>카테고리 구조</CCardHeader>
+            <CCardBody style={{ paddingLeft: '20px' }}>{renderCategoryTree()}</CCardBody>
+          </CCard>
         </CCol>
-        <CCol xs={8}>
-          <CContainer style={{ backgroundColor: '#f0f0f0', borderRadius: '10px' }}>
-            {selectedCategory ? (
-              <div style={{}}>
-                <h5>카테고리 정보</h5>
-                <CTable>
-                  <CTableHead>
-                    <CTableRow>
-                      <CTableDataCell>상위 카테고리명</CTableDataCell>
-                      <CTableDataCell>
-                        {findParentCategoryName(selectedCategory.categoryParent)}
-                      </CTableDataCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    <CTableRow>
-                      <CTableDataCell>카테고리명</CTableDataCell>
-                      <CTableDataCell>
-                        <CFormInput
-                          size="sm"
-                          value={editCategoryName}
-                          onChange={(e) => setEditCategoryName(e.target.value)}
-                        />
-                      </CTableDataCell>
-                    </CTableRow>
-                  </CTableBody>
-                </CTable>
+        <CCol xs={8} className="d-flex flex-column">
+          <CCard className="flex-grow-1">
+            <CCardHeader>카테고리 수정 및 추가</CCardHeader>
+            <CCardBody style={{ height: '300px', overflowY: 'auto' }}>
+              {' '}
+              {/* 카드의 높이를 고정 */}
+              {selectedCategory ? (
+                <div>
+                  <h5>카테고리 정보</h5>
+                  <CTable>
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableDataCell>상위 카테고리명</CTableDataCell>
+                        <CTableDataCell>
+                          {findParentCategoryName(selectedCategory.categoryParent)}
+                        </CTableDataCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      <CTableRow>
+                        <CTableDataCell>카테고리명</CTableDataCell>
+                        <CTableDataCell>
+                          <CFormInput
+                            size="sm"
+                            value={editCategoryName}
+                            onChange={(e) => setEditCategoryName(e.target.value)}
+                          />
+                        </CTableDataCell>
+                      </CTableRow>
+                    </CTableBody>
+                  </CTable>
 
-                <CButton
-                  onClick={handleEditCategory}
-                  disabled={editCategoryName === selectedCategory.categoryName}
-                >
-                  수정
-                </CButton>
-                <CButton
-                  color="danger"
-                  onClick={() => handleDeleteCategory(selectedCategory.categoryId)}
-                >
-                  삭제
-                </CButton>
+                  <CButton
+                    onClick={handleEditCategory}
+                    disabled={editCategoryName === selectedCategory.categoryName}
+                  >
+                    수정
+                  </CButton>
+                  <CButton
+                    color="danger"
+                    onClick={() => handleDeleteCategory(selectedCategory.categoryId)}
+                  >
+                    삭제
+                  </CButton>
 
-                {!addingSubcategory && (
-                  <CButton onClick={() => setAddingSubcategory(true)}>하위 카테고리 추가</CButton>
-                )}
-                {addingSubcategory && (
-                  <div style={{ marginTop: '10px' }}>
-                    <CFormInput
-                      size="sm"
-                      placeholder="새 하위 카테고리명"
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                    />
-                    <CButton
-                      onClick={handleAddSubcategory}
-                      disabled={!newCategoryName.trim()}
-                      style={{ marginLeft: '10px' }}
-                    >
-                      추가
-                    </CButton>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <h5>카테고리를 선택하세요</h5>
-            )}
-          </CContainer>
+                  {!addingSubcategory && (
+                    <CButton onClick={() => setAddingSubcategory(true)}>하위 카테고리 추가</CButton>
+                  )}
+                  {addingSubcategory && (
+                    <div style={{ marginTop: '10px' }}>
+                      <CFormInput
+                        size="sm"
+                        placeholder="새 하위 카테고리명"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                      />
+                      <CButton
+                        onClick={handleAddSubcategory}
+                        disabled={!newCategoryName.trim()}
+                        style={{ marginTop: '10px' }}
+                      >
+                        추가
+                      </CButton>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <h6>카테고리를 선택하세요</h6>
+              )}
+            </CCardBody>
+          </CCard>
 
-          <CContainer
-            style={{ marginTop: '20px', backgroundColor: '#f0f0f0', borderRadius: '10px' }}
-          >
-            <h5>대분류 추가</h5>
-            <CFormInput
-              label="대분류 이름"
-              size="sm"
-              value={newMainCategoryName}
-              onChange={(e) => setNewMainCategoryName(e.target.value)}
-              fullWidth
-            />
-            <CButton onClick={handleAddMainCategory} style={{ marginTop: '10px' }}>
-              추가
-            </CButton>
-          </CContainer>
+          <CCard style={{ marginTop: '20px' }} className="flex-grow-1">
+            <CCardHeader>대분류 추가</CCardHeader>
+            <CCardBody>
+              <CFormInput
+                label="대분류 이름"
+                size="sm"
+                value={newMainCategoryName}
+                onChange={(e) => setNewMainCategoryName(e.target.value)}
+                style={{ width: '100%' }}
+              />
+              <CButton onClick={handleAddMainCategory} style={{ marginTop: '10px' }}>
+                추가
+              </CButton>
+            </CCardBody>
+          </CCard>
         </CCol>
       </CRow>
     </CContainer>
