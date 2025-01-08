@@ -1,8 +1,11 @@
+import ProductSlide from '../../components/user/product/ProductSlide'
 import React from 'react'
 
 const UserMain = () => {
   return (
-    <div>UserMain</div>
+    <div>
+      <ProductSlide />
+    </div>
   )
 }
 
