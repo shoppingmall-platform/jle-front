@@ -16,44 +16,59 @@ import { cilSearch } from '@coreui/icons' // 아이콘 불러오기
 import CIcon from '@coreui/icons-react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { React, useState } from 'react'
+import { React, useState, useEffect } from 'react'
 import '../adminpage.css'
+import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 
 const data = {
   total: 5, // 전체 건수
   sold: 3, // 판매된 건수
   unsold: 2, // 판매되지 않은 건수
 }
-const productData = [
-  {
-    productCode: '12345',
-    productName: '상품 A',
-    salePrice: '10,000원',
-    discountPrice: '9,000원',
-    category: '일반상품',
-    note: '-',
-  },
-  {
-    productCode: '67890',
-    productName: '상품 B',
-    salePrice: '20,000원',
-    discountPrice: '18,000원',
-    category: '세트상품',
-    note: '-',
-  },
-  {
-    productCode: '11223',
-    productName: '상품 C',
-    salePrice: '30,000원',
-    discountPrice: '27,000원',
-    category: '할인상품',
-    note: '-',
-  },
-]
 
 const ProductList = () => {
   const [startDate, setStartDate] = useState(new Date())
   const [endDate, setEndDate] = useState(new Date())
+  const [productData, setProductData] = useState([])
+
+  const fetchProductData = async () => {
+    try {
+      const productDatas = [
+        {
+          productCode: '12345',
+          productName: '상품 A',
+          salePrice: '10,000원',
+          discountPrice: '9,000원',
+          category: '일반상품',
+          note: '-',
+        },
+        {
+          productCode: '67890',
+          productName: '상품 B',
+          salePrice: '20,000원',
+          discountPrice: '18,000원',
+          category: '세트상품',
+          note: '-',
+        },
+        {
+          productCode: '11223',
+          productName: '상품 C',
+          salePrice: '30,000원',
+          discountPrice: '27,000원',
+          category: '할인상품',
+          note: '-',
+        },
+      ]
+      setProductData(productDatas)
+    } catch (error) {
+      console.log('error', error)
+    }
+  }
+  useEffect(() => {
+    fetchProductData()
+  }, [])
+  const productCheckbox = useCheckboxSelection(productData, 'productCode')
+
   return (
     <div className="container mt-4">
       <CRow className="my-4 justify-content-center">
@@ -286,7 +301,10 @@ const ProductList = () => {
             <thead className="table-head">
               <tr>
                 <th>
-                  <input type="checkbox" />
+                  <CFormCheck
+                    checked={productCheckbox.selectedItems.length === productData.length}
+                    onChange={productCheckbox.handleSelectAll} // 전체 선택
+                  />
                 </th>
                 <th>No</th>
                 <th>상품구분</th>
@@ -302,7 +320,10 @@ const ProductList = () => {
               {productData.map((product, index) => (
                 <tr key={product.productCode}>
                   <td>
-                    <input type="checkbox" />
+                    <CFormCheck
+                      checked={productCheckbox.selectedItems.includes(product.productCode)}
+                      onChange={() => productCheckbox.handleSelectItem(product.productCode)} // 개별 선택
+                    />
                   </td>
                   <td>{index + 1}</td>
                   <td>{product.category}</td>

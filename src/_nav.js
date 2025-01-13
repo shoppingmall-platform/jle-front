@@ -57,6 +57,11 @@ const _nav = [
         name: '카테고리',
         to: 'products/categories',
       },
+      {
+        component: CNavItem,
+        name: '옵션관리',
+        to: 'products/option',
+      },
     ],
   },
   {
