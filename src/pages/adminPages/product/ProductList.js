@@ -264,8 +264,8 @@ const ProductList = () => {
         </CCardBody>
       </CCard>
       <div className="button-group">
-        <CButton>검색</CButton>
-        <CButton>초기화</CButton>
+        <CButton color="primary">검색</CButton>
+        <CButton color="primary">초기화</CButton>
       </div>
       <CCard>
         <CCardHeader>상품 목록</CCardHeader>

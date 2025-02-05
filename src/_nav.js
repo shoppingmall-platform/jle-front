@@ -72,13 +72,13 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: '고객관리',
-        to: 'customers/manage',
+        name: '회원조회',
+        to: 'customers/list',
       },
       {
         component: CNavItem,
-        name: '고객목록',
-        to: 'customers/list',
+        name: '회원관리',
+        to: 'customers/manage',
       },
     ],
   },

@@ -21,6 +21,7 @@ import {
 import React, { useState } from 'react'
 import EditorBox from '@/components/admin/product/EditorBox'
 import UploadFile from '@/components/admin/product/UploadFile'
+import OptionTable from '@/components/admin/product/OptionTable'
 
 const ProductAdd = () => {
   const [selectedValue, setSelectedValue] = useState('')
@@ -193,6 +194,13 @@ const ProductAdd = () => {
               </tr>
             </tbody>
           </table>
+        </CCardBody>
+      </CCard>
+
+      <CCard className="mb-4">
+        <CCardHeader>옵션</CCardHeader>
+        <CCardBody>
+          <OptionTable />
         </CCardBody>
       </CCard>
 
