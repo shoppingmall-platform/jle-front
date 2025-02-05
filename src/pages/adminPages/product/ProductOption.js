@@ -26,6 +26,7 @@ import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 
 const ProductOption = () => {
   const [tabIndex, setTabIndex] = useState(0)
+
   const [options, setOptions] = useState([])
   const [optionSets, setOptionSets] = useState([])
   const [optionName, setOptionName] = useState('')
@@ -59,7 +60,18 @@ const ProductOption = () => {
         {
           id: 1,
           name: '세트1',
-          values: ['색상', '사이즈'],
+          options: [
+            {
+              id: 1,
+              name: '색상',
+              values: ['블랙', '화이트'],
+            },
+            {
+              id: 2,
+              name: '사이즈',
+              values: ['S', 'M', 'L'],
+            },
+          ],
           description: '기본세트입니다.',
           use: true,
         },
@@ -101,7 +113,7 @@ const ProductOption = () => {
       const newOptionSet = {
         id: optionSets.length + 1,
         name: optionSetName,
-        values: optionSetValues,
+        options: optionSetValues,
         description: optionSetDescription,
         use: optionSetUse,
       }
@@ -111,17 +123,21 @@ const ProductOption = () => {
       setOptionSetDescription('')
       setOptionSetUse(false)
     }
+    console.log('옵션세트', JSON.stringify(optionSets, null, 2))
   }
 
   const optionsCheckbox = useCheckboxSelection(options, 'id')
   const optionSetsCheckbox = useCheckboxSelection(optionSets, 'id')
 
-  const handleCheckboxChange = (name) => {
+  const handleCheckboxChange = (selectedOption) => {
     setOptionSetValues((prevValues) => {
-      if (prevValues.includes(name)) {
-        return prevValues.filter((value) => value !== name)
+      const exists = prevValues.some((option) => option.name === selectedOption.name)
+      if (exists) {
+        // 선택 해제: 동일한 이름의 옵션을 필터링
+        return prevValues.filter((option) => option.name !== selectedOption.name)
       } else {
-        return [...prevValues, name]
+        // 선택 추가: 선택된 옵션 추가
+        return [...prevValues, selectedOption]
       }
     })
   }
@@ -253,7 +269,9 @@ const ProductOption = () => {
                           </CTableDataCell>
                           <CTableDataCell>{set.id}</CTableDataCell>
                           <CTableDataCell>{set.name}</CTableDataCell>
-                          <CTableDataCell>{set.values.join(', ')}</CTableDataCell>
+                          <CTableDataCell>
+                            {set.options.map((option) => option.name).join(', ')}
+                          </CTableDataCell>
                           <CTableDataCell>{set.description}</CTableDataCell>
                           <CTableDataCell>{set.use ? '사용' : '미사용'}</CTableDataCell>
                         </CTableRow>
@@ -286,8 +304,10 @@ const ProductOption = () => {
                               <CTableDataCell>
                                 <CFormCheck
                                   type="checkbox"
-                                  checked={optionSetValues.includes(option.name)}
-                                  onChange={() => handleCheckboxChange(option.name)}
+                                  checked={optionSetValues.some(
+                                    (value) => value.name === option.name,
+                                  )}
+                                  onChange={() => handleCheckboxChange(option)}
                                 />
                               </CTableDataCell>
                               <CTableDataCell>{option.id}</CTableDataCell>
