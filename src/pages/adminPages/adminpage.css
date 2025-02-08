@@ -1,6 +1,7 @@
 /* ProductList.js*/
 .table {
   width: 100%;
+  table-layout: fixed;
 }
 
 /* 칼럼 제목 셀 스타일 */
@@ -17,7 +18,7 @@
   display: flex;
   gap: 20px; /* 각 라디오 버튼 사이의 간격 */
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
   padding: 4px;
 }
 
@@ -46,18 +47,30 @@
 }
 
 .custom-button {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 14px;
-  background-color: white;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  font-size: 14px !important;
+  background-color: white !important;
 }
 
 .small-select {
-  width: 170px; /* 원하는 너비 설정 */
-  height: 35px; /* 원하는 높이 설정 */
-  font-size: 14px; /* 글자 크기 조절 */
+  width: 170px !important;
+  height: 35px !important;
+  font-size: 14px !important;
 }
+
+.small-form {
+  width: 200px !important;
+  height: 35px !important;
+  font-size: 14px !important;
+}
+.x-small-form {
+  width: 120px !important;
+  height: 35px !important;
+  font-size: 14px !important;
+}
+
 .flex-row {
   display: flex;
   align-items: center; /* 세로 가운데 정렬 */

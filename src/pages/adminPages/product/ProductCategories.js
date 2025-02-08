@@ -16,6 +16,7 @@ import {
   CTableBody,
   CTableHead,
 } from '@coreui/react'
+import '../adminpage.css'
 import { CIcon } from '@coreui/icons-react'
 import { cilFolder, cilFolderOpen, cilDescription } from '@coreui/icons'
 
@@ -53,7 +54,11 @@ const ProductCategories = () => {
     if (childCategories.length === 0) return null
     return childCategories.map((cat) => (
       <CListGroup key={cat.categoryId}>
-        <CListGroupItem component="button" onClick={() => handleCategoryClick(cat)}>
+        <CListGroupItem
+          component="button"
+          style={{ border: 'none', gap: 5 }}
+          onClick={() => handleCategoryClick(cat)}
+        >
           <CIcon
             icon={
               cat.categoryDepth === 1
@@ -132,46 +137,53 @@ const ProductCategories = () => {
               {/* 카드의 높이를 고정 */}
               {selectedCategory ? (
                 <div>
-                  <h5>카테고리 정보</h5>
-                  <CTable>
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableDataCell>상위 카테고리명</CTableDataCell>
-                        <CTableDataCell>
+                  <h6>카테고리 정보</h6>
+                  <table className="table">
+                    <tbody>
+                      <tr>
+                        <td className="text-center table-header">상위 카테고리명</td>
+                        <td colSpan="4">
                           {findParentCategoryName(selectedCategory.categoryParent)}
-                        </CTableDataCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      <CTableRow>
-                        <CTableDataCell>카테고리명</CTableDataCell>
-                        <CTableDataCell>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-center table-header">카테고리명</td>
+                        <td colSpan="4">
                           <CFormInput
-                            size="sm"
                             value={editCategoryName}
                             onChange={(e) => setEditCategoryName(e.target.value)}
                           />
-                        </CTableDataCell>
-                      </CTableRow>
-                    </CTableBody>
-                  </CTable>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div className="d-flex gap-3">
+                    <CButton
+                      color="primary"
+                      variant="outline"
+                      onClick={handleEditCategory}
+                      disabled={editCategoryName === selectedCategory.categoryName}
+                    >
+                      수정
+                    </CButton>
+                    <CButton
+                      color="danger"
+                      variant="outline"
+                      onClick={() => handleDeleteCategory(selectedCategory.categoryId)}
+                    >
+                      삭제
+                    </CButton>
 
-                  <CButton
-                    onClick={handleEditCategory}
-                    disabled={editCategoryName === selectedCategory.categoryName}
-                  >
-                    수정
-                  </CButton>
-                  <CButton
-                    color="danger"
-                    onClick={() => handleDeleteCategory(selectedCategory.categoryId)}
-                  >
-                    삭제
-                  </CButton>
-
-                  {!addingSubcategory && (
-                    <CButton onClick={() => setAddingSubcategory(true)}>하위 카테고리 추가</CButton>
-                  )}
+                    {!addingSubcategory && (
+                      <CButton
+                        color="primary"
+                        variant="outline"
+                        onClick={() => setAddingSubcategory(true)}
+                      >
+                        하위 카테고리 추가
+                      </CButton>
+                    )}
+                  </div>
                   {addingSubcategory && (
                     <div style={{ marginTop: '10px' }}>
                       <CFormInput
@@ -181,6 +193,8 @@ const ProductCategories = () => {
                         onChange={(e) => setNewCategoryName(e.target.value)}
                       />
                       <CButton
+                        color="primary"
+                        variant="outline"
                         onClick={handleAddSubcategory}
                         disabled={!newCategoryName.trim()}
                         style={{ marginTop: '10px' }}
@@ -191,7 +205,15 @@ const ProductCategories = () => {
                   )}
                 </div>
               ) : (
-                <h6>카테고리를 선택하세요</h6>
+                <h6
+                  style={{
+                    display: 'grid',
+                    placeItems: 'center',
+                    marginTop: '50px',
+                  }}
+                >
+                  카테고리를 선택하세요
+                </h6>
               )}
             </CCardBody>
           </CCard>
@@ -206,7 +228,12 @@ const ProductCategories = () => {
                 onChange={(e) => setNewMainCategoryName(e.target.value)}
                 style={{ width: '100%' }}
               />
-              <CButton onClick={handleAddMainCategory} style={{ marginTop: '10px' }}>
+              <CButton
+                color="primary"
+                variant="outline"
+                onClick={handleAddMainCategory}
+                style={{ marginTop: '10px' }}
+              >
                 추가
               </CButton>
             </CCardBody>

@@ -22,6 +22,7 @@ import {
   CNavLink,
   CTab,
 } from '@coreui/react'
+import '../adminpage.css'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 
 const ProductOption = () => {
@@ -201,6 +202,7 @@ const ProductOption = () => {
                   </CTable>
                   <CButton
                     color="danger"
+                    variant="outline"
                     onClick={() => optionsCheckbox.handleDeleteSelected(setOptions)}
                     disabled={optionsCheckbox.selectedItems.length === 0}
                   >
@@ -214,22 +216,48 @@ const ProductOption = () => {
             <CCol>
               <CCard className="mb-4">
                 <CCardHeader>옵션 등록</CCardHeader>
+
                 <CCardBody>
-                  <CFormLabel>옵션명</CFormLabel>
-                  <CFormInput value={optionName} onChange={(e) => setOptionName(e.target.value)} />
-                  <CFormLabel>옵션값 (쉼표로 구분)</CFormLabel>
-                  <CFormInput
-                    value={optionValues}
-                    onChange={(e) => setOptionValues(e.target.value)}
-                  />
-                  <CFormLabel>옵션설명</CFormLabel>
-                  <CFormInput
-                    value={optionDescription}
-                    onChange={(e) => setOptionDescription(e.target.value)}
-                  />
-                  <CButton style={{ marginTop: '10px' }} color="primary" onClick={handleAddOption}>
-                    옵션 추가
-                  </CButton>
+                  <table className="table">
+                    <tbody>
+                      <tr>
+                        <td className="text-center table-header">옵션명</td>
+                        <td colSpan="4">
+                          <CFormInput
+                            value={optionName}
+                            onChange={(e) => setOptionName(e.target.value)}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-center table-header">옵션값 (쉼표로 구분)</td>
+                        <td colSpan="4">
+                          <CFormInput
+                            value={optionValues}
+                            onChange={(e) => setOptionValues(e.target.value)}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-center table-header">옵션설명</td>
+                        <td colSpan="4">
+                          <CFormInput
+                            value={optionDescription}
+                            onChange={(e) => setOptionDescription(e.target.value)}
+                          />
+                        </td>
+                      </tr>
+
+                      <CButton
+                        style={{ marginTop: '10px' }}
+                        color="primary"
+                        variant="outline"
+                        onClick={handleAddOption}
+                      >
+                        옵션 추가
+                      </CButton>
+                    </tbody>
+                  </table>
                 </CCardBody>
               </CCard>
             </CCol>
@@ -280,6 +308,7 @@ const ProductOption = () => {
                   </CTable>
                   <CButton
                     color="danger"
+                    variant="outline"
                     onClick={() => optionSetsCheckbox.handleDeleteSelected(setOptionSets)}
                     disabled={optionSetsCheckbox.selectedItems.length === 0}
                   >
@@ -318,7 +347,8 @@ const ProductOption = () => {
                         </CTableBody>
                       </CTable>
                       <CButton
-                        color="secondary"
+                        color="primary"
+                        variant="outline"
                         onClick={handleAddOptionSet}
                         disabled={optionSetValues.length < 2 || !optionSetName}
                         style={{ margin: 8 }}
@@ -327,46 +357,53 @@ const ProductOption = () => {
                       </CButton>
                     </CCol>
                     <CCol xs={12} md={6}>
-                      <CFormLabel style={{ margin: 8 }}>사용여부</CFormLabel>
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          marginBottom: 8,
-                          gap: '16px',
-                        }}
-                      >
-                        <CFormCheck
-                          type="radio"
-                          id="useYes"
-                          name="useOptionSet"
-                          checked={optionSetUse === true}
-                          onChange={() => setOptionSetUse(true)}
-                          label="사용함"
-                        />
-                        <CFormCheck
-                          type="radio"
-                          id="useNo"
-                          name="useOptionSet"
-                          checked={optionSetUse === false}
-                          onChange={() => setOptionSetUse(false)}
-                          label="사용안함"
-                        />
-                      </div>
-
-                      <CFormLabel style={{ margin: 8 }}>옵션세트명</CFormLabel>
-                      <CFormInput
-                        value={optionSetName}
-                        onChange={(e) => setOptionSetName(e.target.value)}
-                        style={{ marginBottom: 8 }}
-                      />
-
-                      <CFormLabel style={{ margin: 8 }}>옵션세트설명</CFormLabel>
-                      <CFormInput
-                        value={optionSetDescription}
-                        onChange={(e) => setOptionSetDescription(e.target.value)}
-                        style={{ marginBottom: 8 }}
-                      />
+                      <table className="table">
+                        <tbody>
+                          <tr>
+                            <td className="text-center table-header">사용여부</td>
+                            <td colSpan="4">
+                              <div className="radio-group">
+                                <CFormCheck
+                                  type="radio"
+                                  id="useYes"
+                                  name="useOptionSet"
+                                  checked={optionSetUse === true}
+                                  onChange={() => setOptionSetUse(true)}
+                                  label="사용함"
+                                />
+                                <CFormCheck
+                                  type="radio"
+                                  id="useNo"
+                                  name="useOptionSet"
+                                  checked={optionSetUse === false}
+                                  onChange={() => setOptionSetUse(false)}
+                                  label="사용안함"
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-center table-header">옵션세트명</td>
+                            <td colSpan="4">
+                              <CFormInput
+                                value={optionSetName}
+                                onChange={(e) => setOptionSetName(e.target.value)}
+                                style={{ marginBottom: 8 }}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-center table-header">옵션세트설명</td>
+                            <td colSpan="4">
+                              <CFormInput
+                                value={optionSetDescription}
+                                onChange={(e) => setOptionSetDescription(e.target.value)}
+                                style={{ marginBottom: 8 }}
+                              />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </CCol>
                   </CRow>
                 </CCardBody>

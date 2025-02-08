@@ -19,14 +19,16 @@ import {
   CFormTextarea,
 } from '@coreui/react'
 import '../adminpage.css'
-import DatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
+import DateRangePicker from '@/components/admin/DateRangePicker'
 import { React, useState, useEffect } from 'react'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 
 const CustomerList = () => {
-  const [startDate, setStartDate] = useState(new Date())
-  const [endDate, setEndDate] = useState(new Date())
+  const [startDate1, setStartDate1] = useState(null)
+  const [endDate1, setEndDate1] = useState(null)
+  const [startDate2, setStartDate2] = useState(null)
+  const [endDate2, setEndDate2] = useState(null)
+
   const [memberData, setMemberData] = useState([])
 
   const fetchMemberData = async () => {
@@ -92,39 +94,29 @@ const CustomerList = () => {
           <table className="table">
             <tbody>
               <tr>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  개인정보
-                </td>
-                <td colSpan="7">
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>아이디</option>
-                        <option value="a">a</option>
-                      </CFormSelect>
-                      <CFormInput size="sm" placeholder="검색어를 입력하세요" />
-                    </CCol>
-                  </CRow>
+                <td className="text-center table-header">개인정보</td>
+                <td colSpan="5">
+                  <div className="d-flex gap-3">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>아이디</option>
+                      <option value="a">a</option>
+                    </CFormSelect>
+                    <CFormInput size="sm" placeholder="검색어를 입력하세요" />
+                  </div>
                 </td>
               </tr>
               <tr>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  회원등급
+                <td className="text-center table-header">회원등급</td>
+                <td colSpan="2">
+                  <div className="d-flex gap-3">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>전체</option>
+                      <option value="a">일반회원</option>
+                    </CFormSelect>
+                  </div>
                 </td>
-                <td style={{ width: '35%' }}>
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>전체</option>
-                        <option value="a">일반회원</option>
-                      </CFormSelect>
-                    </CCol>
-                  </CRow>
-                </td>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  회원유형
-                </td>
-                <td style={{ width: '35%', verticalAlign: 'middle' }}>
+                <td className="text-center table-header">회원유형</td>
+                <td colSpan="2">
                   <div className="radio-group">
                     <CFormCheck type="radio" name="saleStatus" value="T" label="전체" />
                     <CFormCheck type="radio" name="saleStatus" value="T" label="특별관리유형" />
@@ -134,60 +126,38 @@ const CustomerList = () => {
               </tr>
 
               <tr>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  가입일/기념일
-                </td>
-                <td colSpan="7">
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>가입일</option>
-                        <option value="a">생일</option>
-                      </CFormSelect>
+                <td className="text-center table-header">가입일/기념일</td>
+                <td colSpan="5">
+                  <div className="d-flex gap-3">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>가입일</option>
+                      <option value="a">생일</option>
+                    </CFormSelect>
 
-                      <div>
-                        <DatePicker
-                          showIcon
-                          dateFormat="yyyy.MM.dd"
-                          selected={startDate}
-                          onChange={(date) => setStartDate(date)}
-                          placeholderText="시작 날짜"
-                          className="custom-datepicker"
-                        />
-
-                        <span>~</span>
-
-                        <DatePicker
-                          showIcon
-                          dateFormat="yyyy.MM.dd"
-                          selected={endDate}
-                          onChange={(date) => setEndDate(date)}
-                          placeholderText="종료 날짜"
-                          className="custom-datepicker"
-                        />
-                      </div>
-                    </CCol>
-                  </CRow>
+                    <div>
+                      <DateRangePicker
+                        startDate={startDate1}
+                        endDate={endDate1}
+                        setStartDate={setStartDate1}
+                        setEndDate={setEndDate1}
+                        showButtons={false}
+                      />
+                    </div>
+                  </div>
                 </td>
               </tr>
               <tr>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  나이
+                <td className="text-center table-header">나이</td>
+                <td colSpan="2">
+                  <div className="d-flex gap-3">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>전체</option>
+                      <option value="a">10대</option>
+                    </CFormSelect>
+                  </div>
                 </td>
-                <td style={{ width: '35%' }}>
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>전체</option>
-                        <option value="a">10대</option>
-                      </CFormSelect>
-                    </CCol>
-                  </CRow>
-                </td>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  성별
-                </td>
-                <td style={{ width: '35%', verticalAlign: 'middle' }}>
+                <td className="text-center table-header">성별</td>
+                <td colSpan="2" style={{ verticalAlign: 'middle' }}>
                   <div className="radio-group">
                     <CFormCheck type="radio" name="saleStatus" value="T" label="전체" />
                     <CFormCheck type="radio" name="saleStatus" value="T" label="남" />
@@ -196,71 +166,47 @@ const CustomerList = () => {
                 </td>
               </tr>
               <tr>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  구매금액/건수
-                </td>
-                <td colSpan="7">
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>전체</option>
-                        <option value="a">생일</option>
-                      </CFormSelect>
-                      <CFormInput size="sm" placeholder="" />
-                      <span>~</span>
-                      <CFormInput size="sm" placeholder="" />
-                    </CCol>
-                  </CRow>
+                <td className="text-center table-header">구매금액/건수</td>
+                <td colSpan="5">
+                  <div className="d-flex gap-3">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>전체</option>
+                      <option value="a">생일</option>
+                    </CFormSelect>
+                    <CFormInput className="small-form" placeholder="" />
+                    <span>~</span>
+                    <CFormInput className="small-form" placeholder="" />
+                  </div>
                 </td>
               </tr>
               <tr>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  주문일/결제완료일
-                </td>
-                <td colSpan="7">
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>주문일</option>
-                        <option value="a">결제완료일</option>
-                      </CFormSelect>
+                <td className="text-center table-header">주문일/결제완료일</td>
+                <td colSpan="5">
+                  <div className="d-flex gap-3">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>주문일</option>
+                      <option value="a">결제완료일</option>
+                    </CFormSelect>
 
-                      <div>
-                        <DatePicker
-                          showIcon
-                          dateFormat="yyyy.MM.dd"
-                          selected={startDate}
-                          onChange={(date) => setStartDate(date)}
-                          placeholderText="시작 날짜"
-                          className="custom-datepicker"
-                        />
-
-                        <span>~</span>
-
-                        <DatePicker
-                          showIcon
-                          dateFormat="yyyy.MM.dd"
-                          selected={endDate}
-                          onChange={(date) => setEndDate(date)}
-                          placeholderText="종료 날짜"
-                          className="custom-datepicker"
-                        />
-                      </div>
-                    </CCol>
-                  </CRow>
+                    <div>
+                      <DateRangePicker
+                        startDate={startDate2}
+                        endDate={endDate2}
+                        setStartDate={setStartDate2}
+                        setEndDate={setEndDate2}
+                        showButtons={false}
+                      />
+                    </div>
+                  </div>
                 </td>
               </tr>
               <tr>
-                <td className="text-center table-header" style={{ width: '15%' }}>
-                  주문상품
-                </td>
-                <td colSpan="7">
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormInput size="sm" style={{ width: '150px' }} placeholder="" />
-                      <CButton color="secondary">상품검색 </CButton>
-                    </CCol>
-                  </CRow>
+                <td className="text-center table-header">주문상품</td>
+                <td colSpan="5">
+                  <div className="d-flex gap-3">
+                    <CFormInput className="small-select" placeholder="" />
+                    <CButton color="secondary">상품검색 </CButton>
+                  </div>
                 </td>
               </tr>
             </tbody>
