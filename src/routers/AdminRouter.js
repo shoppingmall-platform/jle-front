@@ -12,6 +12,8 @@ const CustomerMain = React.lazy(() => import('@/pages/adminPages/customer/Custom
 const CustomerList = React.lazy(() => import('@/pages/adminPages/customer/CustomerList'))
 const OrderMain = React.lazy(() => import('@/pages/adminPages/order/OrderMain'))
 const OrderList = React.lazy(() => import('@/pages/adminPages/order/OrderList'))
+const DiscountAdd = React.lazy(() => import('@/pages/adminPages/promotion/DiscountAdd'))
+const DiscountList = React.lazy(() => import('@/pages/adminPages/promotion/DiscountList'))
 
 export const adminRouter = [
   { path: '', element: Dashboard },
@@ -25,4 +27,6 @@ export const adminRouter = [
   { path: 'customers/list', element: CustomerList },
   { path: 'orders', element: OrderMain },
   { path: 'orders/list', element: OrderList },
+  { path: 'promotion/discounts/add', element: DiscountAdd },
+  { path: 'promotion/discounts/list', element: DiscountList },
 ]
