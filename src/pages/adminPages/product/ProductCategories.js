@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CContainer,
   CRow,
@@ -19,11 +19,13 @@ import {
 import { CIcon } from '@coreui/icons-react'
 import { cilFolder, cilFolderOpen, cilDescription } from '@coreui/icons'
 
+import { getCategories } from '@/apis/product/categoryApis'
+
 const initialCategories = [
-  { categoryId: 1, categoryParent: null, categoryName: '대분류1', categoryDepth: 1 },
-  { categoryId: 2, categoryParent: 1, categoryName: '중분류1', categoryDepth: 2 },
-  { categoryId: 3, categoryParent: null, categoryName: '대분류2', categoryDepth: 1 },
-  { categoryId: 4, categoryParent: 3, categoryName: '중분류2', categoryDepth: 2 },
+  { categoryId: 1, categoryParent: null, categoryName: '대분류1', categoryLevel: 1 },
+  { categoryId: 2, categoryParent: 1, categoryName: '중분류1', categoryLevel: 2 },
+  { categoryId: 3, categoryParent: null, categoryName: '대분류2', categoryLevel: 1 },
+  { categoryId: 4, categoryParent: 3, categoryName: '중분류2', categoryLevel: 2 },
 ]
 
 const ProductCategories = () => {
@@ -56,16 +58,16 @@ const ProductCategories = () => {
         <CListGroupItem component="button" onClick={() => handleCategoryClick(cat)}>
           <CIcon
             icon={
-              cat.categoryDepth === 1
+              cat.categoryLevel === 1
                 ? cilFolder
-                : cat.categoryDepth === 2
+                : cat.categoryLevel === 2
                   ? cilFolderOpen
                   : cilDescription
             }
           />
           {cat.categoryName}
         </CListGroupItem>
-        {cat.categoryDepth < 3 && (
+        {cat.categoryLevel < 3 && (
           <div style={{ paddingLeft: '20px' }}>{renderCategoryTree(cat.categoryId)}</div>
         )}
       </CListGroup>
@@ -91,7 +93,7 @@ const ProductCategories = () => {
       categoryId: categories.length + 1,
       categoryParent: selectedCategory.categoryId,
       categoryName: newCategoryName,
-      categoryDepth: selectedCategory.categoryDepth + 1,
+      categoryLevel: selectedCategory.categoryLevel + 1,
     }
     setCategories([...categories, newCategory])
     setNewCategoryName('')
@@ -100,14 +102,12 @@ const ProductCategories = () => {
 
   const handleAddMainCategory = () => {
     if (!newMainCategoryName) return
-
     const newCategory = {
       categoryId: categories.length + 1,
       categoryParent: null,
       categoryName: newMainCategoryName,
-      categoryDepth: 1,
+      categoryLevel: 1,
     }
-
     setCategories([...categories, newCategory])
     setNewMainCategoryName('')
   }
