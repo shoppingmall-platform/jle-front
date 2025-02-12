@@ -104,7 +104,7 @@ const OptionTable = () => {
           <tr>
             <td className="text-center">옵션 사용</td>
             <td colSpan="4">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '15px' }}>
                 <CFormCheck
                   type="radio"
                   name="optionUsage"
@@ -129,7 +129,9 @@ const OptionTable = () => {
               <tr>
                 <td className="text-center">옵션 설정</td>
                 <td colSpan="4">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '15px' }}
+                  >
                     <CFormCheck
                       type="radio"
                       name="optionSettings"

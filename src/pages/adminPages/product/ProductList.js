@@ -14,11 +14,10 @@ import {
 } from '@coreui/react'
 import { cilSearch } from '@coreui/icons' // 아이콘 불러오기
 import CIcon from '@coreui/icons-react'
-import DatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
 import { React, useState, useEffect } from 'react'
 import '../adminpage.css'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
+import DateRangePicker from '@/components/admin/DateRangePicker'
 
 const data = {
   total: 5, // 전체 건수
@@ -27,8 +26,8 @@ const data = {
 }
 
 const ProductList = () => {
-  const [startDate, setStartDate] = useState(new Date())
-  const [endDate, setEndDate] = useState(new Date())
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
   const [productData, setProductData] = useState([])
 
   const fetchProductData = async () => {
@@ -104,137 +103,51 @@ const ProductList = () => {
                   검색분류
                 </td>
                 <td colSpan="7">
-                  <CRow className="m-1">
-                    <CCol className="flex-row">
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>상품명</option>
-                        <option value="a">a</option>
-                      </CFormSelect>
-                      <CFormInput size="sm" placeholder="검색어를 입력하세요" />
-                      <CButton
-                        size="sm"
-                        // onClick={handleSearch}
-                        className="ms-2"
-                        aria-label="검색"
-                      >
-                        <CIcon icon={cilSearch} />
-                      </CButton>
-                    </CCol>
-                  </CRow>
+                  <div className="d-flex align-items-center gap-2">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>상품명</option>
+                      <option value="a">a</option>
+                    </CFormSelect>
+
+                    <CFormInput size="sm" placeholder="검색어를 입력하세요" />
+
+                    <CButton size="sm" className="ms-2" aria-label="검색">
+                      <CIcon icon={cilSearch} />
+                    </CButton>
+                  </div>
                 </td>
               </tr>
               <tr>
                 <td className="text-center table-header">카테고리</td>
                 <td colSpan="7">
-                  <CRow className="m-1">
-                    <CCol>
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>대분류 선택</option>
-                        <option value="a">a</option>
-                      </CFormSelect>
-                    </CCol>
-                    <CCol>
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>중분류 선택</option>
-                        <option value="a">a</option>
-                      </CFormSelect>
-                    </CCol>
-                    <CCol>
-                      <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                        <option>소분류 선택</option>
-                        <option value="a">a</option>
-                      </CFormSelect>
-                    </CCol>
-                  </CRow>
+                  <div className="d-flex gap-4">
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>대분류 선택</option>
+                      <option value="a">a</option>
+                    </CFormSelect>
+
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>중분류 선택</option>
+                      <option value="a">a</option>
+                    </CFormSelect>
+
+                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
+                      <option>소분류 선택</option>
+                      <option value="a">a</option>
+                    </CFormSelect>
+                  </div>
                 </td>
               </tr>
               <tr>
                 <td className="text-center table-header">상품 등록일</td>
                 <td colSpan="7">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <CButton
-                      className="custom-button"
-                      onClick={() => {
-                        const today = new Date()
-                        setStartDate(today)
-                        setEndDate(today)
-                      }}
-                    >
-                      오늘
-                    </CButton>
-
-                    <CButton
-                      className="custom-button"
-                      onClick={() => {
-                        const today = new Date()
-                        setStartDate(new Date(today.setDate(today.getDate() - 3)))
-                        setEndDate(new Date())
-                      }}
-                    >
-                      3일
-                    </CButton>
-
-                    <CButton
-                      className="custom-button"
-                      onClick={() => {
-                        const today = new Date()
-                        setStartDate(new Date(today.setDate(today.getDate() - 7)))
-                        setEndDate(new Date())
-                      }}
-                    >
-                      7일
-                    </CButton>
-
-                    <CButton
-                      className="custom-button"
-                      onClick={() => {
-                        const today = new Date()
-                        setStartDate(new Date(today.setMonth(today.getMonth() - 1)))
-                        setEndDate(new Date())
-                      }}
-                    >
-                      1개월
-                    </CButton>
-
-                    <CButton
-                      className="custom-button"
-                      onClick={() => {
-                        const today = new Date()
-                        setStartDate(new Date(today.setMonth(today.getMonth() - 3)))
-                        setEndDate(new Date())
-                      }}
-                    >
-                      3개월
-                    </CButton>
-
-                    <CButton
-                      className="custom-button"
-                      onClick={() => {
-                        setStartDate(null)
-                        setEndDate(null)
-                      }}
-                    >
-                      전체
-                    </CButton>
-
-                    <DatePicker
-                      showIcon
-                      dateFormat="yyyy.MM.dd"
-                      selected={startDate}
-                      onChange={(date) => setStartDate(date)}
-                      placeholderText="시작 날짜"
-                      className="custom-datepicker"
-                    />
-
-                    <span>~</span>
-
-                    <DatePicker
-                      showIcon
-                      dateFormat="yyyy.MM.dd"
-                      selected={endDate}
-                      onChange={(date) => setEndDate(date)}
-                      placeholderText="종료 날짜"
-                      className="custom-datepicker"
+                    <DateRangePicker
+                      startDate={startDate}
+                      endDate={endDate}
+                      setStartDate={setStartDate}
+                      setEndDate={setEndDate}
+                      showButtons={true}
                     />
                   </div>
                 </td>
