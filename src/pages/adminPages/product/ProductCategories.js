@@ -20,13 +20,13 @@ import '../adminpage.css'
 import { CIcon } from '@coreui/icons-react'
 import { cilFolder, cilFolderOpen, cilDescription } from '@coreui/icons'
 
-import { getCategories } from '@/apis/product/categoryApis'
+import CategoryApis from '@/apis/product/categoryApis'
 
 const initialCategories = [
-  { categoryId: 1, categoryParent: null, categoryName: '대분류1', categoryLevel: 1 },
-  { categoryId: 2, categoryParent: 1, categoryName: '중분류1', categoryLevel: 2 },
-  { categoryId: 3, categoryParent: null, categoryName: '대분류2', categoryLevel: 1 },
-  { categoryId: 4, categoryParent: 3, categoryName: '중분류2', categoryLevel: 2 },
+  { categoryId: 1, parentCategoryId: null, categoryName: '대분류1', categoryLevel: 1 },
+  { categoryId: 2, parentCategoryId: 1, categoryName: '중분류1', categoryLevel: 2 },
+  { categoryId: 3, parentCategoryId: null, categoryName: '대분류2', categoryLevel: 1 },
+  { categoryId: 4, parentCategoryId: 3, categoryName: '중분류2', categoryLevel: 2 },
 ]
 
 const ProductCategories = () => {
@@ -36,13 +36,14 @@ const ProductCategories = () => {
   const [editCategoryName, setEditCategoryName] = useState('')
   const [addingSubcategory, setAddingSubcategory] = useState(false)
   const [newMainCategoryName, setNewMainCategoryName] = useState('')
-  const [showCategoryDetails, setShowCategoryDetails] = useState(false) // 내용 토글 상태 추가
 
   useEffect(() => {
     async function callGetCategoriesApi() {
-      // const categories = await getCategories()
-      // console.log('categories', categories)
-      // setCategories(categories)
+      // 카테고리 목록 받아오는 API 호출
+      const categories = await CategoryApis.getCategories()
+      console.log('categories', categories)
+      // 받아온 데이터를 useState에 저장장
+      setCategories(categories)
     }
     callGetCategoriesApi()
   }, [])
@@ -51,7 +52,6 @@ const ProductCategories = () => {
     setSelectedCategory(category)
     setEditCategoryName(category.categoryName)
     setAddingSubcategory(false)
-    setShowCategoryDetails(!showCategoryDetails) // 카테고리 클릭 시 내용 토글
   }
 
   const findParentCategoryName = (parentId) => {
@@ -61,7 +61,7 @@ const ProductCategories = () => {
   }
 
   const renderCategoryTree = (parentId = null) => {
-    const childCategories = categories.filter((cat) => cat.categoryParent === parentId)
+    const childCategories = categories.filter((cat) => cat.parentCategoryId === parentId)
     if (childCategories.length === 0) return null
     return childCategories.map((cat) => (
       <CListGroup key={cat.categoryId}>
@@ -88,42 +88,75 @@ const ProductCategories = () => {
     ))
   }
 
-  const handleEditCategory = () => {
-    setCategories(
-      categories.map((cat) =>
-        cat.categoryId === selectedCategory.categoryId
-          ? { ...cat, categoryName: editCategoryName }
-          : cat,
-      ),
-    )
+  const handleEditCategory = async () => {
+    // 업데이트된 카테고리 정보보
+    const updatedCateory = {
+      categoryId: selectedCategory.categoryId,
+      parentCategoryId: selectedCategory.parentCategoryId,
+      categoryName: editCategoryName,
+      categoryLevel: selectedCategory.categoryLevel,
+    }
+
+    // 카테고리 정보 업데이트 API 호출
+    await CategoryApis.updateCategory(updatedCateory)
+
+    // // 업데이트 완료되었으니 업데이트된 카테고리 목록 재호출
+    // 카테고리 목록 받아오는 API 호출
+    const categories = await CategoryApis.getCategories()
+    console.log('categories', categories)
+    // 받아온 데이터를 useState에 저장장
+    setCategories(categories)
   }
 
   const handleDeleteCategory = (id) => {
     setCategories(categories.filter((cat) => cat.categoryId !== id))
   }
 
-  const handleAddSubcategory = () => {
-    const newCategory = {
-      categoryId: categories.length + 1,
-      categoryParent: selectedCategory.categoryId,
+  const handleAddSubcategory = async () => {
+    const newSubCategory = {
+      // ************** categoryParentId -> parentCateoryId로 수정 필요 *********** //
+      categoryParentId: selectedCategory.categoryId,
       categoryName: newCategoryName,
       categoryLevel: selectedCategory.categoryLevel + 1,
     }
-    setCategories([...categories, newCategory])
+    console.log('카테고리 추가 API 요청')
+    // 카테고리 생성 요청
+    await CategoryApis.createCategories(newSubCategory)
+
+    console.log('카테고리 목록 가져오기 API 재호출 ')
+    // // 생성 완료되었으니 업데이트된 카테고리 목록 재호출
+    // 카테고리 목록 받아오는 API 호출
+    const categories = await CategoryApis.getCategories()
+    console.log('categories', categories)
+    // 받아온 데이터를 useState에 저장장
+    setCategories(categories)
+
+    // 새 카테고리명은 초기화
     setNewCategoryName('')
+    // 서브카테고리 토글 해제
     setAddingSubcategory(false)
   }
 
-  const handleAddMainCategory = () => {
+  const handleAddMainCategory = async () => {
+    console.log('대분류 추가 버튼 클릭')
     if (!newMainCategoryName) return
     const newCategory = {
-      categoryId: categories.length + 1,
-      categoryParent: null,
+      parentCategoryId: null,
       categoryName: newMainCategoryName,
       categoryLevel: 1,
     }
-    setCategories([...categories, newCategory])
-    setNewMainCategoryName('')
+
+    console.log('카테고리 추가 API 요청')
+    // 카테고리 생성 요청
+    await CategoryApis.createCategories(newCategory)
+
+    console.log('카테고리 목록 가져오기 API 재호출 ')
+    // // 생성 완료되었으니 업데이트된 카테고리 목록 재호출
+    // 카테고리 목록 받아오는 API 호출
+    const categories = await CategoryApis.getCategories()
+    console.log('categories', categories)
+    // 받아온 데이터를 useState에 저장장
+    setCategories(categories)
   }
 
   return (
@@ -152,7 +185,7 @@ const ProductCategories = () => {
                       <tr>
                         <td className="text-center table-header">상위 카테고리명</td>
                         <td colSpan="4">
-                          {findParentCategoryName(selectedCategory.categoryParent)}
+                          {findParentCategoryName(selectedCategory.parentCategoryId)}
                         </td>
                       </tr>
                       <tr>
