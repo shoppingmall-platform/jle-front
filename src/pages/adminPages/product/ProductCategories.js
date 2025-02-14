@@ -38,6 +38,15 @@ const ProductCategories = () => {
   const [newMainCategoryName, setNewMainCategoryName] = useState('')
   const [showCategoryDetails, setShowCategoryDetails] = useState(false) // 내용 토글 상태 추가
 
+  useEffect(() => {
+    async function callGetCategoriesApi() {
+      // const categories = await getCategories()
+      // console.log('categories', categories)
+      // setCategories(categories)
+    }
+    callGetCategoriesApi()
+  }, [])
+
   const handleCategoryClick = (category) => {
     setSelectedCategory(category)
     setEditCategoryName(category.categoryName)

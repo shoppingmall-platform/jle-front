@@ -1,7 +1,4 @@
-import { useApi } from '@/apis/index'
-
-const api = useApi()
-
+import api from '@/apis/index'
 
 /**
  * @returns 
@@ -22,9 +19,8 @@ export const getCategories = async () => {
   }
 }
 
-
 /**
- * @returns 
+ * @returns
  *  { categoryId: 1 }
  */
 export const createCategories = async (newCategory) => {
@@ -37,9 +33,8 @@ export const createCategories = async (newCategory) => {
   }
 }
 
-
 /**
- * @returns 
+ * @returns
  *  "update successful"
  */
 export const updateCategories = async (categoryId, updateCategory) => {
@@ -51,11 +46,10 @@ export const updateCategories = async (categoryId, updateCategory) => {
     console.error(error)
   }
 }
-  
 
 /**
- * @returns 
- * 
+ * @returns
+ *
  */
 export const deleteCategories = async (categoryId) => {
   try {
@@ -65,4 +59,3 @@ export const deleteCategories = async (categoryId) => {
     console.error(error)
   }
 }
-  
