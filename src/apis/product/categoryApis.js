@@ -11,9 +11,8 @@ import api from '@/apis/index'
  */
 export const getCategories = async () => {
   try {
-    console.log('get')
     // http://localhost:8090/v1/categories
-    const response = await api.get('/v1/categories')
+    const response = await api.get('/product/v1/categories')
     console.log(response)
     return response.data
   } catch (error) {
@@ -27,8 +26,7 @@ export const getCategories = async () => {
  */
 export const createCategories = async (newCategory) => {
   try {
-    console.log('create')
-    const response = await api.post('/v1/categories', newCategory)
+    const response = await api.post('/product/v1/categories', newCategory)
     console.log(response)
     return response.data
   } catch (error) {
@@ -42,7 +40,7 @@ export const createCategories = async (newCategory) => {
  */
 export const updateCategory = async (updateCategory) => {
   try {
-    const response = await api.post('/v1/categories/update-category', updateCategory)
+    const response = await api.post('/product/v1/categories/update-category', updateCategory)
     console.log(response)
     return response.data
   } catch (error) {
@@ -56,9 +54,11 @@ export const updateCategory = async (updateCategory) => {
  */
 export const deleteCategory = async (categoryId) => {
   try {
-    const response = await api.post(`/v1/categories/delete-category/${categoryId}`)
+    const response = await api.post(`/product/v1/categories/delete-category/${categoryId}`)
     console.log(response)
   } catch (error) {
     console.error(error)
   }
 }
+
+export default { getCategories, createCategories, updateCategory, deleteCategory }
