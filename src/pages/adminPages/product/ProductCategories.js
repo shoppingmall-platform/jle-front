@@ -20,7 +20,12 @@ import '../adminpage.css'
 import { CIcon } from '@coreui/icons-react'
 import { cilFolder, cilFolderOpen, cilDescription } from '@coreui/icons'
 
-import CategoryApis from '@/apis/product/categoryApis'
+import {
+  getCategories,
+  createCategories,
+  updateCategory,
+  deleteCategory,
+} from '@/apis/product/categoryApis'
 
 const initialCategories = [
   { categoryId: 1, parentCategoryId: null, categoryName: '대분류1', categoryLevel: 1 },
@@ -38,15 +43,18 @@ const ProductCategories = () => {
   const [newMainCategoryName, setNewMainCategoryName] = useState('')
 
   useEffect(() => {
-    async function callGetCategoriesApi() {
-      // 카테고리 목록 받아오는 API 호출
-      const categories = await CategoryApis.getCategories()
-      console.log('categories', categories)
-      // 받아온 데이터를 useState에 저장장
-      setCategories(categories)
-    }
     callGetCategoriesApi()
   }, [])
+
+  async function callGetCategoriesApi() {
+    try {
+      const categories = await getCategories()
+      setCategories(categories)
+    } catch (err) {
+      console.log(err)
+      alert(err)
+    }
+  }
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category)
@@ -89,47 +97,49 @@ const ProductCategories = () => {
   }
 
   const handleEditCategory = async () => {
-    // 업데이트된 카테고리 정보보
+    // 업데이트된 카테고리 정보
     const updatedCateory = {
       categoryId: selectedCategory.categoryId,
       parentCategoryId: selectedCategory.parentCategoryId,
       categoryName: editCategoryName,
       categoryLevel: selectedCategory.categoryLevel,
     }
-
-    // 카테고리 정보 업데이트 API 호출
-    await CategoryApis.updateCategory(updatedCateory)
+    try {
+      await updateCategory(updatedCateory)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
 
     // // 업데이트 완료되었으니 업데이트된 카테고리 목록 재호출
-    // 카테고리 목록 받아오는 API 호출
-    const categories = await CategoryApis.getCategories()
-    console.log('categories', categories)
-    // 받아온 데이터를 useState에 저장장
-    setCategories(categories)
+    callGetCategoriesApi()
   }
 
-  const handleDeleteCategory = (id) => {
-    setCategories(categories.filter((cat) => cat.categoryId !== id))
+  const handleDeleteCategory = async () => {
+    // 선택된 카테고리 삭제
+    try {
+      await deleteCategory(selectedCategory.categoryId)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
+    callGetCategoriesApi()
   }
 
   const handleAddSubcategory = async () => {
+    if (!newCategoryName) return
     const newSubCategory = {
-      // ************** categoryParentId -> parentCateoryId로 수정 필요 *********** //
-      categoryParentId: selectedCategory.categoryId,
+      parentCategoryId: selectedCategory.categoryId,
       categoryName: newCategoryName,
       categoryLevel: selectedCategory.categoryLevel + 1,
     }
-    console.log('카테고리 추가 API 요청')
-    // 카테고리 생성 요청
-    await CategoryApis.createCategories(newSubCategory)
-
-    console.log('카테고리 목록 가져오기 API 재호출 ')
-    // // 생성 완료되었으니 업데이트된 카테고리 목록 재호출
-    // 카테고리 목록 받아오는 API 호출
-    const categories = await CategoryApis.getCategories()
-    console.log('categories', categories)
-    // 받아온 데이터를 useState에 저장장
-    setCategories(categories)
+    try {
+      await createCategories(newSubCategory)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
+    callGetCategoriesApi()
 
     // 새 카테고리명은 초기화
     setNewCategoryName('')
@@ -138,7 +148,6 @@ const ProductCategories = () => {
   }
 
   const handleAddMainCategory = async () => {
-    console.log('대분류 추가 버튼 클릭')
     if (!newMainCategoryName) return
     const newCategory = {
       parentCategoryId: null,
@@ -146,17 +155,13 @@ const ProductCategories = () => {
       categoryLevel: 1,
     }
 
-    console.log('카테고리 추가 API 요청')
-    // 카테고리 생성 요청
-    await CategoryApis.createCategories(newCategory)
-
-    console.log('카테고리 목록 가져오기 API 재호출 ')
-    // // 생성 완료되었으니 업데이트된 카테고리 목록 재호출
-    // 카테고리 목록 받아오는 API 호출
-    const categories = await CategoryApis.getCategories()
-    console.log('categories', categories)
-    // 받아온 데이터를 useState에 저장장
-    setCategories(categories)
+    try {
+      await createCategories(newCategory)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
+    callGetCategoriesApi()
   }
 
   return (
@@ -208,11 +213,7 @@ const ProductCategories = () => {
                     >
                       수정
                     </CButton>
-                    <CButton
-                      color="danger"
-                      variant="outline"
-                      onClick={() => handleDeleteCategory(selectedCategory.categoryId)}
-                    >
+                    <CButton color="danger" variant="outline" onClick={handleDeleteCategory}>
                       삭제
                     </CButton>
 

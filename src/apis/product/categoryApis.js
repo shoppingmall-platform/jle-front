@@ -11,6 +11,7 @@ import api from '@/apis/index'
  */
 export const getCategories = async () => {
   try {
+    console.log('get')
     // http://localhost:8090/v1/categories
     const response = await api.get('/v1/categories')
     console.log(response)
@@ -26,6 +27,7 @@ export const getCategories = async () => {
  */
 export const createCategories = async (newCategory) => {
   try {
+    console.log('create')
     const response = await api.post('/v1/categories', newCategory)
     console.log(response)
     return response.data
@@ -60,5 +62,3 @@ export const deleteCategory = async (categoryId) => {
     console.error(error)
   }
 }
-
-export default { getCategories, createCategories, updateCategory, deleteCategory }
