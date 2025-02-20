@@ -111,19 +111,27 @@ const ProductCategories = () => {
       alert(err)
     }
 
-    // // 업데이트 완료되었으니 업데이트된 카테고리 목록 재호출
+    // 업데이트 완료되었으니 업데이트된 카테고리 목록 재호출
     callGetCategoriesApi()
   }
 
   const handleDeleteCategory = async () => {
     // 선택된 카테고리 삭제
+    const deleteCategoryId = {
+      categoryId: selectedCategory.categoryId,
+    }
     try {
-      await deleteCategory(selectedCategory.categoryId)
+      await deleteCategory(deleteCategoryId)
     } catch (err) {
       console.error(err)
       alert(err)
     }
     callGetCategoriesApi()
+
+    // 새 카테고리명은 초기화
+    setNewCategoryName('')
+
+    setSelectedCategory(null)
   }
 
   const handleAddSubcategory = async () => {
@@ -162,6 +170,9 @@ const ProductCategories = () => {
       alert(err)
     }
     callGetCategoriesApi()
+
+    // 새 메인 카테고리명은 초기화
+    setNewMainCategoryName('')
   }
 
   return (

@@ -52,9 +52,9 @@ export const updateCategory = async (updateCategory) => {
  * @returns
  *
  */
-export const deleteCategory = async (categoryId) => {
+export const deleteCategory = async (deleteCategoryId) => {
   try {
-    const response = await api.post(`/product/v1/categories/delete-category/${categoryId}`)
+    const response = await api.post('/product/v1/categories/delete-category', deleteCategoryId)
     console.log(response)
   } catch (error) {
     console.error(error)
