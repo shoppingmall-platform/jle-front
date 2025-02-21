@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-import { useApi } from '@/apis'
+import api from '@/apis/index'
 import { isEmpty } from 'lodash'
 import Cookies from 'react-cookies'
 
@@ -55,7 +55,6 @@ export const useAuthStore = create(
 
       /* 신규토큰 요청 */
       requestToken: async () => {
-        const api = useApi()
         const codeVerifier = Cookies.get('codeVerifier')
         const url = `/v2/login?code=${new URLSearchParams(window.location.search).get('code')}&codeVerifier=${codeVerifier}`
         return await api.post(url, {})

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CContainer,
   CRow,
@@ -20,11 +20,18 @@ import '../adminpage.css'
 import { CIcon } from '@coreui/icons-react'
 import { cilFolder, cilFolderOpen, cilDescription } from '@coreui/icons'
 
+import {
+  getCategories,
+  createCategories,
+  updateCategory,
+  deleteCategory,
+} from '@/apis/product/categoryApis'
+
 const initialCategories = [
-  { categoryId: 1, categoryParent: null, categoryName: '대분류1', categoryDepth: 1 },
-  { categoryId: 2, categoryParent: 1, categoryName: '중분류1', categoryDepth: 2 },
-  { categoryId: 3, categoryParent: null, categoryName: '대분류2', categoryDepth: 1 },
-  { categoryId: 4, categoryParent: 3, categoryName: '중분류2', categoryDepth: 2 },
+  { categoryId: 1, parentCategoryId: null, categoryName: '대분류1', categoryLevel: 1 },
+  { categoryId: 2, parentCategoryId: 1, categoryName: '중분류1', categoryLevel: 2 },
+  { categoryId: 3, parentCategoryId: null, categoryName: '대분류2', categoryLevel: 1 },
+  { categoryId: 4, parentCategoryId: 3, categoryName: '중분류2', categoryLevel: 2 },
 ]
 
 const ProductCategories = () => {
@@ -34,13 +41,25 @@ const ProductCategories = () => {
   const [editCategoryName, setEditCategoryName] = useState('')
   const [addingSubcategory, setAddingSubcategory] = useState(false)
   const [newMainCategoryName, setNewMainCategoryName] = useState('')
-  const [showCategoryDetails, setShowCategoryDetails] = useState(false) // 내용 토글 상태 추가
+
+  useEffect(() => {
+    callGetCategoriesApi()
+  }, [])
+
+  async function callGetCategoriesApi() {
+    try {
+      const categories = await getCategories()
+      setCategories(categories)
+    } catch (err) {
+      console.log(err)
+      alert(err)
+    }
+  }
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category)
     setEditCategoryName(category.categoryName)
     setAddingSubcategory(false)
-    setShowCategoryDetails(!showCategoryDetails) // 카테고리 클릭 시 내용 토글
   }
 
   const findParentCategoryName = (parentId) => {
@@ -50,7 +69,7 @@ const ProductCategories = () => {
   }
 
   const renderCategoryTree = (parentId = null) => {
-    const childCategories = categories.filter((cat) => cat.categoryParent === parentId)
+    const childCategories = categories.filter((cat) => cat.parentCategoryId === parentId)
     if (childCategories.length === 0) return null
     return childCategories.map((cat) => (
       <CListGroup key={cat.categoryId}>
@@ -61,59 +80,98 @@ const ProductCategories = () => {
         >
           <CIcon
             icon={
-              cat.categoryDepth === 1
+              cat.categoryLevel === 1
                 ? cilFolder
-                : cat.categoryDepth === 2
+                : cat.categoryLevel === 2
                   ? cilFolderOpen
                   : cilDescription
             }
           />
           {cat.categoryName}
         </CListGroupItem>
-        {cat.categoryDepth < 3 && (
+        {cat.categoryLevel < 3 && (
           <div style={{ paddingLeft: '20px' }}>{renderCategoryTree(cat.categoryId)}</div>
         )}
       </CListGroup>
     ))
   }
 
-  const handleEditCategory = () => {
-    setCategories(
-      categories.map((cat) =>
-        cat.categoryId === selectedCategory.categoryId
-          ? { ...cat, categoryName: editCategoryName }
-          : cat,
-      ),
-    )
-  }
-
-  const handleDeleteCategory = (id) => {
-    setCategories(categories.filter((cat) => cat.categoryId !== id))
-  }
-
-  const handleAddSubcategory = () => {
-    const newCategory = {
-      categoryId: categories.length + 1,
-      categoryParent: selectedCategory.categoryId,
-      categoryName: newCategoryName,
-      categoryDepth: selectedCategory.categoryDepth + 1,
+  const handleEditCategory = async () => {
+    // 업데이트된 카테고리 정보
+    const updatedCateory = {
+      categoryId: selectedCategory.categoryId,
+      parentCategoryId: selectedCategory.parentCategoryId,
+      categoryName: editCategoryName,
+      categoryLevel: selectedCategory.categoryLevel,
     }
-    setCategories([...categories, newCategory])
+    try {
+      await updateCategory(updatedCateory)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
+
+    // 업데이트 완료되었으니 업데이트된 카테고리 목록 재호출
+    callGetCategoriesApi()
+  }
+
+  const handleDeleteCategory = async () => {
+    // 선택된 카테고리 삭제
+    const deleteCategoryId = {
+      categoryId: selectedCategory.categoryId,
+    }
+    try {
+      await deleteCategory(deleteCategoryId)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
+    callGetCategoriesApi()
+
+    // 새 카테고리명은 초기화
     setNewCategoryName('')
+
+    setSelectedCategory(null)
+  }
+
+  const handleAddSubcategory = async () => {
+    if (!newCategoryName) return
+    const newSubCategory = {
+      parentCategoryId: selectedCategory.categoryId,
+      categoryName: newCategoryName,
+      categoryLevel: selectedCategory.categoryLevel + 1,
+    }
+    try {
+      await createCategories(newSubCategory)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
+    callGetCategoriesApi()
+
+    // 새 카테고리명은 초기화
+    setNewCategoryName('')
+    // 서브카테고리 토글 해제
     setAddingSubcategory(false)
   }
 
-  const handleAddMainCategory = () => {
+  const handleAddMainCategory = async () => {
     if (!newMainCategoryName) return
-
     const newCategory = {
-      categoryId: categories.length + 1,
-      categoryParent: null,
+      parentCategoryId: null,
       categoryName: newMainCategoryName,
-      categoryDepth: 1,
+      categoryLevel: 1,
     }
 
-    setCategories([...categories, newCategory])
+    try {
+      await createCategories(newCategory)
+    } catch (err) {
+      console.error(err)
+      alert(err)
+    }
+    callGetCategoriesApi()
+
+    // 새 메인 카테고리명은 초기화
     setNewMainCategoryName('')
   }
 
@@ -143,7 +201,7 @@ const ProductCategories = () => {
                       <tr>
                         <td className="text-center table-header">상위 카테고리명</td>
                         <td colSpan="4">
-                          {findParentCategoryName(selectedCategory.categoryParent)}
+                          {findParentCategoryName(selectedCategory.parentCategoryId)}
                         </td>
                       </tr>
                       <tr>
@@ -166,11 +224,7 @@ const ProductCategories = () => {
                     >
                       수정
                     </CButton>
-                    <CButton
-                      color="danger"
-                      variant="outline"
-                      onClick={() => handleDeleteCategory(selectedCategory.categoryId)}
-                    >
+                    <CButton color="danger" variant="outline" onClick={handleDeleteCategory}>
                       삭제
                     </CButton>
 
