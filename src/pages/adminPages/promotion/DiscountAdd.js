@@ -19,23 +19,23 @@ import DateRangePicker from '@/components/admin/DateRangePicker'
 import { registerDiscount } from '@/apis/product/discountApis'
 
 const DiscountAdd = () => {
+  const [discountType, setDiscountType] = useState('할인율')
   const [discountName, setDiscountName] = useState('')
-  const [discountPercentage, setDiscountPercentage] = useState('')
-  const [discountPrice, setDiscountPrice] = useState('')
+  const [discountValue, setDiscountValue] = useState('')
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
   const [loading, setLoading] = useState(false)
 
   const handleRegister = async () => {
-    if (!discountName || !discountPercentage || !discountPrice || !startDate || !endDate) {
+    if (!discountName || !discountType || !discountValue || !startDate || !endDate) {
       alert('모든 필수 항목을 입력해주세요!')
       return
     }
 
     const discountData = {
       discountName,
-      discountPercentage: Number(discountPercentage),
-      discountPrice: Number(discountPrice),
+      discountType,
+      discountValue: Number(discountValue),
       discountStartDate: new Date(startDate).toISOString(),
       discountEndDate: new Date(endDate).toISOString(),
     }
@@ -74,44 +74,54 @@ const DiscountAdd = () => {
                 </td>
               </tr>
               <tr>
-                <td className="text-center table-header">입력코드</td>
-                <td colSpan="4">
-                  <div className="d-flex gap-3">
-                    <CFormInput className="small-form" />
-                    <CButton color="primary" variant="outline">
-                      확인
-                    </CButton>
-                  </div>
-                </td>
-              </tr>
-              <tr>
                 <td className="text-center table-header ">혜택구분</td>
                 <td colSpan="4">
                   <div className="d-flex gap-3">
-                    할인율
-                    <CInputGroup className="x-small-form">
-                      <CFormInput
-                        type="number"
-                        value={discountPercentage}
-                        onChange={(e) => setDiscountPercentage(e.target.value)}
+                    <div className="radio-group">
+                      <CFormCheck
+                        type="radio"
+                        name="혜택구분"
+                        value="할인율"
+                        label="할인율"
+                        checked={discountType === '할인율'}
+                        onChange={(e) => {
+                          setDiscountType(e.target.value)
+                          setDiscountValue('') // 타입 변경 시 값 초기화
+                        }}
                       />
-                      <CInputGroupText>%</CInputGroupText>
-                    </CInputGroup>
-                    <CFormSelect className="small-select" label="절사단위">
-                      <option>절사안함</option>
-                      <option>10</option>
-                      <option>100</option>
-                      <option>1000</option>
-                    </CFormSelect>
-                    상품당 최대 할인 금액
-                    <CInputGroup className="x-small-form">
-                      <CFormInput
-                        type="number"
-                        value={discountPrice}
-                        onChange={(e) => setDiscountPrice(e.target.value)}
+                      <CFormCheck
+                        type="radio"
+                        name="혜택구분"
+                        value="할인금액"
+                        label="할인금액"
+                        checked={discountType === '할인금액'}
+                        onChange={(e) => {
+                          setDiscountType(e.target.value)
+                          setDiscountValue('') // 타입 변경 시 값 초기화
+                        }}
                       />
-                      <CInputGroupText>원</CInputGroupText>
-                    </CInputGroup>
+                    </div>
+                    {discountType === '할인율' && (
+                      <CInputGroup className="x-small-form">
+                        <CFormInput
+                          type="number"
+                          value={discountValue}
+                          onChange={(e) => setDiscountValue(e.target.value)}
+                        />
+                        <CInputGroupText>%</CInputGroupText>
+                      </CInputGroup>
+                    )}
+
+                    {discountType === '할인금액' && (
+                      <CInputGroup className="x-small-form">
+                        <CFormInput
+                          type="number"
+                          value={discountValue}
+                          onChange={(e) => setDiscountValue(e.target.value)}
+                        />
+                        <CInputGroupText>원</CInputGroupText>
+                      </CInputGroup>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -144,52 +154,6 @@ const DiscountAdd = () => {
                     <CFormCheck type="radio" name="적용범위" value="1" label="전체 상품" />
                     <CFormCheck type="radio" name="적용범위" value="2" label="특정 상품" />
                     <CFormCheck type="radio" name="적용범위" value="3" label="특정 분류" />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </CCardBody>
-      </CCard>
-      <CCard className="mb-4">
-        <CCardHeader>제한 정보</CCardHeader>
-        <CCardBody>
-          <table className="table">
-            <tbody>
-              <tr>
-                <td className="text-center table-header">사용가능 대상</td>
-                <td colSpan="4">
-                  <div className="radio-group">
-                    <CFormCheck type="radio" name="사용가능 대상" value="1" label="제한안함" />
-                    <CFormCheck type="radio" name="사용가능 대상" value="2" label="제한함" />
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-center table-header">최대사용 가능횟수</td>
-                <td colSpan="4">
-                  <div className="radio-group">
-                    <CFormCheck type="radio" name="최대사용 가능횟수" value="1" label="제한안함" />
-                    <CFormCheck type="radio" name="최대사용 가능횟수" value="2" label="제한함" />
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-center table-header">사용가능 최소 주문금액</td>
-                <td colSpan="4">
-                  <div className="radio-group">
-                    <CFormCheck
-                      type="radio"
-                      name="사용가능 최소 주문금액"
-                      value="1"
-                      label="제한안함"
-                    />
-                    <CFormCheck
-                      type="radio"
-                      name="사용가능 최소 주문금액"
-                      value="2"
-                      label="제한함"
-                    />
                   </div>
                 </td>
               </tr>
