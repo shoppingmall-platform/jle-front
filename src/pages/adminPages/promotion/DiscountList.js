@@ -1,4 +1,4 @@
-import { React, useState } from 'react'
+import { React, useState, useEffect } from 'react'
 import {
   CButton,
   CForm,
@@ -16,10 +16,22 @@ import {
 } from '@coreui/react'
 import '../adminpage.css'
 import DateRangePicker from '@/components/admin/DateRangePicker'
+import { getDiscountList } from '@/apis/product/discountApis'
 
 const DiscountList = () => {
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
+  const [discountList, setDiscountList] = useState([])
+
+  const handleSearch = async () => {
+    if (!startDate || !endDate) {
+      alert('시작일과 종료일을 선택해주세요!')
+      return
+    }
+    const data = await getDiscountList(startDate, endDate)
+    setDiscountList(data)
+  }
+
   return (
     <div className="container mt-4">
       <CRow className="my-4 justify-content-center">
@@ -65,7 +77,9 @@ const DiscountList = () => {
         </CCardBody>
       </CCard>
       <div className="button-group">
-        <CButton color="primary">검색</CButton>
+        <CButton color="primary" onClick={handleSearch}>
+          검색
+        </CButton>
       </div>
       <CCard className="mb-4">
         <CCardHeader>할인코드 목록</CCardHeader>
@@ -88,49 +102,40 @@ const DiscountList = () => {
             <CButton className="custom-button">탈퇴/삭제</CButton>
           </div>
           <table className="table">
-            {/* 표의 헤더 */}
-            {/* <thead className="table-head">
-                    <tr>
-                      <th>
+            <thead className="table-head">
+              <tr>
+                {/* <th>
                         <CFormCheck
                           checked={memberCheckbox.selectedItems.length === memberData.length}
                           onChange={memberCheckbox.handleSelectAll} // 전체 선택
                         />
-                      </th>
-                      <th>등록일</th>
-                      <th>이름</th>
-                      <th>아이디</th>
-                      <th>등급</th>
-                      <th>전화번호</th>
-                      <th>성별</th>
-                      <th>나이</th>
-                      <th>지역</th>
-                      <th>비고</th>
-                    </tr>
-                  </thead>
-                  
+                      </th> */}
+                <th>할인 ID</th>
+                <th>할인 코드</th>
+                <th>할인율</th>
+                <th>최대할인금액</th>
+                <th>시작일</th>
+                <th>종료일</th>
+              </tr>
+            </thead>
             <tbody className="table-body">
-              {memberData.map((member) => (
-                <tr key={member.id}>
-                  <td>
+              {discountList.map((discount) => (
+                <tr key={discount.discountId}>
+                  {/* <td>
                     <CFormCheck
                       checked={memberCheckbox.selectedItems.includes(member.id)}
                       onChange={() => memberCheckbox.handleSelectItem(member.id)} // 개별 선택
                     />
-                  </td>
-                  <td>{member.registeredDate}</td>
-                  <td>{member.name}</td>
-                  <td>{member.username}</td>
-                  <td>{member.grade}</td>
-                  <td>{member.phone}</td>
-                  <td>{member.gender}</td>
-                  <td>{member.age}</td>
-                  <td>{member.region}</td>
-                  <td>{member.note}</td>
+                  </td> */}
+                  <td>{discount.discountId}</td>
+                  <td>{discount.discountName}</td>
+                  <td>{discount.discountPercentage}</td>
+                  <td>{discount.discountPrice}</td>
+                  <td>{discount.discountStartDate}</td>
+                  <td>{discount.discountEndDate}</td>
                 </tr>
               ))}
-            </tbody>{' '}
-            */}
+            </tbody>
           </table>
         </CCardBody>
       </CCard>

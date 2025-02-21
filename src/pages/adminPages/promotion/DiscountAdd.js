@@ -16,10 +16,43 @@ import {
 } from '@coreui/react'
 import '../adminpage.css'
 import DateRangePicker from '@/components/admin/DateRangePicker'
+import { registerDiscount } from '@/apis/product/discountApis'
 
 const DiscountAdd = () => {
+  const [discountName, setDiscountName] = useState('')
+  const [discountPercentage, setDiscountPercentage] = useState('')
+  const [discountPrice, setDiscountPrice] = useState('')
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleRegister = async () => {
+    if (!discountName || !discountPercentage || !discountPrice || !startDate || !endDate) {
+      alert('모든 필수 항목을 입력해주세요!')
+      return
+    }
+
+    const discountData = {
+      discountName,
+      discountPercentage: Number(discountPercentage),
+      discountPrice: Number(discountPrice),
+      discountStartDate: new Date(startDate).toISOString(),
+      discountEndDate: new Date(endDate).toISOString(),
+    }
+
+    console.log('보낼 데이터:', discountData)
+
+    setLoading(true)
+    try {
+      await registerDiscount(discountData)
+      alert('할인이 성공적으로 등록되었습니다!')
+    } catch (error) {
+      alert('할인 등록 실패: ' + (error.response?.data?.message || '알 수 없는 오류'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="container mt-4">
       <CRow className="my-4 justify-content-center">
@@ -33,7 +66,11 @@ const DiscountAdd = () => {
               <tr>
                 <td className="text-center table-header">할인코드 입력</td>
                 <td colSpan="4">
-                  <CFormInput className="small-form" />
+                  <CFormInput
+                    className="small-form"
+                    value={discountName}
+                    onChange={(e) => setDiscountName(e.target.value)}
+                  />
                 </td>
               </tr>
               <tr>
@@ -53,7 +90,11 @@ const DiscountAdd = () => {
                   <div className="d-flex gap-3">
                     할인율
                     <CInputGroup className="x-small-form">
-                      <CFormInput label="" type="number" />
+                      <CFormInput
+                        type="number"
+                        value={discountPercentage}
+                        onChange={(e) => setDiscountPercentage(e.target.value)}
+                      />
                       <CInputGroupText>%</CInputGroupText>
                     </CInputGroup>
                     <CFormSelect className="small-select" label="절사단위">
@@ -64,7 +105,11 @@ const DiscountAdd = () => {
                     </CFormSelect>
                     상품당 최대 할인 금액
                     <CInputGroup className="x-small-form">
-                      <CFormInput label="" type="number" />
+                      <CFormInput
+                        type="number"
+                        value={discountPrice}
+                        onChange={(e) => setDiscountPrice(e.target.value)}
+                      />
                       <CInputGroupText>원</CInputGroupText>
                     </CInputGroup>
                   </div>
@@ -153,7 +198,9 @@ const DiscountAdd = () => {
         </CCardBody>
       </CCard>
       <div className="button-group">
-        <CButton color="primary">저장 </CButton>
+        <CButton color="primary" onClick={handleRegister}>
+          저장{' '}
+        </CButton>
       </div>
     </div>
   )
