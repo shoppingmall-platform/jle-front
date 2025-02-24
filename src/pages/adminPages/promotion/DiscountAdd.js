@@ -19,8 +19,8 @@ import DateRangePicker from '@/components/admin/DateRangePicker'
 import { registerDiscount } from '@/apis/product/discountApis'
 
 const DiscountAdd = () => {
-  const [discountType, setDiscountType] = useState('할인율')
   const [discountName, setDiscountName] = useState('')
+  const [discountType, setDiscountType] = useState('할인율')
   const [discountValue, setDiscountValue] = useState('')
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
@@ -32,19 +32,19 @@ const DiscountAdd = () => {
       return
     }
 
-    const discountData = {
+    const newDiscount = {
       discountName,
       discountType,
       discountValue: Number(discountValue),
       discountStartDate: new Date(startDate).toISOString(),
       discountEndDate: new Date(endDate).toISOString(),
+      // 상품타입: '전체상품' or '선택상품' or '특정분류',
+      // productValue: ['productID1, productID2 ....']
     }
-
-    console.log('보낼 데이터:', discountData)
 
     setLoading(true)
     try {
-      await registerDiscount(discountData)
+      await registerDiscount(newDiscount)
       alert('할인이 성공적으로 등록되었습니다!')
     } catch (error) {
       alert('할인 등록 실패: ' + (error.response?.data?.message || '알 수 없는 오류'))

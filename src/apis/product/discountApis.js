@@ -1,13 +1,8 @@
 import api from '@/apis/index'
 
-export const getDiscountList = async (startDate, endDate, discountName = '') => {
+export const getDiscountList = async (params) => {
   try {
-    const params = {
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      discountName, // 선택값
-    }
-    const response = await api.get('product/v1/discounts/getDiscountList', { params })
+    const response = await api.get('/product/v1/discounts', { params })
     console.log(response)
     return response.data
   } catch (error) {
@@ -17,7 +12,7 @@ export const getDiscountList = async (startDate, endDate, discountName = '') => 
 
 export const registerDiscount = async (newDiscount) => {
   try {
-    const response = await api.post('/product/v1/discounts/registerDiscount', newDiscount)
+    const response = await api.post('/product/v1/discounts', newDiscount)
     console.log(response)
     return response.data
   } catch (error) {
@@ -25,9 +20,10 @@ export const registerDiscount = async (newDiscount) => {
   }
 }
 
-export const deleteDiscount = async (deleteDiscount) => {
+export const deleteDiscount = async (deleteDiscountBody) => {
   try {
-    const response = await api.post('/product/v1/discounts/deleteDiscount', deleteDiscount)
+    // URL : /delete-discount로 수정 필요
+    const response = await api.post('/product/v1/discounts/delete-discount', deleteDiscountBody)
     console.log(response)
     return response.data
   } catch (error) {
