@@ -22,8 +22,7 @@ const useCheckboxSelection = (items, key) => {
   }
 
   // 선택된 항목 삭제
-  const handleDeleteSelected = (setItems) => {
-    setItems((prevItems) => prevItems.filter((item) => !selectedItems.includes(item[key]))) // key를 동적으로 사용
+  const handleDeleteSelected = () => {
     setSelectedItems([])
   }
 
