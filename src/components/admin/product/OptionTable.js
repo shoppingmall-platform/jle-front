@@ -15,19 +15,23 @@ import {
   CFormInput,
   CFormCheck,
   CFormSelect,
+  CButton,
 } from '@coreui/react'
 import { MultiSelect } from 'react-multi-select-component'
-import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 
 const OptionTable = () => {
   const [useOption, setUseOption] = useState(false) // 옵션 사용 여부
   const [optionSetting, setOptionSetting] = useState('optionset') // 옵션세트: optionset, 옵션: options
 
-  const [options, setOptions] = useState([]) // 옵션 데이터 (MultiSelect용)
+  const [options, setOptions] = useState([]) // MultiSelect에 사용할 옵션 데이터
   const [optionSets, setOptionSets] = useState([]) // 옵션세트 데이터
   const [selectedOptionSet, setSelectedOptionSet] = useState(null) // 선택된 옵션세트
-  // 선택된 옵션은 객체 형태로 { [옵션명]: [선택된 옵션값...] }
+  // 선택된 옵션: { [옵션명]: [선택된 옵션값들] }
   const [selectedOptions, setSelectedOptions] = useState({})
+
+  // 조합 정보를 저장할 상태
+  // 각 조합은 { combination: [옵션값 배열], 재고, 추가가격 } 형태로 저장
+  const [optionCombinations, setOptionCombinations] = useState([])
 
   const fetchInitialOptions = async () => {
     try {
@@ -46,11 +50,11 @@ const OptionTable = () => {
         },
       ]
 
-      // MultiSelect에 맞게 label, value, values를 함께 포함
+      // MultiSelect에 사용할 옵션: 옵션값 배열도 함께 포함
       const transformedOptions = initialData.map((option) => ({
-        label: option.name, // "색상", "사이즈"
-        value: option.id.toString(), // "1", "2"
-        values: option.values, // 옵션값 배열 추가
+        label: option.name,
+        value: option.id.toString(),
+        values: option.values,
       }))
       setOptions(transformedOptions)
 
@@ -76,10 +80,10 @@ const OptionTable = () => {
       ]
       setOptionSets(initialOptionSets)
 
-      // 선택된 옵션 초기화 (옵션세트 선택 시 사용할 기본값)
+      // 기본 옵션세트 선택 시 초기값 설정
       const defaultSelectedOptions = {}
       initialOptionSets[0].options.forEach((option) => {
-        defaultSelectedOptions[option.name] = [] // 초기값을 빈 배열로 설정
+        defaultSelectedOptions[option.name] = [] // 빈 배열 초기화
       })
       setSelectedOptions(defaultSelectedOptions)
     } catch (error) {
@@ -91,16 +95,17 @@ const OptionTable = () => {
     fetchInitialOptions()
   }, [])
 
-  // "옵션 사용" 라디오 버튼 변경 핸들러
+  // 옵션 사용 라디오 버튼 핸들러
   const handleUseOptionChange = (e) => {
-    setUseOption(e.target.value === 'T') // "T"일 때 true, "F"일 때 false
+    setUseOption(e.target.value === 'T')
   }
 
-  // "옵션 설정" 라디오 버튼 변경 핸들러
+  // 옵션 설정 라디오 버튼 핸들러
   const handleOptionSettingChange = (e) => {
     setOptionSetting(e.target.value)
     setSelectedOptionSet(null)
     setSelectedOptions({})
+    setOptionCombinations([])
   }
 
   // 옵션세트 선택 핸들러
@@ -110,52 +115,101 @@ const OptionTable = () => {
     setSelectedOptions(
       selectedSet
         ? selectedSet.options.reduce((acc, option) => {
-            acc[option.name] = [] // 초기값은 빈 배열
+            acc[option.name] = []
             return acc
           }, {})
         : {},
     )
+    setOptionCombinations([])
   }
 
-  // 전체 선택: 해당 옵션의 모든 값을 선택 또는 해제
+  // 전체 선택: 해당 옵션의 모든 값을 선택하거나 해제
   const handleSelectAll = (optionName, values, isChecked) => {
     setSelectedOptions((prev) => ({
       ...prev,
       [optionName]: isChecked ? [...values] : [],
     }))
+    setOptionCombinations([]) // 조합 초기화
   }
 
-  // 개별 항목 선택 핸들러
+  // 개별 옵션값 선택 핸들러
   const handleSelectItem = (optionName, value) => {
     setSelectedOptions((prev) => {
       const updatedValues = prev[optionName] || []
-      return {
-        ...prev,
-        [optionName]: updatedValues.includes(value)
-          ? updatedValues.filter((v) => v !== value)
-          : [...updatedValues, value],
-      }
+      const newValues = updatedValues.includes(value)
+        ? updatedValues.filter((v) => v !== value)
+        : [...updatedValues, value]
+      return { ...prev, [optionName]: newValues }
     })
+    setOptionCombinations([])
   }
 
-  // MultiSelect 옵션 변경 핸들러 (옵션 불러오기 모드일 때)
+  // MultiSelect 옵션 변경 핸들러 (옵션 불러오기 모드)
   const handleMultiSelectChange = (selected) => {
-    // 선택한 옵션 객체 배열을 바탕으로 selectedOptions 객체 재구성 (값은 빈 배열로 초기화)
     const newSelectedOptions = selected.reduce((acc, option) => {
-      acc[option.label] = []
+      acc[option.label] = [] // 값 입력은 나중에 사용자가 체크박스로 하게 됨
       return acc
     }, {})
     setSelectedOptions(newSelectedOptions)
+    setOptionCombinations([])
   }
 
-  // 선택된 옵션들의 모든 조합을 생성 (예: 색상과 사이즈 선택시 모든 조합)
+  // 선택된 옵션 조합을 생성하는 함수
   const generateCombinations = (selectedOptions) => {
-    const optionValues = Object.values(selectedOptions)
-    if (optionValues.some((arr) => arr.length === 0)) return [] // 하나라도 선택 안 한 경우 빈 배열
-    return optionValues.reduce((acc, values) => {
-      if (acc.length === 0) return values.map((value) => [value])
-      return acc.flatMap((a) => values.map((v) => [...a, v]))
+    const optionNames = Object.keys(selectedOptions)
+    if (optionNames.length === 0) return []
+    const optionValues = optionNames.map((name) => selectedOptions[name])
+    // 만약 하나라도 선택된 옵션값이 없다면 빈 배열 반환
+    if (optionValues.some((arr) => arr.length === 0)) return []
+
+    // 모든 조합 생성 (reduce를 사용하여 누적)
+    const combinations = optionValues.reduce((acc, values, index) => {
+      if (index === 0) return values.map((value) => [value])
+      return acc.flatMap((prevCombination) => values.map((value) => [...prevCombination, value]))
     }, [])
+    return combinations
+  }
+
+  // 조합 생성 버튼 클릭 시 호출
+  const handleGenerateCombinations = () => {
+    const combos = generateCombinations(selectedOptions)
+    // 각 조합에 대해 초기 재고 0, 추가금액 0 으로 초기화한 객체 생성
+    const newCombinations = combos.map((combo) => ({
+      combination: combo,
+      재고: 0,
+      추가가격: 0,
+    }))
+    setOptionCombinations(newCombinations)
+  }
+
+  // 각 조합의 재고와 추가금액 변경 핸들러
+  const handleCombinationChange = (index, field, value) => {
+    setOptionCombinations((prev) => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: Number(value) }
+      return updated
+    })
+  }
+
+  // 최종적으로 상품 옵션 JSON 구조를 만드는 함수
+  const getFinalOptionsJSON = () => {
+    // 옵션 구성 정보를 위해 옵션 종류 리스트 (예: ['색상', '사이즈'])를 가져옴
+    const optionKinds =
+      optionSetting === 'optionset'
+        ? selectedOptionSet?.options.map((opt) => opt.name)
+        : options.filter((opt) => selectedOptions.hasOwnProperty(opt.label)).map((opt) => opt.label)
+    // 각 조합에 대해 상품옵션이름은 조합의 각 값들을 '/'로 이어붙인 값으로 설정
+    const 상품옵션 = optionCombinations.map((comboObj) => {
+      const { combination, 재고, 추가가격 } = comboObj
+      const 상품옵션이름 = combination.join('/')
+      // 옵션구성 배열 생성
+      const 옵션구성 = optionKinds.map((kind, idx) => ({
+        옵션종류: kind,
+        옵션값: combination[idx],
+      }))
+      return { 상품옵션이름, 옵션구성, 재고, 추가가격 }
+    })
+    return { 상품옵션 }
   }
 
   return (
@@ -169,7 +223,7 @@ const OptionTable = () => {
                 <CFormCheck
                   type="radio"
                   name="optionUsage"
-                  value="T" // "T"는 사용함
+                  value="T"
                   label="사용함"
                   checked={useOption === true}
                   onChange={handleUseOptionChange}
@@ -177,7 +231,7 @@ const OptionTable = () => {
                 <CFormCheck
                   type="radio"
                   name="optionUsage"
-                  value="F" // "F"는 사용안함
+                  value="F"
                   label="사용안함"
                   checked={useOption === false}
                   onChange={handleUseOptionChange}
@@ -259,13 +313,11 @@ const OptionTable = () => {
                     <CTableBody>
                       {Object.keys(selectedOptions).length > 0 ? (
                         Object.keys(selectedOptions).map((optionName) => {
-                          // 옵션세트 모드에서는 selectedOptionSet에서 옵션정보를 가져오고,
-                          // 옵션 불러오기 모드에서는 options 배열에서 값을 가져옵니다.
+                          // 옵션세트 모드이면 selectedOptionSet에서, 옵션불러오기 모드이면 options 배열에서 가져옴
                           const optionData =
                             optionSetting === 'optionset'
                               ? selectedOptionSet?.options.find((opt) => opt.name === optionName)
                               : options.find((opt) => opt.label === optionName)
-                          // optionData에 values 속성이 있는 경우 사용, 없으면 빈 배열
                           const values = optionData && optionData.values ? optionData.values : []
                           return (
                             <CTableRow key={optionName}>
@@ -315,6 +367,81 @@ const OptionTable = () => {
                   </CTable>
                 </td>
               </tr>
+
+              <tr>
+                <td colSpan="5" className="text-center">
+                  <CButton color="primary" variant="outline" onClick={handleGenerateCombinations}>
+                    옵션 조합 생성
+                  </CButton>
+                </td>
+              </tr>
+
+              {optionCombinations.length > 0 && (
+                <tr>
+                  <td colSpan="5">
+                    <CTable>
+                      <CTableHead>
+                        <CTableRow>
+                          <CTableHeaderCell>상품옵션이름</CTableHeaderCell>
+                          <CTableHeaderCell>옵션구성</CTableHeaderCell>
+                          <CTableHeaderCell>재고</CTableHeaderCell>
+                          <CTableHeaderCell>추가가격</CTableHeaderCell>
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {optionCombinations.map((combo, idx) => {
+                          // 옵션 종류 리스트 (예: 색상, 사이즈)
+                          const optionKinds =
+                            optionSetting === 'optionset'
+                              ? selectedOptionSet?.options.map((opt) => opt.name)
+                              : options
+                                  .filter((opt) => selectedOptions.hasOwnProperty(opt.label))
+                                  .map((opt) => opt.label)
+                          // 옵션 구성: 각 옵션종류와 해당 조합 값 매핑
+                          const 옵션구성 = optionKinds.map((kind, index) => (
+                            <span key={kind}>
+                              {kind}: {combo.combination[index]}{' '}
+                            </span>
+                          ))
+                          return (
+                            <CTableRow key={idx}>
+                              <CTableDataCell>{combo.combination.join('/')}</CTableDataCell>
+                              <CTableDataCell>{옵션구성}</CTableDataCell>
+                              <CTableDataCell>
+                                <CFormInput
+                                  type="number"
+                                  value={combo.재고}
+                                  onChange={(e) =>
+                                    handleCombinationChange(idx, '재고', e.target.value)
+                                  }
+                                />
+                              </CTableDataCell>
+                              <CTableDataCell>
+                                <CFormInput
+                                  type="number"
+                                  value={combo.추가가격}
+                                  onChange={(e) =>
+                                    handleCombinationChange(idx, '추가가격', e.target.value)
+                                  }
+                                />
+                              </CTableDataCell>
+                            </CTableRow>
+                          )
+                        })}
+                      </CTableBody>
+                    </CTable>
+                    <CButton
+                      color="primary"
+                      onClick={() => {
+                        const finalJSON = getFinalOptionsJSON()
+                        console.log('최종 옵션 JSON:', finalJSON)
+                      }}
+                    >
+                      저장
+                    </CButton>
+                  </td>
+                </tr>
+              )}
             </>
           )}
         </tbody>
