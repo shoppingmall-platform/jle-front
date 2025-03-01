@@ -16,10 +16,18 @@ import {
   CFormCheck,
   CFormSelect,
   CButton,
+  CAlert,
+  CImage,
+  CCloseButton,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+  CModalFooter,
 } from '@coreui/react'
 import { MultiSelect } from 'react-multi-select-component'
 
-const OptionTable = () => {
+const OptionTable = ({ onOptionsChange }) => {
   const [useOption, setUseOption] = useState(false) // 옵션 사용 여부
   const [optionSetting, setOptionSetting] = useState('optionset') // 옵션세트: optionset, 옵션: options
 
@@ -32,6 +40,8 @@ const OptionTable = () => {
   // 조합 정보를 저장할 상태
   // 각 조합은 { combination: [옵션값 배열], 재고, 추가가격 } 형태로 저장
   const [optionCombinations, setOptionCombinations] = useState([])
+
+  const [showModal, setShowModal] = useState(false)
 
   const fetchInitialOptions = async () => {
     try {
@@ -211,6 +221,11 @@ const OptionTable = () => {
     })
     return { 상품옵션 }
   }
+  useEffect(() => {
+    if (onOptionsChange) {
+      onOptionsChange(getFinalOptionsJSON())
+    }
+  }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
 
   return (
     <div>
@@ -435,10 +450,26 @@ const OptionTable = () => {
                       onClick={() => {
                         const finalJSON = getFinalOptionsJSON()
                         console.log('최종 옵션 JSON:', finalJSON)
+                        setShowModal(true)
                       }}
                     >
                       저장
                     </CButton>
+                    <CModal
+                      visible={showModal}
+                      onClose={() => setShowModal(false)}
+                      alignment="center"
+                    >
+                      <CModalHeader onClose={() => setShowModal(false)}>
+                        <CModalTitle>알림</CModalTitle>
+                      </CModalHeader>
+                      <CModalBody>저장되었습니다.</CModalBody>
+                      <CModalFooter>
+                        <CButton color="secondary" onClick={() => setShowModal(false)}>
+                          닫기
+                        </CButton>
+                      </CModalFooter>
+                    </CModal>
                   </td>
                 </tr>
               )}
