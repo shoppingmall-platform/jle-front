@@ -5,19 +5,26 @@ import {
   CCardHeader,
   CRow,
   CCol,
+  CTable,
+  CTableHead,
+  CTableRow,
+  CTableHeaderCell,
+  CTableBody,
+  CTableDataCell,
   CFormLabel,
   CFormInput,
   CFormCheck,
   CFormSelect,
 } from '@coreui/react'
 import { MultiSelect } from 'react-multi-select-component'
+import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 
 // 옵션, 옵션세트 리스트만 셀렉트 박스에 띄움
 // 직접 입력하기는 X
 
 const OptionTable = () => {
-  const [useOption, setUseOption] = useState(false)
-  const [optionSetting, setOptionSetting] = useState('T')
+  const [useOption, setUseOption] = useState(false) //옵션사용함, 사용안함
+  const [optionSetting, setOptionSetting] = useState('optionset') //옵션세트 - optionset, 옵션 - options, 직접 입력하기 - N
 
   const [options, setOptions] = useState([]) // 옵션 데이터
   const [optionSets, setOptionSets] = useState([]) // 옵션세트 데이터
@@ -68,6 +75,13 @@ const OptionTable = () => {
         },
       ]
       setOptionSets(initialOptionSets)
+
+      // 선택된 옵션 초기화 (안 하면 undefined 오류 발생)
+      const defaultSelectedOptions = {}
+      initialOptionSets[0].options.forEach((option) => {
+        defaultSelectedOptions[option.name] = [] // 초기값을 빈 배열로 설정
+      })
+      setSelectedOptions(defaultSelectedOptions)
     } catch (error) {
       console.error('옵션 데이터를 가져오는 중 오류 발생:', error)
     }
@@ -76,6 +90,7 @@ const OptionTable = () => {
   useEffect(() => {
     fetchInitialOptions()
   }, [])
+
   // "옵션 사용" 라디오 버튼 변경 핸들러
   const handleUseOptionChange = (e) => {
     setUseOption(e.target.value === 'T') // "T"일 때 true, "F"일 때 false
@@ -83,18 +98,56 @@ const OptionTable = () => {
 
   // "옵션 설정" 라디오 버튼 변경 핸들러
   const handleOptionSettingChange = (e) => {
-    setOptionSetting(e.target.value) // "옵션 설정"의 값에 맞게 설정
-    console.log(optionSets, '옵셋')
+    setOptionSetting(e.target.value)
+    setSelectedOptionSet(null)
+    setSelectedOptions({})
   }
 
   const handleOptionSetChange = (e) => {
     const selectedSet = optionSets.find((set) => set.id === Number(e.target.value))
-    setSelectedOptionSet(selectedSet)
+    setSelectedOptionSet(selectedSet || null)
+    setSelectedOptions(
+      selectedSet
+        ? selectedSet.options.reduce((acc, option) => {
+            acc[option.name] = []
+            return acc
+          }, {})
+        : {},
+    )
   }
 
-  // 개별 옵션 선택 핸들러
+  const handleSelectAll = (optionName, values, isChecked) => {
+    setSelectedOptionValues((prev) => ({
+      ...prev,
+      [optionName]: isChecked ? [...values] : [],
+    }))
+  }
+
+  const handleSelectItem = (optionName, value) => {
+    setSelectedOptionValues((prev) => {
+      const updatedValues = prev[optionName] || []
+      return {
+        ...prev,
+        [optionName]: updatedValues.includes(value)
+          ? updatedValues.filter((v) => v !== value)
+          : [...updatedValues, value],
+      }
+    })
+  }
+
+  // 옵션 선택 핸들러
   const handleOptionChange = (e) => {
     setSelectedOption(e.target.value)
+  }
+
+  const generateCombinations = (selectedOptions) => {
+    const optionValues = Object.values(selectedOptions)
+    if (optionValues.some((arr) => arr.length === 0)) return [] // 하나라도 선택 안 하면 빈 배열 반환
+
+    return optionValues.reduce((acc, values) => {
+      if (acc.length === 0) return values.map((value) => [value])
+      return acc.flatMap((a) => values.map((v) => [...a, v]))
+    }, [])
   }
 
   return (
@@ -148,19 +201,10 @@ const OptionTable = () => {
                       checked={optionSetting === 'options'}
                       onChange={handleOptionSettingChange}
                     />
-                    <CFormCheck
-                      type="radio"
-                      name="optionSettings"
-                      value="N"
-                      label="직접 입력하기"
-                      checked={optionSetting === 'N'}
-                      onChange={handleOptionSettingChange}
-                    />
                   </div>
                 </td>
               </tr>
-              {/* 옵션 설정에 따른 내용 표시 */}
-              {useOption && optionSetting === 'optionset' && (
+              {optionSetting === 'optionset' && (
                 <tr>
                   <td className="text-center">옵션세트 불러오기</td>
                   <td colSpan="4">
@@ -175,14 +219,21 @@ const OptionTable = () => {
                   </td>
                 </tr>
               )}
-              {useOption && optionSetting === 'options' && (
+              {optionSetting === 'options' && (
                 <tr>
                   <td>옵션 불러오기</td>
                   <td colSpan="4">
                     <MultiSelect
-                      options={options} // 옵션 리스트 적용
-                      value={selectedOptions} // 선택된 옵션
-                      onChange={setSelectedOptions} // 선택 시 상태 업데이트
+                      options={options}
+                      value={Object.keys(selectedOptions)}
+                      onChange={(selected) => {
+                        setSelectedOptions(
+                          selected.reduce((acc, option) => {
+                            acc[option.label] = []
+                            return acc
+                          }, {}),
+                        )
+                      }}
                       labelledBy="옵션 선택"
                       overrideStrings={{
                         selectSomeItems: '옵션 선택',
@@ -193,11 +244,54 @@ const OptionTable = () => {
                   </td>
                 </tr>
               )}
-              {useOption && optionSetting === 'N' && (
-                <tr>
-                  <td colSpan="4">직접 입력하기</td>
-                </tr>
-              )}
+
+              <tr>
+                <td className="text-center">사용된 옵션</td>
+                <td colSpan="4">
+                  <CTable>
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>옵션명</CTableHeaderCell>
+                        <CTableHeaderCell>옵션값</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {/* selectedOptionSet이 null 또는 undefined가 아닌지 확인 후 처리 */}
+                      {selectedOptionSet?.options?.map((option) => (
+                        <CTableRow key={option.id}>
+                          <CTableDataCell>{option.name}</CTableDataCell>
+                          <CTableDataCell>
+                            <CFormCheck
+                              onChange={(e) =>
+                                handleSelectAll(option.name, option.values, e.target.checked)
+                              }
+                              checked={
+                                selectedOptions[option.name]?.length === option.values.length
+                              }
+                            />
+                            전체
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                              {option.values.map((value) => (
+                                <div key={value} style={{ display: 'flex', alignItems: 'center' }}>
+                                  <CFormCheck
+                                    checked={selectedOptions[option.name]?.includes(value) || false}
+                                    onChange={() => handleSelectItem(option.name, value)}
+                                  />
+                                  {value}
+                                </div>
+                              ))}
+                            </div>
+                          </CTableDataCell>
+                        </CTableRow>
+                      )) || (
+                        <CTableRow>
+                          <CTableDataCell colSpan="2">옵션이 없습니다.</CTableDataCell>
+                        </CTableRow>
+                      )}
+                    </CTableBody>
+                  </CTable>
+                </td>
+              </tr>
             </>
           )}
         </tbody>
