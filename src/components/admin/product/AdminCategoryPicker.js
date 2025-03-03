@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { CFormSelect } from '@coreui/react'
 import { getCategories } from '@/apis/product/categoryApis'
 
-const CategorySelector = ({ onCategoryChange }) => {
+const AdminCategoryPicker = ({ onCategoryChange }) => {
   const [categories, setCategories] = useState([])
   const [mainCategories, setMainCategories] = useState([])
   const [middleCategories, setMiddleCategories] = useState([])
@@ -100,4 +100,4 @@ const CategorySelector = ({ onCategoryChange }) => {
   )
 }
 
-export default CategorySelector
+export default AdminCategoryPicker
