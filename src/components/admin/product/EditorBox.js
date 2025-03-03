@@ -32,7 +32,7 @@ AWS.config.update({
 
 const s3 = new AWS.S3()
 
-const EditorBox = ({ updatedContent }) => {
+const EditorBox = ({ onContentChange }) => {
   const [value, setValue] = useState('')
   const [showModal, setShowModal] = useState(false)
   const quillRef = useRef()
@@ -41,8 +41,19 @@ const EditorBox = ({ updatedContent }) => {
     const editorContent = quillRef.current.getEditor().root.innerHTML
     const images = editorContent.match(/(<img[^>]*src\s*=\s*["']?([^>"']+)["']?[^>]*>)/g) || []
     const updatedContent = await handleImageUpload(images, editorContent)
-    console.log('서버로 보낼 HTML:', updatedContent) // 나중에 여기다가 서버로 보내기, 함수는 따로 작성
+
+    console.log('서버로 보낼 HTML:', updatedContent) // ✅ 저장 시 최종 데이터 확인
+
+    if (onContentChange) {
+      onContentChange(updatedContent) // ✅ 부모 컴포넌트로 HTML 전달
+    }
+
     setShowModal(true)
+  }
+
+  const onChangeValue = (e) => {
+    console.log(e)
+    setValue(e)
   }
 
   const handleImageUpload = async (images, editorContent) => {
@@ -130,11 +141,6 @@ const EditorBox = ({ updatedContent }) => {
       },
     }
   }, [])
-
-  const onChangeValue = (e) => {
-    console.log(e)
-    setValue(e)
-  }
 
   return (
     <CContainer>

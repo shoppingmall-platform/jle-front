@@ -11,17 +11,21 @@ import {
   CCol,
   CFormTextarea,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPlus } from '@coreui/icons'
 import React, { useState } from 'react'
 import '../adminpage.css'
 import EditorBox from '@/components/admin/product/EditorBox'
 import UploadFile from '@/components/admin/product/UploadFile'
 import OptionTable from '@/components/admin/product/OptionTable'
+import TagModal from '@/components/admin/product/TagModal'
+import CategorySelector from '@/components/admin/product/categorySelector'
 
 const ProductAdd = () => {
   const [saleStatus, setSaleStatus] = useState('판매함')
   const [displayStatus, setDisplayStatus] = useState('진열함')
   const [category, setCategory] = useState('') // 카테고리 ID 또는 이름
-  const [tags, setTags] = useState([]) // 선택된 태그 배열
+  const [selectedTags, setSelectedTags] = useState([])
   const [productName, setProductName] = useState('')
   const [price, setPrice] = useState(0)
   const [summary, setSummary] = useState('')
@@ -30,6 +34,13 @@ const ProductAdd = () => {
   const [optionData, setOptionData] = useState({})
   const [mainImages, setMainImages] = useState([])
   const [additionalImages, setAdditionalImages] = useState([])
+
+  const [showModal, setShowModal] = useState(false)
+  const [tags, setTags] = useState(['신상품', '추천상품'])
+
+  const toggleTag = (tag) => {
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
+  }
 
   const handleSaleStatusChange = (e) => {
     const value = e.target.value
@@ -45,7 +56,7 @@ const ProductAdd = () => {
       판매상태: saleStatus,
       진열상태: displayStatus,
       카테고리: category,
-      태그: tags,
+      태그: selectedTags,
       상품명: productName,
       상품옵션: optionData.상품옵션,
       판매가: price,
@@ -120,22 +131,7 @@ const ProductAdd = () => {
               <tr>
                 <td className="text-center table-header">카테고리 선택</td>
                 <td colSpan="4">
-                  <div className="d-flex gap-4">
-                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                      <option>대분류 선택</option>
-                      <option value="a">a</option>
-                    </CFormSelect>
-
-                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                      <option>중분류 선택</option>
-                      <option value="a">a</option>
-                    </CFormSelect>
-
-                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                      <option>소분류 선택</option>
-                      <option value="a">a</option>
-                    </CFormSelect>
-                  </div>
+                  <CategorySelector onCategoryChange={(categoryId) => setCategory(categoryId)} />
                 </td>
               </tr>
               <tr>
@@ -143,12 +139,29 @@ const ProductAdd = () => {
                 <td className="text-center table-header">태그 선택</td>
                 <td colSpan="4">
                   <div className="radio-group">
-                    <CFormCheck id="new" label="신상품" />
-                    <CFormCheck label="추천상품" />
-                    <CFormCheck label="Label" />
-                    <CFormCheck label="Label" />
+                    {tags.map((tag, index) => (
+                      <CFormCheck
+                        key={index}
+                        label={tag}
+                        checked={selectedTags.includes(tag)}
+                        onChange={() => toggleTag(tag)}
+                      />
+                    ))}
+                    <CButton
+                      color="primary"
+                      variant="outline"
+                      className="ms-2"
+                      onClick={() => setShowModal(true)}
+                    >
+                      <CIcon icon={cilPlus} size="lg" />
+                    </CButton>
                   </div>
                 </td>
+
+                {/* CoreUI 모달창 */}
+                {showModal && (
+                  <TagModal tags={tags} setTags={setTags} onClose={() => setShowModal(false)} />
+                )}
               </tr>
             </tbody>
           </table>
