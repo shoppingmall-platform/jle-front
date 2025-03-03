@@ -1,5 +1,15 @@
 import React, { useState, useRef } from 'react'
-import { CButton, CAlert, CImage, CCloseButton } from '@coreui/react'
+import {
+  CButton,
+  CAlert,
+  CImage,
+  CCloseButton,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+  CModalFooter,
+} from '@coreui/react'
 import AWS from 'aws-sdk'
 
 AWS.config.update({
@@ -11,9 +21,10 @@ AWS.config.update({
 
 const s3 = new AWS.S3()
 
-const UploadFile = ({ maxImages }) => {
+const UploadFile = ({ maxImages, onUpload }) => {
   const [images, setImages] = useState([])
   const [error, setError] = useState('')
+  const [showModal, setShowModal] = useState(false)
   const inputRef = useRef(null)
 
   const handleImageChange = (e) => {
@@ -28,17 +39,17 @@ const UploadFile = ({ maxImages }) => {
       setError('')
     }
 
-    const validImages = files
+    // 유효한 이미지 파일만 선택하여 File 객체와 미리보기 URL을 저장합니다.
+    files
       .filter((file) => file.type.startsWith('image/'))
       .slice(0, maxImages - currentImageCount)
-
-    validImages.forEach((file) => {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImages((prevImages) => [...prevImages, reader.result])
-      }
-      reader.readAsDataURL(file)
-    })
+      .forEach((file) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setImages((prevImages) => [...prevImages, { file, preview: reader.result }])
+        }
+        reader.readAsDataURL(file)
+      })
 
     e.target.value = ''
   }
@@ -56,12 +67,13 @@ const UploadFile = ({ maxImages }) => {
   const saveEventHandler = async () => {
     try {
       const uploadedUrls = await Promise.all(
-        images.map(async (image) => {
+        images.map(async (imageObj) => {
+          const { file } = imageObj
           const params = {
             Bucket: import.meta.env.VITE_BUCKET_NAME,
-            Key: `uploads/${Date.now()}-${image.name}`,
-            Body: image,
-            ContentType: image.type,
+            Key: `uploads/${Date.now()}-${file.name}`,
+            Body: file,
+            ContentType: file.type,
           }
 
           const { Location } = await s3.upload(params).promise()
@@ -70,6 +82,11 @@ const UploadFile = ({ maxImages }) => {
       )
 
       console.log('Uploaded URLs:', uploadedUrls)
+      if (onUpload) {
+        onUpload(uploadedUrls)
+      }
+      // 저장 성공 시 Modal 표시
+      setShowModal(true)
     } catch (err) {
       console.error('S3 Upload Error:', err)
       setError('이미지 업로드 중 오류가 발생했습니다.')
@@ -101,13 +118,13 @@ const UploadFile = ({ maxImages }) => {
         </CAlert>
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
-        {images.map((image, index) => (
+        {images.map((imageObj, index) => (
           <div
             key={index}
             style={{ position: 'relative', margin: '5px', width: '100px', height: '100px' }}
           >
             <CImage
-              src={image}
+              src={imageObj.preview}
               alt={`preview-${index}`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
@@ -126,6 +143,19 @@ const UploadFile = ({ maxImages }) => {
       >
         저장
       </CButton>
+
+      {/* 저장 성공 시 Modal 표시 */}
+      <CModal visible={showModal} onClose={() => setShowModal(false)} alignment="center">
+        <CModalHeader onClose={() => setShowModal(false)}>
+          <CModalTitle>알림</CModalTitle>
+        </CModalHeader>
+        <CModalBody>저장되었습니다.</CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setShowModal(false)}>
+            닫기
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </div>
   )
 }

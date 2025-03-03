@@ -3,7 +3,20 @@ import ReactQuill, { Quill } from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import ImageResize from 'quill-image-resize'
 import AWS from 'aws-sdk'
-import { CButton, CContainer, CRow, CCol } from '@coreui/react'
+import {
+  CButton,
+  CContainer,
+  CRow,
+  CCol,
+  CAlert,
+  CImage,
+  CCloseButton,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+  CModalFooter,
+} from '@coreui/react'
 import '@coreui/coreui/dist/css/coreui.min.css'
 
 if (!Quill.imports['modules/imageResize']) {
@@ -19,8 +32,9 @@ AWS.config.update({
 
 const s3 = new AWS.S3()
 
-const EditorBox = () => {
+const EditorBox = ({ updatedContent }) => {
   const [value, setValue] = useState('')
+  const [showModal, setShowModal] = useState(false)
   const quillRef = useRef()
 
   const handleSubmit = async () => {
@@ -28,6 +42,7 @@ const EditorBox = () => {
     const images = editorContent.match(/(<img[^>]*src\s*=\s*["']?([^>"']+)["']?[^>]*>)/g) || []
     const updatedContent = await handleImageUpload(images, editorContent)
     console.log('서버로 보낼 HTML:', updatedContent) // 나중에 여기다가 서버로 보내기, 함수는 따로 작성
+    setShowModal(true)
   }
 
   const handleImageUpload = async (images, editorContent) => {
@@ -141,6 +156,17 @@ const EditorBox = () => {
           <CButton color="primary" onClick={handleSubmit}>
             저장
           </CButton>
+          <CModal visible={showModal} onClose={() => setShowModal(false)} alignment="center">
+            <CModalHeader onClose={() => setShowModal(false)}>
+              <CModalTitle>알림</CModalTitle>
+            </CModalHeader>
+            <CModalBody>저장되었습니다.</CModalBody>
+            <CModalFooter>
+              <CButton color="secondary" onClick={() => setShowModal(false)}>
+                닫기
+              </CButton>
+            </CModalFooter>
+          </CModal>
         </CCol>
       </CRow>
     </CContainer>

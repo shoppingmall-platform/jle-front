@@ -4,13 +4,6 @@ import {
   CFormInput,
   CFormCheck,
   CFormSelect,
-  CFormLabel,
-  CTable,
-  CTableRow,
-  CTableDataCell,
-  CTableBody,
-  CInputGroup,
-  CInputGroupText,
   CCard,
   CCardBody,
   CCardHeader,
@@ -25,31 +18,46 @@ import UploadFile from '@/components/admin/product/UploadFile'
 import OptionTable from '@/components/admin/product/OptionTable'
 
 const ProductAdd = () => {
-  const [selectedValue, setSelectedValue] = useState('')
-  const [supplyPrice, setSupplyPrice] = useState(0)
-  const [marginRate, setMarginRate] = useState(0)
-  const [additionalAmount, setAdditionalAmount] = useState(0)
-  const [taxRate, setTaxRate] = useState(10)
-  const [finalPrice, setFinalPrice] = useState(null)
-  const [productPrice, setProductPrice] = useState(null)
-  const [taxAmount, setTaxAmount] = useState(null)
+  const [saleStatus, setSaleStatus] = useState('판매함')
+  const [displayStatus, setDisplayStatus] = useState('진열함')
+  const [category, setCategory] = useState('') // 카테고리 ID 또는 이름
+  const [tags, setTags] = useState([]) // 선택된 태그 배열
+  const [productName, setProductName] = useState('')
+  const [price, setPrice] = useState(0)
+  const [summary, setSummary] = useState('')
+  const [shortDesc, setShortDesc] = useState('')
+  const [detailDesc, setDetailDesc] = useState('')
+  const [optionData, setOptionData] = useState({})
+  const [mainImages, setMainImages] = useState([])
+  const [additionalImages, setAdditionalImages] = useState([])
 
-  const handleRadioChange = (event) => {
-    //과세구분에서 과세상품 선택 시 과세율 박스 띄우기
-    setSelectedValue(event.target.value)
+  const handleSaleStatusChange = (e) => {
+    const value = e.target.value
+    setSaleStatus(value === 'T' ? '판매함' : '판매안함')
+  }
+  const handleDisplayStatusChange = (e) => {
+    const value = e.target.value
+    setDisplayStatus(value === 'T' ? '진열함' : '진열안함')
   }
 
-  const handleCalculation = () => {
-    const taxDecimal = taxRate / 100
-    const sellingPrice = supplyPrice + (supplyPrice * marginRate) / 100 + additionalAmount
-    const productPrice = sellingPrice / (1 + taxDecimal)
-    const taxAmount = productPrice * taxDecimal
-
-    setFinalPrice(sellingPrice.toFixed(2))
-    setProductPrice(productPrice.toFixed(2))
-    setTaxAmount(taxAmount.toFixed(2))
+  const handleSave = () => {
+    const productData = {
+      판매상태: saleStatus,
+      진열상태: displayStatus,
+      카테고리: category,
+      태그: tags,
+      상품명: productName,
+      상품옵션: optionData.상품옵션,
+      판매가: price,
+      상품요약설명: summary,
+      상품간략설명: shortDesc,
+      상품상세설명: detailDesc,
+      상품대표사진: mainImages,
+      상품추가사진: additionalImages,
+    }
+    console.log('최종 전송 데이터:', productData)
+    // API 호출 등 데이터 전송 로직 추가 (예: axios.post(...))
   }
-
   return (
     <div className="container mt-4">
       <CRow className="my-4 justify-content-center">
@@ -71,16 +79,16 @@ const ProductAdd = () => {
                       name="saleStatus"
                       value="T"
                       label="판매함"
-                      checked={selectedValue === 'T'}
-                      onChange={handleRadioChange}
+                      checked={saleStatus === '판매함'}
+                      onChange={handleSaleStatusChange}
                     />
                     <CFormCheck
                       type="radio"
                       name="saleStatus"
                       value="F"
                       label="판매안함"
-                      checked={selectedValue === 'F'}
-                      onChange={handleRadioChange}
+                      checked={saleStatus === '판매안함'}
+                      onChange={handleSaleStatusChange}
                     />
                   </div>
                 </td>
@@ -89,25 +97,26 @@ const ProductAdd = () => {
                 <td className="text-center table-header">진열상태</td>
                 <td colSpan="4">
                   <div className="radio-group">
-                    <CFormCheck type="radio" name="displayStatus" value="T" label="진열함" />
-                    <CFormCheck type="radio" name="displayStatus" value="F" label="진열안함" />
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-center table-header">표시상태</td>
-                <td colSpan="4">
-                  <div className="radio-group">
-                    <CFormCheck type="radio" name="visibility" value="all" label="모두 표시" />
                     <CFormCheck
                       type="radio"
-                      name="visibility"
-                      value="customer"
-                      label="회원만 표시"
+                      name="displayStatus"
+                      value="T"
+                      label="진열함"
+                      checked={displayStatus === '진열함'}
+                      onChange={handleDisplayStatusChange}
+                    />
+                    <CFormCheck
+                      type="radio"
+                      name="displayStatus"
+                      value="F"
+                      label="진열안함"
+                      checked={displayStatus === '진열안함'}
+                      onChange={handleDisplayStatusChange}
                     />
                   </div>
                 </td>
               </tr>
+
               <tr>
                 <td className="text-center table-header">카테고리 선택</td>
                 <td colSpan="4">
@@ -130,7 +139,8 @@ const ProductAdd = () => {
                 </td>
               </tr>
               <tr>
-                <td className="text-center table-header">메인 진열 선택</td>
+                {/* 리스트로 저장 */}
+                <td className="text-center table-header">태그 선택</td>
                 <td colSpan="4">
                   <div className="radio-group">
                     <CFormCheck id="new" label="신상품" />
@@ -153,46 +163,58 @@ const ProductAdd = () => {
               <tr>
                 <td className="text-center">상품명</td>
                 <td colSpan="2">
-                  <CFormInput size="sm" placeholder="상품명을 입력하세요" />
+                  <CFormInput
+                    size="sm"
+                    placeholder="상품명을 입력하세요"
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                  />
                 </td>
-                <td className="text-center">영문 상품명</td>
+                <td className="text-center">판매가</td>
                 <td colSpan="2">
-                  <CFormInput size="sm" placeholder="영문 상품명을 입력하세요" />
+                  <CFormInput
+                    size="sm"
+                    type="number"
+                    placeholder="판매가 입력"
+                    value={price}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                  />
                 </td>
               </tr>
-              <tr>
-                <td className="text-center">모델명</td>
-                <td colSpan="2">
-                  <CFormInput size="sm" placeholder="모델명을 입력하세요" />
-                </td>
-                <td className="text-center">상품코드</td>
-                <td colSpan="2">
-                  <CFormInput size="sm" placeholder="상품코드를 입력하세요" />
-                </td>
-              </tr>
+
               <tr>
                 <td className="text-center">상품 요약 설명</td>
                 <td colSpan="5">
-                  <CFormTextarea size="sm" placeholder="상품 요약 설명을 입력하세요" rows="2" />
+                  <CFormTextarea
+                    size="sm"
+                    placeholder="상품 요약 설명을 입력하세요"
+                    rows="2"
+                    value={summary}
+                    onChange={(e) => setSummary(e.target.value)}
+                  />
                 </td>
               </tr>
               <tr>
                 <td className="text-center">상품 간략 설명</td>
                 <td colSpan="5">
-                  <CFormTextarea size="sm" placeholder="상품 간략 설명을 입력하세요" rows="2" />
+                  <CFormTextarea
+                    size="sm"
+                    placeholder="상품 간략 설명을 입력하세요"
+                    rows="2"
+                    value={shortDesc}
+                    onChange={(e) => setShortDesc(e.target.value)}
+                  />
                 </td>
               </tr>
               <tr>
                 <td className="text-center">상품 상세 설명</td>
                 <td colSpan="5">
-                  <EditorBox />
+                  <EditorBox onContentChange={(content) => setDetailDesc(content)} />
                 </td>
               </tr>
               <tr>
-                <td className="text-center">검색어 설정</td>
-                <td colSpan="5">
-                  <CFormInput size="sm" placeholder="검색어를 입력하세요" />
-                </td>
+                <td className="text-center">할인혜택</td>
+                <td colSpan="5"></td>
               </tr>
             </tbody>
           </table>
@@ -202,124 +224,23 @@ const ProductAdd = () => {
       <CCard className="mb-4">
         <CCardHeader>옵션</CCardHeader>
         <CCardBody>
-          <OptionTable />
+          <OptionTable onOptionsChange={(data) => setOptionData(data)} />
         </CCardBody>
       </CCard>
 
       <CCard className="mb-4">
-        <CCardHeader>판매 정보</CCardHeader>
+        <CCardHeader>이미지 정보</CCardHeader>
         <CCardBody>
           <table className="table">
             <tbody>
-              <tr>
-                <td className="text-center table-header">소비자가</td>
-                <td colSpan="2">
-                  <CFormInput size="sm" type="number" placeholder="소비자가 입력" />
-                </td>
-                <td className="text-center table-header">공급가</td>
-                <td colSpan="2">
-                  <CFormInput
-                    size="sm"
-                    type="number"
-                    value={supplyPrice}
-                    onChange={(e) => setSupplyPrice(Number(e.target.value))}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="text-center table-header">과세 구분</td>
-                <td colSpan="5">
-                  <div className="d-flex gap-3">
-                    <div className="radio-group">
-                      <CFormCheck
-                        type="radio"
-                        name="taxGroup"
-                        value="과세상품"
-                        label="과세상품"
-                        onChange={handleRadioChange}
-                        defaultChecked={selectedValue === '과세상품'}
-                      />
-                      <CFormCheck
-                        type="radio"
-                        name="taxGroup"
-                        value="영세상품"
-                        label="영세상품"
-                        onChange={handleRadioChange}
-                        defaultChecked={selectedValue === '영세상품'}
-                      />
-                      <CFormCheck
-                        type="radio"
-                        name="taxGroup"
-                        value="면세상품"
-                        label="면세상품"
-                        onChange={handleRadioChange}
-                        defaultChecked={selectedValue === '면세상품'}
-                      />
-                    </div>
-                    {selectedValue === '과세상품' && (
-                      <CFormInput
-                        type="number"
-                        value={taxRate}
-                        onChange={(e) => setTaxRate(Number(e.target.value))}
-                        endText="%"
-                        className="small-form"
-                      />
-                    )}
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-center table-header">판매가 계산</td>
-                <td colSpan="5">
-                  <div className="d-flex gap-3">
-                    <CFormInput
-                      className="small-form"
-                      label="마진율"
-                      type="number"
-                      value={marginRate}
-                      onChange={(e) => setMarginRate(Number(e.target.value))}
-                    />
-
-                    <CFormInput
-                      className="small-form"
-                      label="추가금액"
-                      type="number"
-                      value={additionalAmount}
-                      onChange={(e) => setAdditionalAmount(Number(e.target.value))}
-                    />
-
-                    <CButton color="primary" variant="outline" onClick={handleCalculation}>
-                      판매가 계산
-                    </CButton>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="text-center table-header">판매가</td>
-                <td colSpan="5">
-                  {finalPrice !== null && (
-                    <>
-                      판매가: {finalPrice} 원, 상품가: {productPrice} 원, 과세금액: {taxAmount} 원
-                    </>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td className="text-center">적립금</td>
-                <td colSpan="5"></td>
-              </tr>
-              <tr>
-                <td className="text-center">할인혜택</td>
-                <td colSpan="5"></td>
-              </tr>
               <tr>
                 <td className="text-center">이미지 등록</td>
                 <td colSpan="5">
                   <div>
                     <p>*상품 대표 사진 등록 (1장)</p>
-                    <UploadFile maxImages={1} />
+                    <UploadFile maxImages={1} onUpload={(urls) => setMainImages(urls)} />
                     <p className="mt-3">*상품 추가 사진 등록 (최대 10장)</p>
-                    <UploadFile maxImages={10} />
+                    <UploadFile maxImages={10} onUpload={(urls) => setAdditionalImages(urls)} />
                   </div>
                 </td>
               </tr>
@@ -327,6 +248,11 @@ const ProductAdd = () => {
           </table>
         </CCardBody>
       </CCard>
+      <div className="text-center mb-3">
+        <CButton color="primary" onClick={handleSave}>
+          저장
+        </CButton>
+      </div>
     </div>
   )
 }
