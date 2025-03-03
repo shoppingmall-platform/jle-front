@@ -93,7 +93,7 @@ const OptionTable = ({ onOptionsChange }) => {
       // 기본 옵션세트 선택 시 초기값 설정
       const defaultSelectedOptions = {}
       initialOptionSets[0].options.forEach((option) => {
-        defaultSelectedOptions[option.name] = [] // 빈 배열 초기화
+        defaultSelectedOptions[option.name] = [...option.values] // 빈 배열 초기화
       })
       setSelectedOptions(defaultSelectedOptions)
     } catch (error) {
@@ -125,7 +125,7 @@ const OptionTable = ({ onOptionsChange }) => {
     setSelectedOptions(
       selectedSet
         ? selectedSet.options.reduce((acc, option) => {
-            acc[option.name] = []
+            acc[option.name] = [...option.values]
             return acc
           }, {})
         : {},
@@ -157,7 +157,7 @@ const OptionTable = ({ onOptionsChange }) => {
   // MultiSelect 옵션 변경 핸들러 (옵션 불러오기 모드)
   const handleMultiSelectChange = (selected) => {
     const newSelectedOptions = selected.reduce((acc, option) => {
-      acc[option.label] = [] // 값 입력은 나중에 사용자가 체크박스로 하게 됨
+      acc[option.label] = [...option.values] // 값 입력은 나중에 사용자가 체크박스로 하게 됨
       return acc
     }, {})
     setSelectedOptions(newSelectedOptions)
