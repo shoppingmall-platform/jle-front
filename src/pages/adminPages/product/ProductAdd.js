@@ -19,7 +19,7 @@ import EditorBox from '@/components/admin/product/EditorBox'
 import UploadFile from '@/components/admin/product/UploadFile'
 import OptionTable from '@/components/admin/product/OptionTable'
 import TagModal from '@/components/admin/product/TagModal'
-import AdminCategoryPicker from '@/components/admin/product/AdminCategoryPicker'
+import CategoryPicker from '@/components/admin/product/CategoryPicker'
 
 const ProductAdd = () => {
   const [saleStatus, setSaleStatus] = useState('판매함')
@@ -131,7 +131,7 @@ const ProductAdd = () => {
               <tr>
                 <td className="text-center table-header">카테고리 선택</td>
                 <td colSpan="4">
-                  <AdminCategoryPicker onCategoryChange={(categoryId) => setCategory(categoryId)} />
+                  <CategoryPicker onCategoryChange={(categoryId) => setCategory(categoryId)} />
                 </td>
               </tr>
               <tr>

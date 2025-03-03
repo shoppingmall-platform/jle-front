@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { CFormSelect } from '@coreui/react'
 import { getCategories } from '@/apis/product/categoryApis'
 
-const AdminCategoryPicker = ({ onCategoryChange }) => {
+const CategoryPicker = ({ onCategoryChange }) => {
   const [categories, setCategories] = useState([])
   const [mainCategories, setMainCategories] = useState([])
   const [middleCategories, setMiddleCategories] = useState([])
@@ -24,37 +24,33 @@ const AdminCategoryPicker = ({ onCategoryChange }) => {
 
   const handleMainChange = (e) => {
     const mainId = Number(e.target.value)
-    setSelectedCategory(mainId)
+    setSelectedCategory(mainId) // 대분류 선택 시 기본적으로 최종 선택된 카테고리로 설정
     const middleCats = categories.filter(
       (cat) => cat.parentCategoryId === mainId && cat.categoryLevel === 2,
     )
     setMiddleCategories(middleCats)
     setSubCategories([])
 
-    if (middleCats.length === 0) {
-      // ✅ 중분류가 없으면 대분류가 최종 선택된 카테고리
-      onCategoryChange(mainId)
-    }
+    // ✅ 중분류 선택 여부와 상관없이 현재 선택된 대분류를 기본으로 전달
+    onCategoryChange(mainId)
   }
 
   const handleMiddleChange = (e) => {
     const middleId = Number(e.target.value)
-    setSelectedCategory(middleId)
+    setSelectedCategory(middleId) // 중분류 선택 시 최종 선택된 카테고리 변경
     const subCats = categories.filter(
       (cat) => cat.parentCategoryId === middleId && cat.categoryLevel === 3,
     )
     setSubCategories(subCats)
 
-    if (subCats.length === 0) {
-      // ✅ 소분류가 없으면 중분류가 최종 선택된 카테고리
-      onCategoryChange(middleId)
-    }
+    // ✅ 소분류 선택 여부와 상관없이 현재 선택된 중분류를 기본으로 전달
+    onCategoryChange(middleId)
   }
 
   const handleSubChange = (e) => {
     const subId = Number(e.target.value)
-    setSelectedCategory(subId)
-    onCategoryChange(subId) // ✅ 소분류 선택 시 최종 ID 저장
+    setSelectedCategory(subId) // 소분류 선택 시 최종 선택된 카테고리 변경
+    onCategoryChange(subId)
   }
 
   return (
@@ -100,4 +96,4 @@ const AdminCategoryPicker = ({ onCategoryChange }) => {
   )
 }
 
-export default AdminCategoryPicker
+export default CategoryPicker
