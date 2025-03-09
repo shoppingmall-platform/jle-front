@@ -139,15 +139,15 @@ const ProductOption = () => {
     }
 
     try {
-      // 선택된 옵션들의 optionTypeId 목록 가져오기
-      const selectedOptionIds = options
-        .filter((option) => optionsCheckbox.selectedItems.includes(option.optionTypeId))
-        .map((option) => option.optionTypeId)
-
       // 옵션 삭제 API 호출 (각 ID에 대해 요청)
       await Promise.all(
-        selectedOptionIds.map(async (id) => {
-          await deleteOption(id)
+        optionsCheckbox.selectedItems.map(async (selectedOption) => {
+          console.log(selectedOption)
+          const body = {
+            optionTypeId: selectedOption,
+          }
+          console.log('body', body)
+          await deleteOption(body)
         }),
       )
 
@@ -185,8 +185,8 @@ const ProductOption = () => {
     console.log('옵션세트', JSON.stringify(optionSets, null, 2))
   }
 
-  const optionsCheckbox = useCheckboxSelection(options, 'id')
-  const optionSetsCheckbox = useCheckboxSelection(optionSets, 'id')
+  const optionsCheckbox = useCheckboxSelection(options, 'optionTypeId')
+  const optionSetsCheckbox = useCheckboxSelection(optionSets, ' ')
 
   const handleCheckboxChange = (selectedOption) => {
     setOptionSetValues((prevValues) => {

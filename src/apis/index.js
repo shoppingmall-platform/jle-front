@@ -8,6 +8,8 @@ const api = axios.create({
   baseURL: 'http://localhost:3000/api',
   headers: {
     'Content-Type': 'application/json',
+    'X-MEMBER-ID': 'asdf',
+    ROLE: 'ADMIN',
   },
   timeout: 1800000, // 30분 타임아웃
 })
