@@ -24,6 +24,7 @@ import {
 } from '@coreui/react'
 import '../adminpage.css'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
+import { getOptionList, registerOption, deleteOption } from '@/apis/product/optionApis'
 
 const ProductOption = () => {
   const [tabIndex, setTabIndex] = useState(0)
@@ -43,19 +44,26 @@ const ProductOption = () => {
     try {
       const initialData = [
         {
-          id: 1,
-          name: '색상',
-          values: ['블랙', '화이트'],
-          description: '상품의 색상을 선택합니다.',
-        },
-        {
-          id: 2,
-          name: '사이즈',
-          values: ['S', 'M', 'L'],
-          description: '상품의 사이즈를 선택합니다.',
+          optionTypeId: 0,
+          optionTypeName: 'string',
+          optionValues: [
+            {
+              optionValueId: 0,
+              optionValueName: 'string',
+            },
+          ],
         },
       ]
-      setOptions(initialData)
+      try {
+        const params = {
+          page: 0,
+          size: 10,
+        }
+        const options = await getOptionList(params)
+        setOptions(options)
+      } catch (err) {
+        console.log(err)
+      }
 
       const initialOptionSets = [
         {
@@ -92,19 +100,69 @@ const ProductOption = () => {
   }
 
   // 옵션 추가 함수
-  const handleAddOption = () => {
+  const handleAddOption = async () => {
     if (optionName && optionValues) {
-      const valuesArray = optionValues.split(',').map((value) => value.trim())
+      const valuesArray = optionValues.split(',').map((value) => ({
+        optionValueName: value.trim(),
+      }))
+
       const newOption = {
-        id: options.length + 1,
-        name: optionName,
-        values: valuesArray,
-        description: optionDescription,
+        optionTypeName: optionName,
+        optionValues: valuesArray,
       }
-      setOptions([...options, newOption])
+      console.log('newOption', newOption)
+      try {
+        // 등록
+        await registerOption(newOption)
+
+        // 조회회
+        const params = {
+          page: 0,
+          size: 10,
+        }
+        const options = await getOptionList(params)
+        setOptions(options)
+      } catch (err) {
+        console.log(err)
+      }
       setOptionName('')
       setOptionValues('')
       setOptionDescription('')
+    }
+  }
+
+  // 옵션 삭제 함수
+  const handleDeleteOption = async () => {
+    if (optionsCheckbox.selectedItems.length === 0) {
+      alert('삭제할 옵션을 선택하세요.')
+      return
+    }
+
+    try {
+      // 옵션 삭제 API 호출 (각 ID에 대해 요청)
+      await Promise.all(
+        optionsCheckbox.selectedItems.map(async (selectedOption) => {
+          console.log(selectedOption)
+          const body = {
+            optionTypeId: selectedOption,
+          }
+          console.log('body', body)
+          await deleteOption(body)
+        }),
+      )
+
+      // 삭제 후 리스트 갱신
+      const params = {
+        page: 0,
+        size: 10,
+      }
+      const updatedOptions = await getOptionList(params)
+      setOptions(updatedOptions)
+
+      // 선택 항목 초기화
+      optionsCheckbox.handleSelectItem([])
+    } catch (error) {
+      console.error('옵션 삭제 중 오류 발생:', error)
     }
   }
 
@@ -127,8 +185,8 @@ const ProductOption = () => {
     console.log('옵션세트', JSON.stringify(optionSets, null, 2))
   }
 
-  const optionsCheckbox = useCheckboxSelection(options, 'id')
-  const optionSetsCheckbox = useCheckboxSelection(optionSets, 'id')
+  const optionsCheckbox = useCheckboxSelection(options, 'optionTypeId')
+  const optionSetsCheckbox = useCheckboxSelection(optionSets, ' ')
 
   const handleCheckboxChange = (selectedOption) => {
     setOptionSetValues((prevValues) => {
@@ -180,22 +238,22 @@ const ProductOption = () => {
                         <CTableHeaderCell>옵션ID</CTableHeaderCell>
                         <CTableHeaderCell>옵션명</CTableHeaderCell>
                         <CTableHeaderCell>옵션값</CTableHeaderCell>
-                        <CTableHeaderCell>옵션설명</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
                       {options.map((option) => (
-                        <CTableRow key={option.id}>
+                        <CTableRow key={option.optionTypeId}>
                           <CTableDataCell>
                             <CFormCheck
-                              checked={optionsCheckbox.selectedItems.includes(option.id)}
-                              onChange={() => optionsCheckbox.handleSelectItem(option.id)}
+                              checked={optionsCheckbox.selectedItems.includes(option.optionTypeId)}
+                              onChange={() => optionsCheckbox.handleSelectItem(option.optionTypeId)}
                             />
                           </CTableDataCell>
-                          <CTableDataCell>{option.id}</CTableDataCell>
-                          <CTableDataCell>{option.name}</CTableDataCell>
-                          <CTableDataCell>{option.values.join(', ')}</CTableDataCell>
-                          <CTableDataCell>{option.description}</CTableDataCell>
+                          <CTableDataCell>{option.optionTypeId}</CTableDataCell>
+                          <CTableDataCell>{option.optionTypeName}</CTableDataCell>
+                          <CTableDataCell>
+                            {option.optionValues.map((value) => value.optionValueName).join(', ')}
+                          </CTableDataCell>
                         </CTableRow>
                       ))}
                     </CTableBody>
@@ -203,7 +261,7 @@ const ProductOption = () => {
                   <CButton
                     color="danger"
                     variant="outline"
-                    onClick={() => optionsCheckbox.handleDeleteSelected(setOptions)}
+                    onClick={() => handleDeleteOption()}
                     disabled={optionsCheckbox.selectedItems.length === 0}
                   >
                     선택옵션 삭제
@@ -238,16 +296,6 @@ const ProductOption = () => {
                           />
                         </td>
                       </tr>
-                      <tr>
-                        <td className="text-center table-header">옵션설명</td>
-                        <td colSpan="4">
-                          <CFormInput
-                            value={optionDescription}
-                            onChange={(e) => setOptionDescription(e.target.value)}
-                          />
-                        </td>
-                      </tr>
-
                       <CButton
                         style={{ marginTop: '10px' }}
                         color="primary"
@@ -339,9 +387,13 @@ const ProductOption = () => {
                                   onChange={() => handleCheckboxChange(option)}
                                 />
                               </CTableDataCell>
-                              <CTableDataCell>{option.id}</CTableDataCell>
-                              <CTableDataCell>{option.name}</CTableDataCell>
-                              <CTableDataCell>{option.values.join(', ')}</CTableDataCell>
+                              <CTableDataCell>{option.optionTypeId}</CTableDataCell>
+                              <CTableDataCell>{option.optionTypeName}</CTableDataCell>
+                              <CTableDataCell>
+                                {option.optionValues
+                                  .map((value) => value.optionValueName)
+                                  .join(', ')}
+                              </CTableDataCell>
                             </CTableRow>
                           ))}
                         </CTableBody>
