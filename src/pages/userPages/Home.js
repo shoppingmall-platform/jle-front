@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link } from 'react-router-dom'
 import {
   CContainer,
   CRow,
@@ -12,15 +12,15 @@ import {
   CCarousel,
   CCarouselItem,
   CCarouselCaption,
-} from "@coreui/react"
-import { getHomeProducts } from "@/services/productService"
-import { formatPrice } from "@/utils/utils"
+} from '@coreui/react'
+import { getHomeProducts } from '@/services/productService'
+import { formatPrice } from '@/utils/utils'
 
-const UserMain = () => {
+const Home = () => {
   // 실제 구현 시에는 서버에서 데이터를 가져오거나 useEffect로 데이터를 가져옵니다
-  const bestProducts = getHomeProducts("best", 4)
-  const newProducts = getHomeProducts("new", 4)
-  const saleProducts = getHomeProducts("sale", 4)
+  const bestProducts = getHomeProducts('best', 4)
+  const newProducts = getHomeProducts('new', 4)
+  const saleProducts = getHomeProducts('sale', 4)
 
   return (
     <>
@@ -69,8 +69,8 @@ const UserMain = () => {
                   <div className="position-relative">
                     <CCardImage
                       orientation="top"
-                      src={product.images[0] || "/placeholder.svg?height=300&width=300"}
-                      style={{ height: "300px", objectFit: "cover" }}
+                      src={product.images[0] || '/placeholder.svg?height=300&width=300'}
+                      style={{ height: '300px', objectFit: 'cover' }}
                     />
                     {product.isNew && (
                       <span className="position-absolute top-0 start-0 bg-dark text-white px-2 py-1 m-2 small">
@@ -87,7 +87,7 @@ const UserMain = () => {
                 <CCardBody>
                   <CCardTitle className="h6">{product.name}</CCardTitle>
                   <CCardText className="small text-muted">
-                    {product.colorCount > 1 ? `${product.colorCount} colors` : ""}
+                    {product.colorCount > 1 ? `${product.colorCount} colors` : ''}
                   </CCardText>
                   <div className="d-flex align-items-center">
                     {product.discountRate > 0 ? (
@@ -119,8 +119,8 @@ const UserMain = () => {
                   <div className="position-relative">
                     <CCardImage
                       orientation="top"
-                      src={product.images[0] || "/placeholder.svg?height=300&width=300"}
-                      style={{ height: "300px", objectFit: "cover" }}
+                      src={product.images[0] || '/placeholder.svg?height=300&width=300'}
+                      style={{ height: '300px', objectFit: 'cover' }}
                     />
                     {product.isNew && (
                       <span className="position-absolute top-0 start-0 bg-dark text-white px-2 py-1 m-2 small">
@@ -137,7 +137,7 @@ const UserMain = () => {
                 <CCardBody>
                   <CCardTitle className="h6">{product.name}</CCardTitle>
                   <CCardText className="small text-muted">
-                    {product.colorCount > 1 ? `${product.colorCount} colors` : ""}
+                    {product.colorCount > 1 ? `${product.colorCount} colors` : ''}
                   </CCardText>
                   <div className="d-flex align-items-center">
                     {product.discountRate > 0 ? (
@@ -187,8 +187,8 @@ const UserMain = () => {
                   <div className="position-relative">
                     <CCardImage
                       orientation="top"
-                      src={product.images[0] || "/placeholder.svg?height=300&width=300"}
-                      style={{ height: "300px", objectFit: "cover" }}
+                      src={product.images[0] || '/placeholder.svg?height=300&width=300'}
+                      style={{ height: '300px', objectFit: 'cover' }}
                     />
                     {product.isNew && (
                       <span className="position-absolute top-0 start-0 bg-dark text-white px-2 py-1 m-2 small">
@@ -205,7 +205,7 @@ const UserMain = () => {
                 <CCardBody>
                   <CCardTitle className="h6">{product.name}</CCardTitle>
                   <CCardText className="small text-muted">
-                    {product.colorCount > 1 ? `${product.colorCount} colors` : ""}
+                    {product.colorCount > 1 ? `${product.colorCount} colors` : ''}
                   </CCardText>
                   <div className="d-flex align-items-center">
                     {product.discountRate > 0 ? (
@@ -229,5 +229,4 @@ const UserMain = () => {
   )
 }
 
-export default UserMain
-
+export default Home
