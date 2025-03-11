@@ -1,16 +1,13 @@
 import {
   CButton,
-  CForm,
   CFormInput,
   CFormCheck,
   CFormSelect,
-  CFormLabel,
   CCard,
   CCardBody,
   CCardHeader,
   CRow,
   CCol,
-  CFormTextarea,
 } from '@coreui/react'
 import { cilSearch } from '@coreui/icons' // 아이콘 불러오기
 import CIcon from '@coreui/icons-react'
@@ -18,6 +15,8 @@ import { React, useState, useEffect } from 'react'
 import '../adminpage.css'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 import DateRangePicker from '@/components/admin/DateRangePicker'
+import CategoryPicker from '@/components/admin/product/CategoryPicker'
+import { getProductList } from '@/apis/product/productApis'
 
 const data = {
   total: 5, // 전체 건수
@@ -29,43 +28,37 @@ const ProductList = () => {
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
   const [productData, setProductData] = useState([])
-
-  const fetchProductData = async () => {
-    try {
-      const productDatas = [
-        {
-          productCode: '12345',
-          productName: '상품 A',
-          salePrice: '10,000원',
-          discountPrice: '9,000원',
-          category: '일반상품',
-          note: '-',
-        },
-        {
-          productCode: '67890',
-          productName: '상품 B',
-          salePrice: '20,000원',
-          discountPrice: '18,000원',
-          category: '세트상품',
-          note: '-',
-        },
-        {
-          productCode: '11223',
-          productName: '상품 C',
-          salePrice: '30,000원',
-          discountPrice: '27,000원',
-          category: '할인상품',
-          note: '-',
-        },
-      ]
-      setProductData(productDatas)
-    } catch (error) {
-      console.log('error', error)
-    }
-  }
+  const [category, setCategory] = useState('')
   useEffect(() => {
-    fetchProductData()
+    const fetchProducts = async () => {
+      try {
+        const response = await getProductList({ page: 0, size: 10 }) // API 호출
+
+        // API 응답이 배열인지 확인하고 사용
+        if (response && Array.isArray(response.data)) {
+          const formattedProductData = response.data.map((product, index) => ({
+            productCode: product.id,
+            productName: product.name,
+            salePrice: `${product.price.toLocaleString()}원`,
+            discountPrice: product.discountedPrice
+              ? `${product.discountedPrice.toLocaleString()}원`
+              : '-',
+            category: `카테고리 ${product.categoryId}`,
+            note: product.description || '-',
+          }))
+
+          setProductData(formattedProductData)
+        } else {
+          setProductData([]) // 데이터가 없을 경우 빈 배열 설정
+        }
+      } catch (error) {
+        console.error('❌ 상품 목록 조회 실패:', error)
+      }
+    }
+
+    fetchProducts()
   }, [])
+
   const productCheckbox = useCheckboxSelection(productData, 'productCode')
 
   return (
@@ -120,22 +113,7 @@ const ProductList = () => {
               <tr>
                 <td className="text-center table-header">카테고리</td>
                 <td colSpan="7">
-                  <div className="d-flex gap-4">
-                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                      <option>대분류 선택</option>
-                      <option value="a">a</option>
-                    </CFormSelect>
-
-                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                      <option>중분류 선택</option>
-                      <option value="a">a</option>
-                    </CFormSelect>
-
-                    <CFormSelect className="small-select" onChange={() => setSelectCategory()}>
-                      <option>소분류 선택</option>
-                      <option value="a">a</option>
-                    </CFormSelect>
-                  </div>
+                  <CategoryPicker onCategoryChange={(categoryId) => setCategory(categoryId)} />
                 </td>
               </tr>
               <tr>
@@ -214,9 +192,10 @@ const ProductList = () => {
             <thead className="table-head">
               <tr>
                 <th>
-                  <CFormCheck
+                  <input
+                    type="checkbox"
                     checked={productCheckbox.selectedItems.length === productData.length}
-                    onChange={productCheckbox.handleSelectAll} // 전체 선택
+                    onChange={productCheckbox.handleSelectAll}
                   />
                 </th>
                 <th>No</th>
@@ -228,14 +207,14 @@ const ProductList = () => {
                 <th>비고</th>
               </tr>
             </thead>
-            {/* 표의 본문 */}
             <tbody className="table-body">
               {productData.map((product, index) => (
                 <tr key={product.productCode}>
                   <td>
-                    <CFormCheck
+                    <input
+                      type="checkbox"
                       checked={productCheckbox.selectedItems.includes(product.productCode)}
-                      onChange={() => productCheckbox.handleSelectItem(product.productCode)} // 개별 선택
+                      onChange={() => productCheckbox.handleSelectItem(product.productCode)}
                     />
                   </td>
                   <td>{index + 1}</td>

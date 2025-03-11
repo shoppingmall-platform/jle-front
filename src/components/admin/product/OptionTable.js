@@ -1,24 +1,15 @@
 import { React, useState, useEffect } from 'react'
 import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CRow,
-  CCol,
   CTable,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CFormLabel,
   CFormInput,
   CFormCheck,
   CFormSelect,
   CButton,
-  CAlert,
-  CImage,
-  CCloseButton,
   CModal,
   CModalHeader,
   CModalTitle,
@@ -217,22 +208,39 @@ const OptionTable = ({ onOptionsChange }) => {
       optionSetting === 'optionset'
         ? selectedOptionSet?.options.map((opt) => opt.name)
         : options.filter((opt) => selectedOptions.hasOwnProperty(opt.label)).map((opt) => opt.label)
+
     // 각 조합에 대해 상품옵션이름은 조합의 각 값들을 '/'로 이어붙인 값으로 설정
-    const 상품옵션 = optionCombinations.map((comboObj) => {
+    const productOptions = optionCombinations.map((comboObj) => {
       const { combination, 재고, 추가가격 } = comboObj
-      const 상품옵션이름 = combination.join('/')
+      const productOptionName = combination.join('/')
+
       // 옵션구성 배열 생성
-      const 옵션구성 = optionKinds.map((kind, idx) => ({
-        옵션종류: kind,
-        옵션값: combination[idx],
+      const productOptionDetails = optionKinds.map((kind, idx) => ({
+        productOptionType: kind,
+        productOptionDetailName: combination[idx],
       }))
-      return { 상품옵션이름, 옵션구성, 재고, 추가가격 }
+
+      return {
+        productOptionName,
+        productOptionDetails,
+        stockQuantity: 재고,
+        additionalPrice: 추가가격,
+      }
     })
-    return { 상품옵션 }
+
+    return productOptions // 리스트 형태로 반환
   }
+
+  // useEffect(() => {
+  //   if (onOptionsChange) {
+  //     onOptionsChange(getFinalOptionsJSON())
+  //   }
+  // }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
   useEffect(() => {
+    const optionsData = getFinalOptionsJSON()
+    console.log('생성된 옵션 데이터:', JSON.stringify(optionsData, null, 2))
     if (onOptionsChange) {
-      onOptionsChange(getFinalOptionsJSON())
+      onOptionsChange(optionsData)
     }
   }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
 

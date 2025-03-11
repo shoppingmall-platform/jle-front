@@ -1,14 +1,11 @@
 import {
   CButton,
-  CForm,
   CFormInput,
   CFormCheck,
-  CFormSelect,
   CCard,
   CCardBody,
   CCardHeader,
   CRow,
-  CCol,
   CFormTextarea,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -20,7 +17,7 @@ import UploadFile from '@/components/admin/product/UploadFile'
 import OptionTable from '@/components/admin/product/OptionTable'
 import TagModal from '@/components/admin/product/TagModal'
 import CategoryPicker from '@/components/admin/product/CategoryPicker'
-import { getProductList, registerProduct, updateProduct } from '@/apis/product/productApis'
+import { registerProduct } from '@/apis/product/productApis'
 
 const ProductAdd = () => {
   const [saleStatus, setSaleStatus] = useState('판매함')
@@ -59,13 +56,15 @@ const ProductAdd = () => {
       categoryId: category, // 카테고리
       tags: selectedTags, // 태그
       name: productName, // 상품명
-      productOptions: optionData.productOptions || [], // 상품옵션 (옵션이 없을 경우 빈 배열)
+      productOptions: optionData?.length ? optionData : [], // 상품옵션
       price: price, // 판매가
       summaryDescription: summary, // 상품요약설명
       simpleDescription: shortDesc, // 상품간략설명
       description: detailDesc, // 상품상세설명
-      mainImages: mainImages || [], // 상품대표사진
-      additionalImages: additionalImages || [], // 상품추가사진
+      thumbnail: mainImages.length > 0 ? mainImages[0] : null, // 대표 이미지
+      productImages: {
+        paths: additionalImages || [], // 추가 이미지 리스트
+      },
     }
 
     console.log('최종 전송 데이터:', JSON.stringify(productData, null, 2))
@@ -88,8 +87,6 @@ const ProductAdd = () => {
       <CCard className="mb-4">
         <CCardHeader>표시 설정</CCardHeader>
         <CCardBody>
-          {/* 표시 상태 선택 */}
-
           <table className="table">
             <tbody>
               <tr>

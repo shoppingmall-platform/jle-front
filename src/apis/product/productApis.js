@@ -1,6 +1,6 @@
 import api from '@/apis/index'
 
-export const getProductList = async (params) => {
+export const getProductList = async (params = { page: 0, size: 10 }) => {
   try {
     const response = await api.get('/product/v1/products', { params })
     console.log(response)
