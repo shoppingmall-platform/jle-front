@@ -32,11 +32,11 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await getProductList({ page: 0, size: 10 }) // API 호출
+        const data = await getProductList({ page: 0, size: 10 }) // API 호출
 
-        // API 응답이 배열인지 확인하고 사용
-        if (response && Array.isArray(response.data)) {
-          const formattedProductData = response.data.map((product, index) => ({
+        // API 응답으로 받은 데이터가 배열인지 확인하고 사용
+        if (Array.isArray(data)) {
+          const formattedProductData = data.map((product, index) => ({
             productCode: product.id,
             productName: product.name,
             salePrice: `${product.price.toLocaleString()}원`,
