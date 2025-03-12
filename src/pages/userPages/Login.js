@@ -9,8 +9,6 @@ import {
   CButton,
   CCard,
   CCardBody,
-  CCardTitle,
-  CCardText,
   CNav,
   CNavItem,
   CNavLink,
@@ -22,16 +20,11 @@ import { useNavigate } from 'react-router-dom'
 const Login = () => {
   const navigate = useNavigate()
 
-  const goToSignup = () => {
-    navigate('/login')
-  }
-
   return (
-    <CContainer className="mt-5" style={{ maxWidth: '400px' }}>
+    <CContainer className="mt-5 mb-5 text-center" style={{ maxWidth: '400px' }}>
+      <h4 className="mb-5">로그인</h4>
       <CCard>
         <CCardBody>
-          <CCardTitle className="text-center mb-3">로그인</CCardTitle>
-          <hr style={{ border: '1px solid #ddd', margin: '16px 0' }} />
           <CForm>
             <CFormInput
               className="mb-3"
@@ -54,9 +47,10 @@ const Login = () => {
               Login
             </CButton>
           </CForm>
+
           <CNav vertical className="text-center">
             <CNavItem>
-              <CNavLink href="#" onClick={goToSignup}>
+              <CNavLink href="#" onClick={() => navigate('/signup')}>
                 회원가입
               </CNavLink>
             </CNavItem>
@@ -67,6 +61,7 @@ const Login = () => {
               <CNavLink href="#">비밀번호 찾기</CNavLink>
             </CNavItem>
           </CNav>
+
           <hr style={{ border: '1px solid #ddd', margin: '16px 0' }} />
           <CRow>
             <CCol>

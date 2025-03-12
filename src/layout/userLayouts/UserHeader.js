@@ -61,7 +61,7 @@ const Header = () => {
                     <Link to="/login" className="text-black me-3">
                       LOGIN
                     </Link>
-                    <Link to="/register" className="text-black me-3">
+                    <Link to="/signup" className="text-black me-3">
                       JOIN
                     </Link>
                   </>
@@ -69,8 +69,8 @@ const Header = () => {
                 <Link to="/cart" className="text-dark me-3">
                   CART ({cartItemsCount})
                 </Link>
-                <Link to="/order" className="text-dark">
-                  ORDER
+                <Link to="/mypage" className="text-dark">
+                  MY PAGE
                 </Link>
               </div>
             </CCol>

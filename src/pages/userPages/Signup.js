@@ -36,13 +36,13 @@ export default function Signup() {
   }
 
   return (
-    <CContainer className="py-5">
+    <CContainer className="mt-5 mb-5">
+      <h4 className="text-center mb-5">회원가입</h4>
       <CRow className="justify-content-center">
         <CCol md={6}>
           <CCard style={{ minHeight: '400px', width: '100%' }}>
             <CCardBody style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ flex: '1 1 auto' }}>
-                <CCardTitle className="text-center mb-3">회원가입</CCardTitle>
                 {/* Progress Indicator */}
                 <CProgress className="mb-4" value={((activeStep + 1) / steps.length) * 100} />
 
