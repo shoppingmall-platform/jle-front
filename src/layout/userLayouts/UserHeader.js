@@ -111,17 +111,20 @@ const Header = () => {
           >
             <CIcon icon={cilMenu} />
           </CNavbarToggler>
-
           <CCollapse className="navbar-collapse" visible={visible}>
-            <CNavbarNav className="me-auto mb-2 mb-lg-0 justify-content-center w-100">
+            <div className="d-flex flex-wrap justify-content-center w-100">
+              {/* ✅ Link 태그로 카테고리 메뉴 렌더링 */}
               {CATEGORIES.map((category) => (
-                <CNavItem key={category.slug}>
-                  <CNavLink component={Link} to={`/category/${category.slug}`} className="px-3">
-                    {category.name}
-                  </CNavLink>
-                </CNavItem>
+                <Link
+                  key={category.slug}
+                  to={`/category/${category.slug}`}
+                  className="px-3 py-2 text-dark text-decoration-none"
+                  style={{ fontWeight: 'bold' }}
+                >
+                  {category.name}
+                </Link>
               ))}
-            </CNavbarNav>
+            </div>
           </CCollapse>
 
           {/* <div className="d-flex">

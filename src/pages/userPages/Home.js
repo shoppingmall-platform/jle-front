@@ -24,40 +24,6 @@ const Home = () => {
 
   return (
     <>
-      {/* Hero Banner */}
-      {/* <CCarousel controls indicators dark className="mb-5">
-        <CCarouselItem>
-          <img
-            className="d-block w-100"
-            src="/images/hero-banner.jpg"
-            alt="New Collection"
-            style={{ height: "500px", objectFit: "cover" }}
-          />
-          <CCarouselCaption className="d-none d-md-block">
-            <h2>NEW COLLECTION</h2>
-            <p>2025 봄/여름 컬렉션을 만나보세요</p>
-            <CButton component={Link} to="/category/new" color="light" className="mt-2">
-              SHOP NOW
-            </CButton>
-          </CCarouselCaption>
-        </CCarouselItem>
-        <CCarouselItem>
-          <img
-            className="d-block w-100"
-            src="/placeholder.svg?height=500&width=1200"
-            alt="Season Off"
-            style={{ height: "500px", objectFit: "cover" }}
-          />
-          <CCarouselCaption className="d-none d-md-block">
-            <h2>SEASON OFF</h2>
-            <p>최대 70% 할인된 가격으로 만나보세요</p>
-            <CButton component={Link} to="/category/sale" color="light" className="mt-2">
-              SHOP NOW
-            </CButton>
-          </CCarouselCaption>
-        </CCarouselItem>
-      </CCarousel> */}
-
       {/* Best Products */}
       <CContainer className="mb-5 mt-5">
         <h3 className="text-center mb-4">WEEKLY BEST</h3>
@@ -157,24 +123,6 @@ const Home = () => {
           ))}
         </CRow>
       </CContainer>
-
-      {/* Banner */}
-      {/* <div className="bg-dark text-white py-5 mb-5">
-        <CContainer>
-          <CRow className="align-items-center">
-            <CCol md={6} className="text-center text-md-start">
-              <h2 className="display-5 fw-bold mb-3">SUMMER COLLECTION</h2>
-              <p className="lead mb-4">가볍고 시원한 여름 컬렉션으로 스타일리시한 여름을 준비하세요.</p>
-              <CButton component={Link} to="/category/summer" color="light" size="lg">
-                자세히 보기
-              </CButton>
-            </CCol>
-            <CCol md={6} className="d-none d-md-block">
-              <img src="/placeholder.svg?height=400&width=600" alt="Summer Collection" className="img-fluid rounded" />
-            </CCol>
-          </CRow>
-        </CContainer>
-      </div> */}
 
       {/* Sale Products */}
       <CContainer className="mb-5">
