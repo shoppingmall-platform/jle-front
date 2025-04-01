@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   CContainer,
@@ -25,12 +25,28 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
 import { CATEGORIES } from '@/config/constants'
 import logo from '/public/logo.jpeg'
+import { getCategories } from '@/apis/product/categoryApis'
 
 const Header = () => {
   const [visible, setVisible] = useState(false)
   const { isAuthenticated, user, logout } = useAuth()
   const { cartItemsCount } = useCart()
   const navigate = useNavigate()
+
+  const [categories, setCategories] = useState([])
+
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await getCategories()
+      if (data) setCategories(data)
+    }
+    fetchCategories()
+  }, [])
+
+  const mainCategories = categories.filter((c) => c.categoryLevel === 1)
+  const subCategories = categories.filter((c) => c.categoryLevel === 2)
 
   return (
     <>
@@ -113,17 +129,59 @@ const Header = () => {
           </CNavbarToggler>
           <CCollapse className="navbar-collapse" visible={visible}>
             <div className="d-flex flex-wrap justify-content-center w-100">
-              {/* ✅ Link 태그로 카테고리 메뉴 렌더링 */}
-              {CATEGORIES.map((category) => (
-                <Link
-                  key={category.slug}
-                  to={`/category/${category.slug}`}
-                  className="px-3 py-2 text-dark text-decoration-none"
-                  style={{ fontWeight: 'bold' }}
-                >
-                  {category.name}
-                </Link>
-              ))}
+              {mainCategories.map((mainCat) => {
+                const children = subCategories.filter(
+                  (subCat) => subCat.parentCategoryId === mainCat.categoryId,
+                )
+
+                return children.length > 0 ? (
+                  <CDropdown
+                    key={mainCat.categoryId}
+                    onMouseEnter={() => setDropdownOpen(true)}
+                    onMouseLeave={() => setDropdownOpen(false)}
+                    visible={dropdownOpen}
+                    className="mx-2"
+                  >
+                    <CDropdownToggle
+                      color="light"
+                      caret={false}
+                      className="text-dark fw-bold px-3 py-2"
+                    >
+                      {/* ✅ 대분류도 Link로 감싸서 클릭 시 이동하도록 */}
+                      <Link
+                        to={`/category/${mainCat.categoryId}`}
+                        className="text-dark text-decoration-none"
+                      >
+                        {mainCat.categoryName}
+                      </Link>
+                    </CDropdownToggle>
+                    <CDropdownMenu>
+                      {children.map((subCat) => (
+                        <CDropdownItem key={subCat.categoryId}>
+                          <Link to={`/category/${subCat.categoryId}`} className="dropdown-item">
+                            {subCat.categoryName}
+                          </Link>
+                        </CDropdownItem>
+                      ))}
+                    </CDropdownMenu>
+                  </CDropdown>
+                ) : (
+                  <CDropdown key={mainCat.categoryId} className="mx-2">
+                    <CDropdownToggle
+                      color="light"
+                      caret={false}
+                      className="text-dark fw-bold px-3 py-2"
+                    >
+                      <Link
+                        to={`/category/${mainCat.categoryId}`}
+                        className="text-dark text-decoration-none"
+                      >
+                        {mainCat.categoryName}
+                      </Link>
+                    </CDropdownToggle>
+                  </CDropdown>
+                )
+              })}
             </div>
           </CCollapse>
 
