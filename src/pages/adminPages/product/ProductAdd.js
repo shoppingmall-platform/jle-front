@@ -51,10 +51,10 @@ const ProductAdd = () => {
 
   const handleSave = async () => {
     const productData = {
-      saleStatus: saleStatus, // 판매상태
-      displayStatus: displayStatus, // 진열상태
+      // saleStatus: saleStatus, // 판매상태
+      // displayStatus: displayStatus, // 진열상태
       categoryId: category, // 카테고리
-      tags: selectedTags, // 태그
+      tags: selectedTags.map((tag) => ({ tagName: tag })), // 태그
       name: productName, // 상품명
       productOptions: optionData?.length ? optionData : [], // 상품옵션
       price: price, // 판매가

@@ -43,7 +43,7 @@ const ProductList = () => {
             discountPrice: product.discountedPrice
               ? `${product.discountedPrice.toLocaleString()}원`
               : '-',
-            category: `카테고리 ${product.categoryId}`,
+            category: `${product.categoryId}`,
             note: product.description || '-',
           }))
 
