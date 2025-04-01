@@ -1,24 +1,15 @@
 import { React, useState, useEffect } from 'react'
 import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CRow,
-  CCol,
   CTable,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CFormLabel,
   CFormInput,
   CFormCheck,
   CFormSelect,
   CButton,
-  CAlert,
-  CImage,
-  CCloseButton,
   CModal,
   CModalHeader,
   CModalTitle,
@@ -26,6 +17,7 @@ import {
   CModalFooter,
 } from '@coreui/react'
 import { MultiSelect } from 'react-multi-select-component'
+import { getOptionList } from '@/apis/product/optionApis'
 
 const OptionTable = ({ onOptionsChange }) => {
   const [useOption, setUseOption] = useState(false) // 옵션 사용 여부
@@ -45,29 +37,31 @@ const OptionTable = ({ onOptionsChange }) => {
 
   const fetchInitialOptions = async () => {
     try {
-      const initialData = [
-        {
-          id: 1,
-          name: '색상',
-          values: ['블랙', '화이트'],
-          description: '상품의 색상을 선택합니다.',
-        },
-        {
-          id: 2,
-          name: '사이즈',
-          values: ['S', 'M', 'L'],
-          description: '상품의 사이즈를 선택합니다.',
-        },
-      ]
+      const params = { page: 0, size: 10 }
+      const options = await getOptionList(params)
 
-      // MultiSelect에 사용할 옵션: 옵션값 배열도 함께 포함
-      const transformedOptions = initialData.map((option) => ({
-        label: option.name,
-        value: option.id.toString(),
-        values: option.values,
+      if (!options || options.length === 0) {
+        console.warn('옵션 데이터가 없습니다.')
+        setOptions([])
+        return
+      }
+
+      // 데이터를 MultiSelect 형식에 맞게 변환 (label, value 형태)
+      const transformedOptions = options.map((opt) => ({
+        label: opt.optionTypeName, // MultiSelect에서 보이는 옵션 이름
+        value: opt.optionTypeId.toString(), // ID를 문자열로 변환
+        values: opt.optionValues.map((v) => v.optionValueName), // 옵션 값 배열
       }))
-      setOptions(transformedOptions)
 
+      console.log('변환된 옵션 데이터:', transformedOptions)
+      setOptions(transformedOptions) // 상태 저장
+    } catch (error) {
+      console.error('옵션 데이터를 가져오는 중 오류 발생:', error)
+      setOptions([]) // 오류 발생 시 안전하게 빈 배열로 설정
+    }
+
+    // 기존 옵션 세트 로직 유지
+    try {
       const initialOptionSets = [
         {
           id: 1,
@@ -89,15 +83,8 @@ const OptionTable = ({ onOptionsChange }) => {
         },
       ]
       setOptionSets(initialOptionSets)
-
-      // 기본 옵션세트 선택 시 초기값 설정
-      const defaultSelectedOptions = {}
-      initialOptionSets[0].options.forEach((option) => {
-        defaultSelectedOptions[option.name] = [...option.values] // 빈 배열 초기화
-      })
-      setSelectedOptions(defaultSelectedOptions)
     } catch (error) {
-      console.error('옵션 데이터를 가져오는 중 오류 발생:', error)
+      console.error('옵션 세트 데이터를 설정하는 중 오류 발생:', error)
     }
   }
 
@@ -155,13 +142,26 @@ const OptionTable = ({ onOptionsChange }) => {
   }
 
   // MultiSelect 옵션 변경 핸들러 (옵션 불러오기 모드)
+  // const handleMultiSelectChange = (selected) => {
+  //   const newSelectedOptions = selected.reduce((acc, option) => {
+  //     acc[option.label] = [...option.values] // 값 입력은 나중에 사용자가 체크박스로 하게 됨
+  //     return acc
+  //   }, {})
+  //   setSelectedOptions(newSelectedOptions)
+  //   setOptionCombinations([])
+  // }
+
   const handleMultiSelectChange = (selected) => {
+    console.log('선택된 옵션:', selected)
+
+    // 선택된 옵션을 `{ label: values }` 형태의 객체로 저장
     const newSelectedOptions = selected.reduce((acc, option) => {
-      acc[option.label] = [...option.values] // 값 입력은 나중에 사용자가 체크박스로 하게 됨
+      acc[option.label] = [...option.values] // 옵션값 리스트 저장
       return acc
     }, {})
+
     setSelectedOptions(newSelectedOptions)
-    setOptionCombinations([])
+    setOptionCombinations([]) // 기존 옵션 조합 초기화
   }
 
   // 선택된 옵션 조합을 생성하는 함수
@@ -208,22 +208,39 @@ const OptionTable = ({ onOptionsChange }) => {
       optionSetting === 'optionset'
         ? selectedOptionSet?.options.map((opt) => opt.name)
         : options.filter((opt) => selectedOptions.hasOwnProperty(opt.label)).map((opt) => opt.label)
+
     // 각 조합에 대해 상품옵션이름은 조합의 각 값들을 '/'로 이어붙인 값으로 설정
-    const 상품옵션 = optionCombinations.map((comboObj) => {
+    const productOptions = optionCombinations.map((comboObj) => {
       const { combination, 재고, 추가가격 } = comboObj
-      const 상품옵션이름 = combination.join('/')
+      const productOptionName = combination.join('/')
+
       // 옵션구성 배열 생성
-      const 옵션구성 = optionKinds.map((kind, idx) => ({
-        옵션종류: kind,
-        옵션값: combination[idx],
+      const productOptionDetails = optionKinds.map((kind, idx) => ({
+        productOptionType: kind,
+        productOptionDetailName: combination[idx],
       }))
-      return { 상품옵션이름, 옵션구성, 재고, 추가가격 }
+
+      return {
+        productOptionName,
+        productOptionDetails,
+        stockQuantity: 재고,
+        additionalPrice: 추가가격,
+      }
     })
-    return { 상품옵션 }
+
+    return productOptions // 리스트 형태로 반환
   }
+
+  // useEffect(() => {
+  //   if (onOptionsChange) {
+  //     onOptionsChange(getFinalOptionsJSON())
+  //   }
+  // }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
   useEffect(() => {
+    const optionsData = getFinalOptionsJSON()
+    console.log('생성된 옵션 데이터:', JSON.stringify(optionsData, null, 2))
     if (onOptionsChange) {
-      onOptionsChange(getFinalOptionsJSON())
+      onOptionsChange(optionsData)
     }
   }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
 

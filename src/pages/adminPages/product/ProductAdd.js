@@ -1,14 +1,11 @@
 import {
   CButton,
-  CForm,
   CFormInput,
   CFormCheck,
-  CFormSelect,
   CCard,
   CCardBody,
   CCardHeader,
   CRow,
-  CCol,
   CFormTextarea,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -20,6 +17,7 @@ import UploadFile from '@/components/admin/product/UploadFile'
 import OptionTable from '@/components/admin/product/OptionTable'
 import TagModal from '@/components/admin/product/TagModal'
 import CategoryPicker from '@/components/admin/product/CategoryPicker'
+import { registerProduct } from '@/apis/product/productApis'
 
 const ProductAdd = () => {
   const [saleStatus, setSaleStatus] = useState('판매함')
@@ -51,23 +49,35 @@ const ProductAdd = () => {
     setDisplayStatus(value === 'T' ? '진열함' : '진열안함')
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const productData = {
-      판매상태: saleStatus,
-      진열상태: displayStatus,
-      카테고리: category,
-      태그: selectedTags,
-      상품명: productName,
-      상품옵션: optionData.상품옵션,
-      판매가: price,
-      상품요약설명: summary,
-      상품간략설명: shortDesc,
-      상품상세설명: detailDesc,
-      상품대표사진: mainImages,
-      상품추가사진: additionalImages,
+      // saleStatus: saleStatus, // 판매상태
+      // displayStatus: displayStatus, // 진열상태
+      categoryId: category, // 카테고리
+      tags: selectedTags.map((tag) => ({ tagName: tag })), // 태그
+      name: productName, // 상품명
+      productOptions: optionData?.length ? optionData : [], // 상품옵션
+      price: price, // 판매가
+      summaryDescription: summary, // 상품요약설명
+      simpleDescription: shortDesc, // 상품간략설명
+      description: detailDesc, // 상품상세설명
+      thumbnail: mainImages.length > 0 ? mainImages[0] : null, // 대표 이미지
+      productImages: {
+        paths: additionalImages || [], // 추가 이미지 리스트
+      },
     }
-    console.log('최종 전송 데이터:', productData)
-    // API 호출 등 데이터 전송 로직 추가 (예: axios.post(...))
+
+    console.log('최종 전송 데이터:', JSON.stringify(productData, null, 2))
+
+    try {
+      const response = await registerProduct(productData)
+      console.log('제품 등록 성공:', response)
+
+      alert('상품이 성공적으로 등록되었습니다.')
+    } catch (error) {
+      console.error('제품 등록 실패:', error)
+      alert('상품 등록에 실패했습니다. 다시 시도해주세요.')
+    }
   }
   return (
     <div className="container mt-4">
@@ -77,8 +87,6 @@ const ProductAdd = () => {
       <CCard className="mb-4">
         <CCardHeader>표시 설정</CCardHeader>
         <CCardBody>
-          {/* 표시 상태 선택 */}
-
           <table className="table">
             <tbody>
               <tr>
