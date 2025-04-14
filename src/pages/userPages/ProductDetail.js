@@ -72,7 +72,9 @@ const ProductDetail = () => {
   }
 
   const isNew = product.productState === 'NEW'
-  const images = product.thumbnailPath ? [product.thumbnailPath] : []
+  const images = [product.thumbnailPath]
+  product.productImagePaths.map((image) => images.push(image.path))
+  console.log('images', images)
 
   return (
     <CContainer className="mt-5 mb-5">
