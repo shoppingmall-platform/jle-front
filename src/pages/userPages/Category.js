@@ -10,7 +10,6 @@ import {
   CCardText,
 } from '@coreui/react'
 import { useQuery } from '@tanstack/react-query'
-import { getCategoryProducts } from '@/services/productService'
 import { getCategoryProductList } from '@/apis/product/productApis'
 import { formatPrice } from '@/utils/utils'
 
@@ -44,8 +43,7 @@ const Category = () => {
                     <div className="position-relative">
                       <CCardImage
                         orientation="top"
-                        // ************여기 product.thumbnail 이거를 return 값에 맞춰 수정할 필요가 있음
-                        src={product.thumbnail || '/placeholder.svg?height=300&width=300'}
+                        src={product.thumbnailPath || '/placeholder.svg?height=300&width=300'}
                         style={{ height: '300px', objectFit: 'cover' }}
                       />
                       {product.discountRate > 0 && (
