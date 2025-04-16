@@ -27,6 +27,44 @@ const UploadFile = ({ maxImages, onUpload }) => {
   const [showModal, setShowModal] = useState(false)
   const inputRef = useRef(null)
 
+  const resizeImageFile = (file, maxWidth = 800) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const img = new Image()
+        img.onload = () => {
+          const scale = Math.min(1, maxWidth / img.width)
+          const width = img.width * scale
+          const height = img.height * scale
+
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, width, height)
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const resizedFile = new File([blob], file.name, { type: blob.type })
+                resolve(resizedFile)
+              } else {
+                reject(new Error('Canvas toBlob failed'))
+              }
+            },
+            'image/jpeg',
+            0.85,
+          ) // 압축 품질 설정
+        }
+        img.onerror = reject
+        img.src = event.target.result
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
     const currentImageCount = images.length
@@ -69,11 +107,15 @@ const UploadFile = ({ maxImages, onUpload }) => {
       const uploadedUrls = await Promise.all(
         images.map(async (imageObj) => {
           const { file } = imageObj
+
+          // 🔥 리사이징 적용
+          const resizedFile = await resizeImageFile(file, 800)
+
           const params = {
             Bucket: import.meta.env.VITE_BUCKET_NAME,
-            Key: `uploads/${Date.now()}-${file.name}`,
-            Body: file,
-            ContentType: file.type,
+            Key: `uploads/${Date.now()}-${resizedFile.name}`,
+            Body: resizedFile,
+            ContentType: resizedFile.type,
           }
 
           const { Location } = await s3.upload(params).promise()

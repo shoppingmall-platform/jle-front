@@ -12,7 +12,7 @@ export const getProductList = async (params = { page: 0, size: 10 }) => {
 
 export const getCategoryProductList = async (categoryId, params = { page: 0, size: 10 }) => {
   try {
-    const response = await api.get(`/product/v1/${categoryId}/products`, { params })
+    const response = await api.post(`/product/v1/${categoryId}/products`, { params })
     console.log(response)
     return response.data
   } catch (error) {
