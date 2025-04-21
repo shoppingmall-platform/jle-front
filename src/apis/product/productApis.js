@@ -1,8 +1,8 @@
 import api from '@/apis/index'
 
-export const getProductList = async (params = { page: 0, size: 10 }) => {
+export const getProductList = async (conditions, params = { page: 0, size: 10 }) => {
   try {
-    const response = await api.get('/product/v1/products', { params })
+    const response = await api.post('/product/v1/products/read', conditions, { params })
     console.log(response)
     return response.data
   } catch (error) {
@@ -10,9 +10,13 @@ export const getProductList = async (params = { page: 0, size: 10 }) => {
   }
 }
 
-export const getCategoryProductList = async (categoryId, params = { page: 0, size: 10 }) => {
+export const getCategoryProductList = async (
+  categoryId,
+  conditions,
+  params = { page: 0, size: 10 },
+) => {
   try {
-    const response = await api.get(`/product/v1/${categoryId}/products`, { params })
+    const response = await api.post(`/product/v1/${categoryId}/products`, conditions, { params })
     console.log(response)
     return response.data
   } catch (error) {
