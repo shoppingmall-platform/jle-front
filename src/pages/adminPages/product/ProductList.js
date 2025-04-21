@@ -32,7 +32,7 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProductList({ page: 0, size: 10 }) // API 호출
+        const data = await getProductList({}, { page: 0, size: 20 }) // API 호출
 
         // API 응답으로 받은 데이터가 배열인지 확인하고 사용
         if (Array.isArray(data)) {
