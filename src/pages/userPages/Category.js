@@ -21,7 +21,7 @@ const Category = () => {
     isError,
   } = useQuery({
     queryKey: ['categoryProducts', categoryId],
-    queryFn: () => getCategoryProductList(categoryId, { page: 0, size: 8 }),
+    queryFn: () => getCategoryProductList(categoryId, {}, { page: 0, size: 8 }),
     enabled: !!categoryId,
   })
 
