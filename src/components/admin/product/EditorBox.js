@@ -56,12 +56,69 @@ const EditorBox = ({ onContentChange }) => {
     setValue(e)
   }
 
+  // const handleImageUpload = async (images, editorContent) => {
+  //   for (let image of images) {
+  //     const base64Src = image.match(/src="([^"]+)"/)[1]
+  //     const blob = base64ToBlob(base64Src)
+  //     const imageUrl = await uploadImage(blob)
+  //     editorContent = editorContent.replace(base64Src, imageUrl)
+  //   }
+  //   return editorContent
+  // }
+  const resizeImage = async (base64, maxWidth = 800) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.crossOrigin = 'Anonymous' // 외부 이미지 처리용
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width)
+        const width = img.width * scale
+        const height = img.height * scale
+
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob)
+            } else {
+              reject(new Error('Canvas toBlob failed'))
+            }
+          },
+          'image/jpeg',
+          0.85, // 압축 품질
+        )
+      }
+      img.onerror = reject
+      img.src = base64
+    })
+  }
+
   const handleImageUpload = async (images, editorContent) => {
     for (let image of images) {
       const base64Src = image.match(/src="([^"]+)"/)[1]
-      const blob = base64ToBlob(base64Src)
+      const blob = await resizeImage(base64Src, 800) // 너비 제한 리사이징
       const imageUrl = await uploadImage(blob)
-      editorContent = editorContent.replace(base64Src, imageUrl)
+
+      // <img> 태그에 style 속성 강제 삽입
+      let updatedImgTag = image.replace(base64Src, imageUrl)
+
+      // style이 이미 있는 경우: 기존 스타일에 추가만 (안 겹치게)
+      if (/style=/.test(updatedImgTag)) {
+        updatedImgTag = updatedImgTag.replace(
+          /style="([^"]*)"/,
+          (_, style) => `style="${style}; max-width:100%; height:auto;"`,
+        )
+      } else {
+        // style이 없는 경우: 새로 추가
+        updatedImgTag = updatedImgTag.replace('<img', '<img style="max-width:100%; height:auto;"')
+      }
+
+      editorContent = editorContent.replace(image, updatedImgTag)
     }
     return editorContent
   }

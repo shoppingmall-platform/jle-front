@@ -13,6 +13,7 @@ import {
 } from '@coreui/react'
 import { getProductDetail } from '@/apis/product/productApis'
 import { formatPrice } from '@/utils/utils'
+import 'react-quill/dist/quill.snow.css'
 
 const ProductDetail = () => {
   const { productId } = useParams()
@@ -87,7 +88,14 @@ const ProductDetail = () => {
                 <CImage
                   fluid
                   src={selectedImage}
-                  style={{ maxHeight: '450px', objectFit: 'cover', width: '100%' }}
+                  style={{
+                    height: '450px',
+                    width: '100%',
+                    objectFit: 'contain',
+                    backgroundColor: '#f8f8f8',
+                    border: '1px solid #eee',
+                    borderRadius: '6px',
+                  }}
                 />
                 <div className="d-flex justify-content-center mt-3">
                   {images.map((img, idx) => (
@@ -175,6 +183,7 @@ const ProductDetail = () => {
           <CCard className="mt-4 p-4">
             <h5>상품 설명</h5>
             <div
+              className="ql-editor"
               dangerouslySetInnerHTML={{ __html: product.description }}
               style={{ lineHeight: 1.6 }}
             />
