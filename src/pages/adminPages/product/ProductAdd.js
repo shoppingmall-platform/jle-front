@@ -50,6 +50,23 @@ const ProductAdd = () => {
   }
 
   const handleSave = async () => {
+    if (!category) {
+      alert('카테고리를 선택해주세요.')
+      return
+    }
+    if (!productName.trim()) {
+      alert('상품명을 입력해주세요.')
+      return
+    }
+    if (!price || price <= 0) {
+      alert('판매가를 0원 이상으로 입력해주세요.')
+      return
+    }
+    if (!mainImages || mainImages.length === 0) {
+      alert('대표 이미지를 등록해주세요.')
+      return
+    }
+
     const productData = {
       // saleStatus: saleStatus, // 판매상태
       // displayStatus: displayStatus, // 진열상태
@@ -137,7 +154,9 @@ const ProductAdd = () => {
               </tr>
 
               <tr>
-                <td className="text-center table-header">카테고리 선택</td>
+                <td className="text-center table-header">
+                  카테고리 선택 <span className="text-danger">*</span>
+                </td>
                 <td colSpan="4">
                   <CategoryPicker onCategoryChange={(categoryId) => setCategory(categoryId)} />
                 </td>
@@ -182,7 +201,9 @@ const ProductAdd = () => {
           <table className="table">
             <tbody>
               <tr>
-                <td className="text-center">상품명</td>
+                <td className="text-center">
+                  상품명 <span className="text-danger">*</span>
+                </td>
                 <td colSpan="2">
                   <CFormInput
                     size="sm"
@@ -191,7 +212,9 @@ const ProductAdd = () => {
                     onChange={(e) => setProductName(e.target.value)}
                   />
                 </td>
-                <td className="text-center">판매가</td>
+                <td className="text-center">
+                  판매가 <span className="text-danger">*</span>
+                </td>
                 <td colSpan="2">
                   <CFormInput
                     size="sm"
@@ -258,9 +281,11 @@ const ProductAdd = () => {
                 <td className="text-center">이미지 등록</td>
                 <td colSpan="5">
                   <div>
-                    <p>*상품 대표 사진 등록 (1장)</p>
+                    <p>
+                      상품 대표 사진 등록 (1장)<span className="text-danger">*</span>
+                    </p>
                     <UploadFile maxImages={1} onUpload={(urls) => setMainImages(urls)} />
-                    <p className="mt-3">*상품 추가 사진 등록 (최대 10장)</p>
+                    <p className="mt-3">상품 추가 사진 등록 (최대 10장)</p>
                     <UploadFile maxImages={10} onUpload={(urls) => setAdditionalImages(urls)} />
                   </div>
                 </td>
