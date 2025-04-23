@@ -10,7 +10,7 @@ import {
   CProgress,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
-import './userpage.css'
+import '@/pages/userPages/userpage.css'
 const Mypage = () => {
   const navigate = useNavigate()
   const menuItems = [
@@ -18,25 +18,37 @@ const Mypage = () => {
       key: 'ORDER',
       title: '주문내역',
       description: '고객님께서 주문하신 상품의 주문 내역을 확인할 수 있습니다.',
-      path: '/orders',
+      path: '/mypage/orders',
     },
     {
       key: 'WISHLIST',
       title: '관심상품',
       description: '찜한 상품 목록을 확인할 수 있습니다.',
-      path: '/wishlist',
+      path: '/mypage/wishlist',
     },
     {
       key: 'PROFILE',
       title: '회원정보',
       description: '회원정보 및 배송지를 수정할 수 있습니다.',
-      path: '/profile',
+      path: '/mypage/profile',
     },
     {
       key: 'SETTINGS',
       title: '설정',
       description: '알림 및 보안 설정을 변경할 수 있습니다.',
-      path: '/settings',
+      path: '/mypage/settings',
+    },
+    {
+      key: 'COUPON',
+      title: '쿠폰',
+      description: '보유하고 있는 쿠폰 내역을 확인할 수 있습니다.',
+      path: '/mypage/coupon',
+    },
+    {
+      key: 'ADDRESS',
+      title: '주소록 관리',
+      description: '자주 사용하는 주소록을 등록하고 관리할 수 있습니다.',
+      path: '/mypage/address',
     },
   ]
 
