@@ -128,18 +128,18 @@ const _nav = [
       {
         component: CNavGroup,
         name: '쿠폰',
-        to: '/promotion/coupon',
+        to: '/promotion/coupons',
         icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
         items: [
           {
             component: CNavItem,
             name: '쿠폰등록',
-            to: 'promotion/coupon/add',
+            to: 'promotion/coupons/add',
           },
           {
             component: CNavItem,
             name: '쿠폰조회',
-            to: 'promotion/coupon/list',
+            to: 'promotion/coupons/list',
           },
         ],
       },

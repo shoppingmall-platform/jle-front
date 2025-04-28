@@ -36,20 +36,49 @@ const CategoryPicker = ({ onCategoryChange }) => {
   }
 
   const handleMiddleChange = (e) => {
-    const middleId = Number(e.target.value)
-    setSelectedCategory(middleId) // 중분류 선택 시 최종 선택된 카테고리 변경
+    const value = e.target.value
+
+    if (!value) {
+      // 중분류 선택 해제 시
+      setSubCategories([])
+      const lastMainId = mainCategories.find((cat) =>
+        middleCategories.some((mid) => mid.parentCategoryId === cat.categoryId),
+      )?.categoryId
+
+      if (lastMainId) {
+        setSelectedCategory(lastMainId)
+        onCategoryChange(lastMainId)
+      }
+      return
+    }
+
+    const middleId = Number(value)
+    setSelectedCategory(middleId)
     const subCats = categories.filter(
       (cat) => cat.parentCategoryId === middleId && cat.categoryLevel === 3,
     )
     setSubCategories(subCats)
-
-    // ✅ 소분류 선택 여부와 상관없이 현재 선택된 중분류를 기본으로 전달
     onCategoryChange(middleId)
   }
 
   const handleSubChange = (e) => {
-    const subId = Number(e.target.value)
-    setSelectedCategory(subId) // 소분류 선택 시 최종 선택된 카테고리 변경
+    const value = e.target.value
+
+    if (!value) {
+      // 소분류 선택 해제 시
+      const lastMiddleId = middleCategories.find((cat) =>
+        subCategories.some((sub) => sub.parentCategoryId === cat.categoryId),
+      )?.categoryId
+
+      if (lastMiddleId) {
+        setSelectedCategory(lastMiddleId)
+        onCategoryChange(lastMiddleId)
+      }
+      return
+    }
+
+    const subId = Number(value)
+    setSelectedCategory(subId)
     onCategoryChange(subId)
   }
 

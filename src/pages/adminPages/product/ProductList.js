@@ -32,19 +32,19 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProductList({ page: 0, size: 10 }) // API 호출
+        const data = await getProductList({}, { page: 0, size: 20 }) // API 호출
 
         // API 응답으로 받은 데이터가 배열인지 확인하고 사용
         if (Array.isArray(data)) {
           const formattedProductData = data.map((product, index) => ({
-            productCode: product.id,
+            productCode: product.productId,
             productName: product.name,
             salePrice: `${product.price.toLocaleString()}원`,
             discountPrice: product.discountedPrice
               ? `${product.discountedPrice.toLocaleString()}원`
               : '-',
             category: `${product.categoryId}`,
-            note: product.description || '-',
+            note: '-',
           }))
 
           setProductData(formattedProductData)
@@ -199,7 +199,6 @@ const ProductList = () => {
                   />
                 </th>
                 <th>No</th>
-                <th>상품구분</th>
                 <th>상품코드</th>
                 <th>상품명</th>
                 <th>판매가</th>
@@ -218,7 +217,6 @@ const ProductList = () => {
                     />
                   </td>
                   <td>{index + 1}</td>
-                  <td>{product.category}</td>
                   <td>{product.productCode}</td>
                   <td>{product.productName}</td>
                   <td>{product.salePrice}</td>

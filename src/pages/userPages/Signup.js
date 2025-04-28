@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState  } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CContainer,
   CRow,
@@ -19,6 +20,8 @@ export default function Signup() {
   const [isAgreed, setIsAgreed] = useState(false)
   const [isValidInput, setIsValidInput] = useState(false)
 
+  const navigate = useNavigate()
+
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
   }
@@ -36,25 +39,37 @@ export default function Signup() {
   }
 
   return (
-    <CContainer className="py-5">
+    <CContainer className="mt-5 mb-5">
+      <h4 className="text-center mb-5">회원가입</h4>
       <CRow className="justify-content-center">
         <CCol md={6}>
           <CCard style={{ minHeight: '400px', width: '100%' }}>
             <CCardBody style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ flex: '1 1 auto' }}>
-                <CCardTitle className="text-center mb-3">회원가입</CCardTitle>
                 {/* Progress Indicator */}
-                <CProgress className="mb-4" value={((activeStep + 1) / steps.length) * 100} />
+                <CProgress className="mb-4" color = 'dark' value={((activeStep + 1) / steps.length) * 100} />
 
                 {/* Step Content */}
                 <div className="mb-4">
                   {activeStep === 0 && <Agreement onAgreementChange={handleAgreementChange} />}
                   {activeStep === 1 && <InputSignup onValidityChange={handleValidityChange} />}
                   {activeStep === 2 && (
-                    <div className="text-center">
-                      <h5>가입이 완료되었습니다!</h5>
+                    <div
+                    className="d-flex flex-column justify-content-center align-items-center text-center"
+                    style={{ height: '100%' }}
+                  >
+                      <h4 className="mt-5 mb-3">🎉 회원가입을 축하드립니다!</h4>
+                      <p className="mt-5 mb-4">지금 바로 쇼핑을 시작해보세요.</p>
+                      <CButton
+                        color="dark"
+                        className="w-100"
+                        onClick={() => navigate('/')}
+                      >
+                        쇼핑하러 가기
+                      </CButton>
                     </div>
                   )}
+
                 </div>
               </div>
 

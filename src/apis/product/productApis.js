@@ -1,8 +1,32 @@
 import api from '@/apis/index'
 
-export const getProductList = async (params = { page: 0, size: 10 }) => {
+export const getProductList = async (conditions, params = { page: 0, size: 10 }) => {
   try {
-    const response = await api.get('/product/v1/products', { params })
+    const response = await api.post('/product/v1/products/read', conditions, { params })
+    console.log(response)
+    return response.data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const getCategoryProductList = async (
+  categoryId,
+  conditions,
+  params = { page: 0, size: 10 },
+) => {
+  try {
+    const response = await api.post(`/product/v1/${categoryId}/products`, conditions, { params })
+    console.log(response)
+    return response.data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const getProductDetail = async (productId) => {
+  try {
+    const response = await api.get(`/product/v1/products/${productId}`)
     console.log(response)
     return response.data
   } catch (error) {
@@ -30,4 +54,10 @@ export const updateProduct = async (updateProduct) => {
   }
 }
 
-export default { getProductList, registerProduct, updateProduct }
+export default {
+  getProductList,
+  getCategoryProductList,
+  getProductDetail,
+  registerProduct,
+  updateProduct,
+}
