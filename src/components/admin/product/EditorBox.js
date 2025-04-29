@@ -200,9 +200,9 @@ const EditorBox = ({ onContentChange }) => {
   }, [])
 
   return (
-    <CContainer>
+    <CContainer style={{ height: '100%' }}>
       <CRow className="my-3">
-        <CCol>
+        <CCol style={{ height: '100%' }}>
           <ReactQuill
             value={value}
             theme="snow"
@@ -210,11 +210,11 @@ const EditorBox = ({ onContentChange }) => {
             onChange={onChangeValue}
             formats={formats}
             modules={modules}
-            style={{ height: 400, overflowY: 'auto' }}
+            style={{ height: '430px' }}
           />
         </CCol>
       </CRow>
-      <CRow>
+      <CRow className="mt-5">
         <CCol>
           <CButton color="primary" onClick={handleSubmit}>
             저장

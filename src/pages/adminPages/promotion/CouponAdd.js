@@ -21,6 +21,7 @@ const CouponAdd = () => {
   const [discountValue, setDiscountValue] = useState('')
   const [hasMinOrderPrice, setHasMinOrderPrice] = useState(false)
   const [minOrderPrice, setMinOrderPrice] = useState('')
+  const [maxDiscountAmount, setMaxDiscountAmount] = useState('')
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
 
@@ -72,15 +73,29 @@ const CouponAdd = () => {
                       }}
                     />
                     {discountType === '할인율' && (
-                      <CInputGroup className="x-small-form">
+                      <div className="d-flex gap-3 align-items-center">
+                        {/* 할인율 입력 */}
+                        <CInputGroup className="x-small-form">
+                          <CFormInput
+                            type="number"
+                            value={discountValue}
+                            onChange={(e) => setDiscountValue(e.target.value)}
+                            placeholder="할인율"
+                          />
+                          <CInputGroupText>%</CInputGroupText>
+                        </CInputGroup>
+
+                        {/* 최대 할인금액 입력 */}
                         <CFormInput
                           type="number"
-                          value={discountValue}
-                          onChange={(e) => setDiscountValue(e.target.value)}
+                          value={maxDiscountAmount}
+                          onChange={(e) => setMaxDiscountAmount(e.target.value)}
+                          placeholder="최대 할인 금액"
+                          className="x-small-form"
                         />
-                        <CInputGroupText>%</CInputGroupText>
-                      </CInputGroup>
+                      </div>
                     )}
+
                     {discountType === '할인금액' && (
                       <CInputGroup className="x-small-form">
                         <CFormInput
@@ -156,22 +171,10 @@ const CouponAdd = () => {
               </tr>
 
               <tr>
-                <td className="text-center table-header">사용 범위</td>
-                <td colSpan="4">
-                  <div className="radio-group">
-                    <CFormCheck type="radio" name="사용범위" value="1" label="전체 상품" />
-                    <CFormCheck type="radio" name="사용범위" value="2" label="특정 상품" />
-                    <CFormCheck type="radio" name="사용범위" value="3" label="특정 분류" />
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
                 <td className="text-center table-header">발급 방식</td>
                 <td colSpan="4">
                   <div className="radio-group">
                     <CFormCheck type="radio" name="발급방식" value="auto" label="자동 발급" />
-                    <CFormCheck type="radio" name="발급방식" value="manual" label="다운로드" />
                     <CFormCheck type="radio" name="발급방식" value="code" label="코드 입력" />
                   </div>
                 </td>

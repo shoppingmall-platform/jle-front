@@ -252,8 +252,10 @@ const ProductAdd = () => {
               </tr>
               <tr>
                 <td className="text-center">상품 상세 설명</td>
-                <td colSpan="5">
-                  <EditorBox onContentChange={(content) => setDetailDesc(content)} />
+                <td colSpan="5" style={{ height: '550px' }}>
+                  <div style={{ height: '100%' }}>
+                    <EditorBox onContentChange={(content) => setDetailDesc(content)} />
+                  </div>
                 </td>
               </tr>
               <tr>
