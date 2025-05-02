@@ -26,6 +26,7 @@ import { useCart } from '@/contexts/CartContext'
 import { CATEGORIES } from '@/config/constants'
 import logo from '/public/logo.jpeg'
 import { getCategories } from '@/apis/product/categoryApis'
+import { getTags } from '@/apis/product/tagApis'
 
 const Header = () => {
   const [visible, setVisible] = useState(false)
@@ -34,15 +35,16 @@ const Header = () => {
   const navigate = useNavigate()
 
   const [categories, setCategories] = useState([])
-
-  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [tags, setTags] = useState([]) // ✅ tags 상태 추가
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      const data = await getCategories()
-      if (data) setCategories(data)
+    const fetchCategoriesAndTags = async () => {
+      const categoryData = await getCategories()
+      const tagData = await getTags()
+      if (categoryData) setCategories(categoryData)
+      if (tagData) setTags(tagData) // ✅ tag 정보도 가져오기
     }
-    fetchCategories()
+    fetchCategoriesAndTags()
   }, [])
 
   const mainCategories = categories.filter((c) => c.categoryLevel === 1)
@@ -127,45 +129,32 @@ const Header = () => {
           >
             <CIcon icon={cilMenu} />
           </CNavbarToggler>
+
           <CCollapse className="navbar-collapse" visible={visible}>
             <div className="d-flex flex-wrap justify-content-center w-100">
+              {/* ✅ Tag 버튼 먼저 추가 */}
+              {tags.map((tag) => (
+                <CDropdown key={`tag-${tag.tagId}`} className="mx-2">
+                  <CDropdownToggle
+                    color="light"
+                    caret={false}
+                    className="text-dark fw-bold px-3 py-2"
+                  >
+                    {/* 수정 필요 */}
+                    <Link to={`/tag/${tag.tagName}`} className="text-dark text-decoration-none">
+                      {tag.tagName}
+                    </Link>
+                  </CDropdownToggle>
+                </CDropdown>
+              ))}
+
+              {/* ✅ 기존 Category 렌더링 */}
               {mainCategories.map((mainCat) => {
                 const children = subCategories.filter(
                   (subCat) => subCat.parentCategoryId === mainCat.categoryId,
                 )
 
-                return children.length > 0 ? (
-                  <CDropdown
-                    key={mainCat.categoryId}
-                    onMouseEnter={() => setDropdownOpen(true)}
-                    onMouseLeave={() => setDropdownOpen(false)}
-                    visible={dropdownOpen}
-                    className="mx-2"
-                  >
-                    <CDropdownToggle
-                      color="light"
-                      caret={false}
-                      className="text-dark fw-bold px-3 py-2"
-                    >
-                      {/* ✅ 대분류도 Link로 감싸서 클릭 시 이동하도록 */}
-                      <Link
-                        to={`/category/${mainCat.categoryId}`}
-                        className="text-dark text-decoration-none"
-                      >
-                        {mainCat.categoryName}
-                      </Link>
-                    </CDropdownToggle>
-                    <CDropdownMenu>
-                      {children.map((subCat) => (
-                        <CDropdownItem key={subCat.categoryId}>
-                          <Link to={`/category/${subCat.categoryId}`} className="dropdown-item">
-                            {subCat.categoryName}
-                          </Link>
-                        </CDropdownItem>
-                      ))}
-                    </CDropdownMenu>
-                  </CDropdown>
-                ) : (
+                return (
                   <CDropdown key={mainCat.categoryId} className="mx-2">
                     <CDropdownToggle
                       color="light"
@@ -179,69 +168,26 @@ const Header = () => {
                         {mainCat.categoryName}
                       </Link>
                     </CDropdownToggle>
+
+                    {/* ✅ 중분류가 있을 때만 드롭다운 메뉴 표시 */}
+                    {children.length > 0 && (
+                      <CDropdownMenu>
+                        {children.map((subCat) => (
+                          <CDropdownItem key={subCat.categoryId}>
+                            <Link to={`/category/${subCat.categoryId}`} className="dropdown-item">
+                              {subCat.categoryName}
+                            </Link>
+                          </CDropdownItem>
+                        ))}
+                      </CDropdownMenu>
+                    )}
                   </CDropdown>
                 )
               })}
             </div>
           </CCollapse>
-
-          {/* <div className="d-flex">
-            <Link to="/cart" className="position-relative me-3">
-              <CIcon icon={cilCart} size="lg" />
-              {cartItemsCount > 0 && (
-                <CBadge
-                  color="dark"
-                  position="top-end"
-                  shape="rounded-pill"
-                  className="position-absolute"
-                >
-                  {cartItemsCount}
-                </CBadge>
-              )}
-            </Link>
-            <CDropdown variant="nav-item">
-              <CDropdownToggle color="light" caret={false}>
-                <CIcon icon={cilUser} size="lg" />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                {isAuthenticated ? (
-                  <>
-                    <CDropdownItem component={Link} to="/my-page">
-                      마이페이지
-                    </CDropdownItem>
-                    <CDropdownItem component={Link} to="/order">
-                      주문조회
-                    </CDropdownItem>
-                    <CDropdownItem component={Link} to="/wishlist">
-                      위시리스트
-                    </CDropdownItem>
-                    <CDropdownItem divider />
-                    <CDropdownItem onClick={logout}>로그아웃</CDropdownItem>
-                  </>
-                ) : (
-                  <>
-                    <CDropdownItem component={Link} to="/login">
-                      로그인
-                    </CDropdownItem>
-                    <CDropdownItem component={Link} to="/register">
-                      회원가입
-                    </CDropdownItem>
-                  </>
-                )}
-              </CDropdownMenu>
-            </CDropdown>
-          </div> */}
         </CContainer>
       </CNavbar>
-
-      {/* Promotion banner */}
-      {/* <div className="bg-light border-bottom py-2">
-        <CContainer>
-          <div className="text-center">
-            <p className="mb-0">시즌오프 ~70%</p>
-          </div>
-        </CContainer>
-      </div> */}
     </>
   )
 }
