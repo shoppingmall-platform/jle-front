@@ -166,6 +166,7 @@ const CouponAdd = () => {
                     setEndDate={setEndDate}
                     showButtons={true}
                     includeTime={true}
+                    mode="future"
                   />
                 </td>
               </tr>

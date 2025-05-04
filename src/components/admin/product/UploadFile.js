@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   CButton,
   CAlert,
@@ -21,11 +21,16 @@ AWS.config.update({
 
 const s3 = new AWS.S3()
 
-const UploadFile = ({ maxImages, onUpload }) => {
+const UploadFile = ({ maxImages, onUpload, resetTrigger }) => {
   const [images, setImages] = useState([])
   const [error, setError] = useState('')
   const [showModal, setShowModal] = useState(false)
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    setImages([]) // 이미지 상태 초기화
+    setError('') // 에러 메시지도 초기화
+  }, [resetTrigger])
 
   const resizeImageFile = (file, maxWidth = 800) => {
     return new Promise((resolve, reject) => {

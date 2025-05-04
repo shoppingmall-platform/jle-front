@@ -203,6 +203,7 @@ const DiscountAdd = () => {
                     setEndDate={setEndDate}
                     showButtons={true}
                     includeTime={true}
+                    mode="future"
                   />
                 </td>
               </tr>
