@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import ReactQuill, { Quill } from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import ImageResize from 'quill-image-resize'
@@ -32,8 +32,8 @@ AWS.config.update({
 
 const s3 = new AWS.S3()
 
-const EditorBox = ({ onContentChange }) => {
-  const [value, setValue] = useState('')
+const EditorBox = ({ onContentChange, value: initialValue = '', resetTrigger }) => {
+  const [value, setValue] = useState(initialValue)
   const [showModal, setShowModal] = useState(false)
   const quillRef = useRef()
 
@@ -55,6 +55,13 @@ const EditorBox = ({ onContentChange }) => {
     console.log(e)
     setValue(e)
   }
+  useEffect(() => {
+    setValue(initialValue) // 상태 초기화
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor()
+      quill.setContents(quill.clipboard.convert(initialValue))
+    }
+  }, [initialValue])
 
   // const handleImageUpload = async (images, editorContent) => {
   //   for (let image of images) {
@@ -187,6 +194,31 @@ const EditorBox = ({ onContentChange }) => {
           [{ align: [] }, { color: [] }, { background: [] }],
           ['clean'],
         ],
+        handlers: {
+          image: function imageHandler() {
+            const input = document.createElement('input')
+            input.setAttribute('type', 'file')
+            input.setAttribute('accept', 'image/*')
+            input.setAttribute('multiple', true) // ✅ multiple 추가
+            input.click()
+
+            input.onchange = async () => {
+              const files = input.files
+              if (files) {
+                for (const file of files) {
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    const quill = quillRef.current.getEditor()
+                    const range = quill.getSelection(true)
+                    quill.insertEmbed(range.index, 'image', reader.result)
+                    quill.setSelection(range.index + 1)
+                  }
+                  reader.readAsDataURL(file)
+                }
+              }
+            }
+          },
+        },
       },
       imageResize: {
         displayStyles: {
@@ -200,9 +232,9 @@ const EditorBox = ({ onContentChange }) => {
   }, [])
 
   return (
-    <CContainer>
+    <CContainer style={{ height: '100%' }}>
       <CRow className="my-3">
-        <CCol>
+        <CCol style={{ height: '100%' }}>
           <ReactQuill
             value={value}
             theme="snow"
@@ -210,11 +242,11 @@ const EditorBox = ({ onContentChange }) => {
             onChange={onChangeValue}
             formats={formats}
             modules={modules}
-            style={{ height: 400, overflowY: 'auto' }}
+            style={{ height: '430px' }}
           />
         </CCol>
       </CRow>
-      <CRow>
+      <CRow className="mt-5">
         <CCol>
           <CButton color="primary" onClick={handleSubmit}>
             저장

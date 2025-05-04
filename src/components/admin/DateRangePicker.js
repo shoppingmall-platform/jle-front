@@ -10,11 +10,25 @@ const DateRangePicker = ({
   setEndDate,
   showButtons = true,
   includeTime = false,
+  mode = 'past',
 }) => {
   const handleButtonClick = (days) => {
-    const today = new Date()
-    setStartDate(new Date(today.setDate(today.getDate() - days)))
-    setEndDate(new Date())
+    let baseDate = startDate
+    if (!startDate) {
+      baseDate = new Date() // 시작일 없으면 오늘로 설정
+      setStartDate(baseDate) // 시작일 상태에도 업데이트!
+    }
+
+    const newDate = new Date(baseDate)
+
+    if (mode === 'future') {
+      newDate.setDate(newDate.getDate() + days)
+      setEndDate(newDate)
+    } else {
+      newDate.setDate(newDate.getDate() - days)
+      setStartDate(newDate)
+      setEndDate(new Date())
+    }
   }
 
   return (

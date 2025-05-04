@@ -6,6 +6,11 @@ import {
   CCardBody,
   CCardHeader,
   CRow,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalFooter,
+  CModalTitle,
   CFormTextarea,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -34,7 +39,17 @@ const ProductAdd = () => {
   const [additionalImages, setAdditionalImages] = useState([])
 
   const [showModal, setShowModal] = useState(false)
+  const [showEditorModal, setShowEditorModal] = useState(false) //상세설명 모달창
+  const [isDetailSaved, setIsDetailSaved] = useState(false)
   const [tags, setTags] = useState(['신상품', '추천상품'])
+
+  const [resetTrigger, setResetTrigger] = useState(false)
+
+  const handleEditorSave = (content) => {
+    setDetailDesc(content)
+    setIsDetailSaved(true) // ✅ 저장 여부 표시
+    setShowEditorModal(false) // ✅ 모달 닫기
+  }
 
   const toggleTag = (tag) => {
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
@@ -47,6 +62,21 @@ const ProductAdd = () => {
   const handleDisplayStatusChange = (e) => {
     const value = e.target.value
     setDisplayStatus(value === 'T' ? '진열함' : '진열안함')
+  }
+
+  const handleReset = () => {
+    setCategory('')
+    setSelectedTags([])
+    setProductName('')
+    setOptionData({})
+    setPrice(0)
+    setSummary('')
+    setShortDesc('')
+    setDetailDesc('')
+    setMainImages([])
+    setAdditionalImages([])
+
+    setResetTrigger((prev) => !prev)
   }
 
   const handleSave = async () => {
@@ -91,11 +121,14 @@ const ProductAdd = () => {
       console.log('제품 등록 성공:', response)
 
       alert('상품이 성공적으로 등록되었습니다.')
+
+      handleReset()
     } catch (error) {
       console.error('제품 등록 실패:', error)
       alert('상품 등록에 실패했습니다. 다시 시도해주세요.')
     }
   }
+
   return (
     <div className="container mt-4">
       <CRow className="my-4 justify-content-center">
@@ -158,7 +191,10 @@ const ProductAdd = () => {
                   카테고리 선택 <span className="text-danger">*</span>
                 </td>
                 <td colSpan="4">
-                  <CategoryPicker onCategoryChange={(categoryId) => setCategory(categoryId)} />
+                  <CategoryPicker
+                    onCategoryChange={(categoryId) => setCategory(categoryId)}
+                    resetTrigger={resetTrigger}
+                  />
                 </td>
               </tr>
               <tr>
@@ -253,7 +289,12 @@ const ProductAdd = () => {
               <tr>
                 <td className="text-center">상품 상세 설명</td>
                 <td colSpan="5">
-                  <EditorBox onContentChange={(content) => setDetailDesc(content)} />
+                  <CButton
+                    color={isDetailSaved ? 'success' : 'primary'}
+                    onClick={() => setShowEditorModal(true)}
+                  >
+                    {isDetailSaved ? '상세 설명 작성 완료' : '상세 설명 작성'}
+                  </CButton>
                 </td>
               </tr>
               <tr>
@@ -284,9 +325,17 @@ const ProductAdd = () => {
                     <p>
                       상품 대표 사진 등록 (1장)<span className="text-danger">*</span>
                     </p>
-                    <UploadFile maxImages={1} onUpload={(urls) => setMainImages(urls)} />
+                    <UploadFile
+                      maxImages={1}
+                      onUpload={(urls) => setMainImages(urls)}
+                      resetTrigger={resetTrigger}
+                    />
                     <p className="mt-3">상품 추가 사진 등록 (최대 10장)</p>
-                    <UploadFile maxImages={10} onUpload={(urls) => setAdditionalImages(urls)} />
+                    <UploadFile
+                      maxImages={10}
+                      onUpload={(urls) => setAdditionalImages(urls)}
+                      resetTrigger={resetTrigger}
+                    />
                   </div>
                 </td>
               </tr>
@@ -299,6 +348,30 @@ const ProductAdd = () => {
           저장
         </CButton>
       </div>
+      {/* 상세 설명 모달 창 */}
+      <CModal visible={showEditorModal} size="xl" backdrop="static">
+        <CModalHeader>
+          <CModalTitle>상품 상세 설명 작성</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <EditorBox
+            onContentChange={handleEditorSave}
+            value={detailDesc}
+            resetTrigger={resetTrigger}
+          />
+        </CModalBody>
+        <CModalFooter>
+          <CButton
+            color="secondary"
+            onClick={() => {
+              const confirmClose = window.confirm('작성 중인 내용이 사라집니다. 닫으시겠습니까?')
+              if (confirmClose) setShowEditorModal(false)
+            }}
+          >
+            닫기
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </div>
   )
 }

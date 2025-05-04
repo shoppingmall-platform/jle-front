@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { CFormSelect } from '@coreui/react'
 import { getCategories } from '@/apis/product/categoryApis'
 
-const CategoryPicker = ({ onCategoryChange }) => {
+const CategoryPicker = ({ onCategoryChange, resetTrigger }) => {
   const [categories, setCategories] = useState([])
   const [mainCategories, setMainCategories] = useState([])
   const [middleCategories, setMiddleCategories] = useState([])
@@ -34,6 +34,14 @@ const CategoryPicker = ({ onCategoryChange }) => {
     // ✅ 중분류 선택 여부와 상관없이 현재 선택된 대분류를 기본으로 전달
     onCategoryChange(mainId)
   }
+
+  useEffect(() => {
+    setSelectedCategory(null)
+    setMainCategories([])
+    setMiddleCategories([])
+    setSubCategories([])
+    onCategoryChange(null) // 부모에 초기값 알리기
+  }, [resetTrigger])
 
   const handleMiddleChange = (e) => {
     const value = e.target.value

@@ -1,4 +1,4 @@
-import { React, useState } from 'react'
+import { React, useState, useEffect } from 'react'
 import {
   CButton,
   CForm,
@@ -16,7 +16,10 @@ import {
 } from '@coreui/react'
 import '../adminpage.css'
 import DateRangePicker from '@/components/admin/DateRangePicker'
+import CategoryPicker from '@/components/admin/product/CategoryPicker'
+import { getProductList } from '@/apis/product/productApis'
 import { registerDiscount } from '@/apis/product/discountApis'
+import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 
 const DiscountAdd = () => {
   const [discountName, setDiscountName] = useState('')
@@ -24,11 +27,52 @@ const DiscountAdd = () => {
   const [discountValue, setDiscountValue] = useState('')
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
+  const [scopeType, setScopeType] = useState('0')
+
+  const [productData, setProductData] = useState([])
+  const [selectedProducts, setSelectedProducts] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState(null)
+
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await getProductList({}, { page: 0, size: 20 })
+        if (Array.isArray(res)) {
+          const formatted = res.map((p) => ({
+            productCode: p.productId,
+            productName: p.name,
+            salePrice: `${p.price.toLocaleString()}원`,
+            discountPrice: p.discountedPrice ? `${p.discountedPrice.toLocaleString()}원` : '-',
+          }))
+          setProductData(formatted)
+        }
+      } catch (error) {
+        console.error('상품 목록 조회 실패:', error)
+      }
+    }
+    fetchProducts()
+  }, [])
+
+  const handleToggleProduct = (productId) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
+    )
+  }
 
   const handleRegister = async () => {
     if (!discountName || !discountType || !discountValue || !startDate || !endDate) {
       alert('모든 필수 항목을 입력해주세요!')
+      return
+    }
+    if (scopeType === '1' && selectedProducts.length === 0) {
+      alert('특정 상품을 선택해주세요.')
+      return
+    }
+
+    if (scopeType === '2' && !selectedCategory) {
+      alert('카테고리를 선택해주세요.')
       return
     }
 
@@ -38,9 +82,17 @@ const DiscountAdd = () => {
       discountValue: Number(discountValue),
       discountStartDate: new Date(startDate).toISOString(),
       discountEndDate: new Date(endDate).toISOString(),
-      // 상품타입: '전체상품' or '선택상품' or '특정분류',
-      // productValue: ['productID1, productID2 ....']
+      applyType: Number(scopeType),
+      ids:
+        scopeType === '0'
+          ? null
+          : scopeType === '1'
+            ? selectedProducts
+            : scopeType === '2'
+              ? [selectedCategory]
+              : null,
     }
+    console.log('최종 전송 데이터:', newDiscount)
 
     setLoading(true)
     try {
@@ -52,6 +104,13 @@ const DiscountAdd = () => {
       setLoading(false)
     }
   }
+  const handleScopeChange = (e) => {
+    setScopeType(e.target.value)
+  }
+  const productCheckbox = useCheckboxSelection(productData, 'productCode')
+  useEffect(() => {
+    setSelectedProducts(productCheckbox.selectedItems)
+  }, [productCheckbox.selectedItems])
 
   return (
     <div className="container mt-4">
@@ -144,6 +203,7 @@ const DiscountAdd = () => {
                     setEndDate={setEndDate}
                     showButtons={true}
                     includeTime={true}
+                    mode="future"
                   />
                 </td>
               </tr>
@@ -151,12 +211,96 @@ const DiscountAdd = () => {
                 <td className="text-center table-header">적용범위</td>
                 <td colSpan="4">
                   <div className="radio-group">
-                    <CFormCheck type="radio" name="적용범위" value="1" label="전체 상품" />
-                    <CFormCheck type="radio" name="적용범위" value="2" label="특정 상품" />
-                    <CFormCheck type="radio" name="적용범위" value="3" label="특정 분류" />
+                    <CFormCheck
+                      type="radio"
+                      name="scopeType"
+                      value="0"
+                      label="전체상품"
+                      checked={scopeType === '전체상품'}
+                      onChange={handleScopeChange}
+                    />
+                    <CFormCheck
+                      type="radio"
+                      name="scopeType"
+                      value="1"
+                      label="특정상품"
+                      checked={scopeType === '특정상품'}
+                      onChange={handleScopeChange}
+                    />
+                    <CFormCheck
+                      type="radio"
+                      name="scopeType"
+                      value="2"
+                      label="특정분류"
+                      checked={scopeType === '특정분류'}
+                      onChange={handleScopeChange}
+                    />
                   </div>
                 </td>
               </tr>
+              {scopeType === '1' && (
+                <tr>
+                  <td className="text-center table-header">상품 목록</td>
+                  <td colSpan="4">
+                    <table className="table table-bordered table-sm">
+                      <thead>
+                        <tr>
+                          <th>
+                            <CFormCheck
+                              checked={
+                                productCheckbox.selectedItems.length === productData.length &&
+                                productData.length > 0
+                              }
+                              onChange={productCheckbox.handleSelectAll}
+                            />
+                          </th>
+                          <th>상품명</th>
+                          <th>판매가</th>
+                          <th>할인가</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {productData.length > 0 ? (
+                          productData.map((product) => (
+                            <tr key={product.productCode}>
+                              <td>
+                                <CFormCheck
+                                  checked={productCheckbox.selectedItems.includes(
+                                    product.productCode,
+                                  )}
+                                  onChange={() =>
+                                    productCheckbox.handleSelectItem(product.productCode)
+                                  }
+                                />
+                              </td>
+                              <td>{product.productName}</td>
+                              <td>{product.salePrice}</td>
+                              <td>{product.discountPrice}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="4" className="text-center">
+                              상품이 없습니다.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              )}
+
+              {scopeType === '2' && (
+                <tr>
+                  <td className="text-center table-header">카테고리</td>
+                  <td colSpan="4">
+                    <CategoryPicker
+                      onCategoryChange={(categoryId) => setSelectedCategory(categoryId)}
+                    />
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </CCardBody>
