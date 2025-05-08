@@ -77,11 +77,19 @@ const Home = () => {
                           src={product.thumbnailPath || '/placeholder.svg?height=300&width=300'}
                           style={{ height: '300px', objectFit: 'cover' }}
                         />
-                        {product.discountRate > 0 && (
-                          <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
-                            {product.discountRate}% OFF
-                          </span>
-                        )}
+                        {product.discountedPrice !== product.price &&
+                          product.discountInfo?.discountType === '할인금액' && (
+                            <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
+                              {product.discountInfo.discountValue}원 OFF
+                            </span>
+                          )}
+
+                        {product.discountedPrice !== product.price &&
+                          product.discountInfo?.discountType === '할인율' && (
+                            <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
+                              {product.discountInfo.discountValue}% OFF
+                            </span>
+                          )}
                       </div>
                     </Link>
                     <CCardBody>
@@ -90,11 +98,9 @@ const Home = () => {
                         {product.tag.map((tag) => tag.productTagName).join(', ')}
                       </CCardText>
                       <div className="d-flex align-items-center">
-                        {product.discountRate > 0 ? (
+                        {product.discountedPrice !== product.price ? (
                           <>
-                            <span className="fw-bold">
-                              {formatPrice(product.price * (1 - product.discountRate / 100))}
-                            </span>
+                            <span className="fw-bold">{formatPrice(product.discountedPrice)}</span>
                             <span className="text-muted text-decoration-line-through ms-2 small">
                               {formatPrice(product.price)}
                             </span>
@@ -137,11 +143,19 @@ const Home = () => {
                             src={product.thumbnailPath || '/placeholder.svg?height=300&width=300'}
                             style={{ height: '300px', objectFit: 'cover' }}
                           />
-                          {product.discountRate > 0 && (
-                            <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
-                              {product.discountRate}% OFF
-                            </span>
-                          )}
+                          {product.discountedPrice !== product.price &&
+                            product.discountInfo?.discountType === '할인금액' && (
+                              <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
+                                {product.discountInfo.discountValue}원 OFF
+                              </span>
+                            )}
+
+                          {product.discountedPrice !== product.price &&
+                            product.discountInfo?.discountType === '할인율' && (
+                              <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
+                                {product.discountInfo.discountValue}% OFF
+                              </span>
+                            )}
                         </div>
                       </Link>
                       <CCardBody>
@@ -150,10 +164,10 @@ const Home = () => {
                           {product.tag.map((tag) => tag.productTagName).join(', ')}
                         </CCardText>
                         <div className="d-flex align-items-center">
-                          {product.discountRate > 0 ? (
+                          {product.discountedPrice !== product.price ? (
                             <>
                               <span className="fw-bold">
-                                {formatPrice(product.price * (1 - product.discountRate / 100))}
+                                {formatPrice(product.discountedPrice)}
                               </span>
                               <span className="text-muted text-decoration-line-through ms-2 small">
                                 {formatPrice(product.price)}
