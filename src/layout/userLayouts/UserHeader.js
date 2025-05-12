@@ -23,16 +23,17 @@ import CIcon from '@coreui/icons-react'
 import { cilCart, cilUser, cilMenu } from '@coreui/icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
-import { CATEGORIES } from '@/config/constants'
 import logo from '/public/logo.jpeg'
 import { getCategories } from '@/apis/product/categoryApis'
 import { getTags } from '@/apis/product/tagApis'
+import { useCategoryStore } from '@/store/product/categoryStore'
 
 const Header = () => {
   const [visible, setVisible] = useState(false)
   const { isAuthenticated, user, logout } = useAuth()
   const { cartItemsCount } = useCart()
-  const navigate = useNavigate()
+
+  const selectCategory = useCategoryStore((state) => state.selectCategory)
 
   const [categories, setCategories] = useState([])
   const [tags, setTags] = useState([]) // ✅ tags 상태 추가
@@ -141,7 +142,11 @@ const Header = () => {
                     className="text-dark fw-bold px-3 py-2"
                   >
                     {/* 수정 필요 */}
-                    <Link to={`/tag/${tag.tagName}`} className="text-dark text-decoration-none">
+                    <Link
+                      to={`/tag/${tag.tagName}`}
+                      className="text-dark text-decoration-none"
+                      onClick={() => selectCategory(tag.tagName)}
+                    >
                       {tag.tagName}
                     </Link>
                   </CDropdownToggle>
@@ -164,6 +169,7 @@ const Header = () => {
                       <Link
                         to={`/category/${mainCat.categoryId}`}
                         className="text-dark text-decoration-none"
+                        onClick={() => selectCategory(mainCat.categoryName)}
                       >
                         {mainCat.categoryName}
                       </Link>
@@ -174,7 +180,11 @@ const Header = () => {
                       <CDropdownMenu>
                         {children.map((subCat) => (
                           <CDropdownItem key={subCat.categoryId}>
-                            <Link to={`/category/${subCat.categoryId}`} className="dropdown-item">
+                            <Link
+                              to={`/category/${subCat.categoryId}`}
+                              className="dropdown-item"
+                              onClick={() => selectCategory(subCat.categoryName)}
+                            >
                               {subCat.categoryName}
                             </Link>
                           </CDropdownItem>

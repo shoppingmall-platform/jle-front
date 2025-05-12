@@ -12,9 +12,11 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { getCategoryProductList } from '@/apis/product/productApis'
 import { formatPrice } from '@/utils/utils'
+import { useCategoryStore } from '@/store/product/categoryStore'
 
 const Category = () => {
   const { categoryId } = useParams()
+  const selectedCategory = useCategoryStore((state) => state.selectedCategory)
   const {
     data: categoryProducts = [],
     isLoading,
@@ -27,7 +29,7 @@ const Category = () => {
 
   return (
     <CContainer className="mb-5 mt-5">
-      <h3 className="text-center mb-4">{categoryId.toUpperCase()} CATEGORY</h3>
+      <h3 className="text-center mb-4">{selectedCategory.toUpperCase()} CATEGORY</h3>
 
       {isLoading ? (
         <p className="text-center">로딩 중...</p>
