@@ -7,6 +7,7 @@ const Tag = React.lazy(() => import('@/pages/userPages/Tag'))
 const ProductDetail = React.lazy(() => import('@/pages/userPages/ProductDetail'))
 const Login = React.lazy(() => import('@/pages/userPages/Login'))
 const Signup = React.lazy(() => import('@/pages/userPages/Signup'))
+const Cart = React.lazy(() => import('@/pages/userPages/Cart'))
 const Mypage = React.lazy(() => import('@/pages/userPages/mypage/Mypage'))
 const Profile = React.lazy(() => import('@/pages/userPages/mypage/Profile'))
 const AddressList = React.lazy(() => import('@/pages/userPages/mypage/address/AddressList'))
@@ -19,6 +20,7 @@ export const userRouter = [
   { path: '/product/:productId', element: ProductDetail },
   { path: '/login', element: Login },
   { path: '/signup', element: Signup },
+  { path: '/cart', element: Cart },
   { path: '/mypage', element: Mypage },
   { path: '/mypage/profile', element: Profile },
   { path: '/mypage/address', element: AddressList },

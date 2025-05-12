@@ -14,3 +14,9 @@
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 살짝 그림자 추가 */
   transform: scale(1.05); /* 약간 확대 */
 }
+
+.custom-header th {
+  font-weight: normal;
+  font-size: 0.85rem;
+  text-align: center;
+}
