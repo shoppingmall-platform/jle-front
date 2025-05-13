@@ -1,6 +1,9 @@
 import axios from 'axios'
 import { authStore } from '@/store/auth/authStore'
 
+// 토큰 재발급 중복 방지를 위한 플래그
+let isTokenRefreshing = false
+
 export function useApi() {
   // API 호출 함수 (공통 함수)
   const request = async (method, url, data = null, config = {}) => {
@@ -28,17 +31,6 @@ export function useApi() {
       (error) => Promise.reject(error),
     )
 
-    // const headers = {
-    //   ...config.headers,
-    //   Authorization: tokenInfo ? `Bearer ${tokenInfo}` : '',
-    // }
-
-    // // responseType 설정
-    // const responseConfig = {
-    //   headers,
-    //   ...config,
-    // }
-
     try {
       const response =
         method === 'GET'
@@ -51,6 +43,37 @@ export function useApi() {
         header: response?.headers,
       }
     } catch (err) {
+      // 로그인 여부 체크
+      if (err.response?.status === 400) {
+        alert('시스템 오류입니다. \n관리자에게 문의바랍니다.')
+
+        return
+      } else if (err.response?.status === 401 && err.response?.data.error === 'TokenExpiredError') {
+        // 이미 토큰 갱신 중이면 추가 처리하지 않음 (중복 처리 방지)
+        if (!isTokenRefreshing) {
+          isTokenRefreshing = true
+          alert('인증이 만료되었습니다.')
+
+          await authStore.getState().getTokenRefresh()
+
+          setTimeout(() => {
+            isTokenRefreshing = false // 페이지 새로고침 전에 플래그 초기화
+          }, 1500)
+        }
+
+        return
+      } else if (err.response?.status === 401) {
+        alert('인증 정보가 유효하지 않습니다.', 'warn')
+
+        authStore.getState().logout()
+
+        setTimeout(() => {
+          authStore.getState().login()
+        }, 1500)
+
+        return
+      }
+
       return {
         status: err.response?.status,
         errorInfo: err.response?.data || {},
