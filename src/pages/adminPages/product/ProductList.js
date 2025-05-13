@@ -12,7 +12,7 @@ import {
 import { cilSearch } from '@coreui/icons' // 아이콘 불러오기
 import CIcon from '@coreui/icons-react'
 import { React, useState, useEffect } from 'react'
-import '../adminpage.css'
+
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import CategoryPicker from '@/components/admin/product/CategoryPicker'

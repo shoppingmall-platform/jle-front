@@ -18,7 +18,7 @@ import {
   CCol,
   CFormTextarea,
 } from '@coreui/react'
-import '../adminpage.css'
+
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import { React, useState, useEffect } from 'react'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'

@@ -56,7 +56,7 @@ const CouponList = () => {
 
   const couponCheckbox = useCheckboxSelection(couponList, 'couponId')
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     const params = {
       couponName,
       couponStartDate: startDate,

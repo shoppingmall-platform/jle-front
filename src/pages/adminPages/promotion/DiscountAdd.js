@@ -14,7 +14,7 @@ import {
   CCol,
   CFormTextarea,
 } from '@coreui/react'
-import '../adminpage.css'
+
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import CategoryPicker from '@/components/admin/product/CategoryPicker'
 import { getProductList } from '@/apis/product/productApis'

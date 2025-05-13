@@ -16,7 +16,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 import React, { useState } from 'react'
-import '../adminpage.css'
+
 import EditorBox from '@/components/admin/product/EditorBox'
 import UploadFile from '@/components/admin/product/UploadFile'
 import OptionTable from '@/components/admin/product/OptionTable'

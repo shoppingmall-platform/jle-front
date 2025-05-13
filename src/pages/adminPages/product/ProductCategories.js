@@ -16,7 +16,7 @@ import {
   CTableBody,
   CTableHead,
 } from '@coreui/react'
-import '../adminpage.css'
+
 import { CIcon } from '@coreui/icons-react'
 import { cilFolder, cilFolderOpen, cilDescription } from '@coreui/icons'
 

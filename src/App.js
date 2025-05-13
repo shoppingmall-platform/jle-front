@@ -4,6 +4,8 @@ import { useColorModes } from '@coreui/react'
 import { routes } from '@/routers/route' // 기존 RouterProvider 설정
 import '@/scss/style.scss' // CoreUI 스타일
 import '@/scss/examples.scss' // CoreUI 예제 스타일 (필요하지 않다면 삭제 가능)
+import '@/scss/userpage.scss'
+import '@/scss/adminpage.scss'
 import useThemeStore from './store/common/themeStore' // Import zustand store
 
 const App = () => {
