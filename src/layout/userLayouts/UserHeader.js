@@ -101,7 +101,7 @@ const Header = () => {
       <div className="bg-white py-4 text-center">
         <CContainer>
           <Link to="/">
-            <CImage fluid align="center" src={logo} width={'30%'} />
+            <CImage fluid align="center" src={logo} width={'240px'} />
           </Link>
         </CContainer>
       </div>
