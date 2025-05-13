@@ -22,7 +22,7 @@ import {
   CNavLink,
   CTab,
 } from '@coreui/react'
-import '../adminpage.css'
+
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 import { getOptionList, registerOption, deleteOption } from '@/apis/product/optionApis'
 

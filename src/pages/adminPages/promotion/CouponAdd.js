@@ -12,7 +12,7 @@ import {
   CForm,
   CCol,
 } from '@coreui/react'
-import '../adminpage.css'
+
 import DateRangePicker from '@/components/admin/DateRangePicker'
 
 const CouponAdd = () => {

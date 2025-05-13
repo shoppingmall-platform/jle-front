@@ -14,7 +14,7 @@ import {
   CCol,
   CFormTextarea,
 } from '@coreui/react'
-import '../adminpage.css'
+
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 import { getDiscountList, deleteDiscount } from '@/apis/product/discountApis'
