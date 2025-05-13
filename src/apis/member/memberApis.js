@@ -1,4 +1,4 @@
-import api from '@/apis/index'
+import { useApi } from '@/apis/index'
 
 export const test = async () => {
   try {

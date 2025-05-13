@@ -1,18 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-import api from '@/apis/index'
-import { isEmpty } from 'lodash'
-import Cookies from 'react-cookies'
+import { isEmpty } from 'es-toolkit/compat'
 
 export const useAuthStore = create(
   persist(
     (set, get) => ({
-      userInfo: {
-        accessToken: 'test1',
-        refreshToken: 'test2',
-      }, // 사용자정보
-      referer: '', // 로그인완료후 이동할 페이지
+      userInfo: {}, // 사용자정보
+      tokenInfo: 'aasdfasfd', // 사용자정보
 
       /* 로그인 완료후 사용자 정보 설정 */
       setUser: (data) => set({ userInfo: data }),
@@ -20,7 +14,6 @@ export const useAuthStore = create(
       /* 사용자 정보 초기화 - 로그아웃 시 */
       reset: () => {
         set({ userInfo: {} })
-        set({ referer: '' })
       },
 
       /* 로그인 여부 */
@@ -29,35 +22,14 @@ export const useAuthStore = create(
       },
 
       /* 로그인 완료후 사용자 정보 설정 */
-      setToken: (accessToken, refreshToken) => {
+      setToken: (accessToken) => {
         set((state) => ({
           ...state,
           userInfo: {
             ...state.userInfo,
             accessToken,
-            refreshToken,
           },
         }))
-      },
-
-      /* 로그인 완료후 이동할 페이지 */
-      setReferer: (param) => {
-        Cookies.save('loginReferer', param, { maxAge: 30 })
-      },
-      getReferer: () => {
-        return Cookies.load('loginReferer')
-      },
-
-      /* 토큰 만료시 재 로그인 + 현재 페이지 기록 */
-      historyPage: (param) => {
-        get().setReferer(param)
-      },
-
-      /* 신규토큰 요청 */
-      requestToken: async () => {
-        const codeVerifier = Cookies.get('codeVerifier')
-        const url = `/v2/login?code=${new URLSearchParams(window.location.search).get('code')}&codeVerifier=${codeVerifier}`
-        return await api.post(url, {})
       },
     }),
     {
