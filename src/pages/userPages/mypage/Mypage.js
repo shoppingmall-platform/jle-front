@@ -10,7 +10,6 @@ import {
   CProgress,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
-import '@/pages/userPages/userpage.css'
 const Mypage = () => {
   const navigate = useNavigate()
   const menuItems = [
