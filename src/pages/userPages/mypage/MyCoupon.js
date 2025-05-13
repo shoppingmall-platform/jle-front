@@ -18,8 +18,6 @@ import {
   CListGroupItem,
 } from '@coreui/react'
 
-import '@/pages/userPages/userpage.css'
-
 const MyCoupon = () => {
   const mockCoupons = [
     {

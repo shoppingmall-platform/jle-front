@@ -16,7 +16,6 @@ import {
   CListGroupItem,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
-import '@/pages/userPages/userpage.css'
 
 const AddressList = () => {
   const navigate = useNavigate()

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { isEmpty } from 'es-toolkit/compat'
 
-export const useAuthStore = create(
+export const authStore = create(
   persist(
     (set, get) => ({
       userInfo: {}, // 사용자정보

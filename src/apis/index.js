@@ -1,10 +1,10 @@
 import axios from 'axios'
-import { useAuthStore } from '@/store/auth/authStore'
+import { authStore } from '@/store/auth/authStore'
 
 export function useApi() {
   // API 호출 함수 (공통 함수)
   const request = async (method, url, data = null, config = {}) => {
-    const tokenInfo = useAuthStore((state) => state.tokenInfo)
+    const { tokenInfo } = authStore.getState()
     // Axios 인스턴스 생성
     const api = axios.create({
       // baseURL: import.meta.env.VITE_API_URL,
@@ -17,22 +17,33 @@ export function useApi() {
       timeout: 1800000, // 30분 타임아웃
     })
 
-    const headers = {
-      ...config.headers,
-      Authorization: tokenInfo ? `Bearer ${tokenInfo}` : '',
-    }
+    // 헤더 및 context-type 설정
+    api.interceptors.request.use(
+      (config) => {
+        // 요청이 전송되기 전에 헤더에 토큰 추가
+        const tokenInfo = authStore.getState().tokenInfo
+        config.headers['Authorization'] = tokenInfo ? `Bearer ${tokenInfo}` : ''
+        return config
+      },
+      (error) => Promise.reject(error),
+    )
 
-    // responseType 설정
-    const responseConfig = {
-      headers,
-      ...config,
-    }
+    // const headers = {
+    //   ...config.headers,
+    //   Authorization: tokenInfo ? `Bearer ${tokenInfo}` : '',
+    // }
+
+    // // responseType 설정
+    // const responseConfig = {
+    //   headers,
+    //   ...config,
+    // }
 
     try {
       const response =
         method === 'GET'
-          ? await api.get(url, { params: data, ...responseConfig })
-          : await api.post(url, data, ...responseConfig)
+          ? await api.get(url, { params: data, ...config })
+          : await api.post(url, data, config)
 
       return {
         status: response?.status,
