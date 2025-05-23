@@ -15,6 +15,7 @@ import {
 } from '@coreui/react'
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
+import { getCouponList, deleteCoupon } from '@/apis/product/couponApis'
 
 const CouponList = () => {
   const [couponName, setCouponName] = useState('')
@@ -58,11 +59,15 @@ const CouponList = () => {
 
   const handleSearch = async () => {
     const params = {
-      couponName,
-      couponStartDate: startDate,
-      couponEndDate: endDate,
+      couponName: couponName || '', // 빈 문자열이면 전체 검색
+      couponStartDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : '',
+      couponEndDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : '',
     }
-    console.log('검색 파라미터:', params)
+
+    console.log('📤 검색 파라미터:', params)
+
+    const data = await getCouponList(params)
+    setCouponList(data)
   }
 
   const handleViewDetails = (coupon) => {
@@ -70,10 +75,36 @@ const CouponList = () => {
     setModalVisible(true)
   }
 
-  const handleDelete = (couponId) => {
-    if (window.confirm('이 쿠폰을 삭제하시겠습니까?')) {
+  const handleDelete = async (couponId) => {
+    if (!window.confirm('이 쿠폰을 삭제하시겠습니까?')) return
+
+    try {
+      await deleteCoupon(couponId)
+
       const updated = couponList.filter((c) => c.couponId !== couponId)
       setCouponList(updated)
+
+      alert('✅ 삭제가 완료되었습니다.')
+    } catch (err) {
+      alert('❌ 삭제 중 오류가 발생했습니다.')
+    }
+  }
+  const handleBulkDelete = async () => {
+    const idsToDelete = couponCheckbox.selectedItems
+    if (idsToDelete.length === 0) return alert('삭제할 항목을 선택해주세요.')
+
+    if (!window.confirm(`${idsToDelete.length}개 쿠폰을 삭제하시겠습니까?`)) return
+
+    try {
+      for (const id of idsToDelete) {
+        await deleteCoupon(id)
+      }
+
+      setCouponList((prev) => prev.filter((c) => !idsToDelete.includes(c.couponId)))
+      couponCheckbox.clearSelection()
+      alert('✅ 일괄 삭제가 완료되었습니다.')
+    } catch (e) {
+      alert('❌ 일괄 삭제 중 오류 발생')
     }
   }
 
@@ -175,6 +206,9 @@ const CouponList = () => {
               ))}
             </tbody>
           </table>
+          <CButton color="danger" size="sm" onClick={handleBulkDelete}>
+            선택 삭제
+          </CButton>
         </CCardBody>
       </CCard>
 
