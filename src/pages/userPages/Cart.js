@@ -14,7 +14,7 @@ import {
   CImage,
   CFormCheck,
 } from '@coreui/react'
-import '@/pages/userPages/userpage.css'
+
 import OptionChange from '@/components/user/product/OptionChange'
 
 const buildOptionTypes = (productOptions) => {
