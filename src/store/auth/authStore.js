@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { isEmpty } from 'es-toolkit/compat'
+import { logout, refreshToken } from '@/apis/member/memberApis'
 
 export const authStore = create(
   persist(
@@ -20,13 +21,14 @@ export const authStore = create(
       login: () => {
         /* TODO: 로그인 페이지로 라우팅 */
         // router.push('/login')
-        // location.href='/login';
+        // 안 좋은 방식인데 우선 급하게 이걸로 처리
+        location.href = '/login'
       },
 
       /* 사용자 정보 초기화 - 로그아웃 시 */
-      logout: () => {
+      logout: async () => {
         /* TODO: 로그아웃 api 호출 필요 */
-
+        const response = await logout()
         set({ userInfo: {} })
         set({ tokenInfo: null })
       },
@@ -40,9 +42,9 @@ export const authStore = create(
       },
 
       /* 토큰 재발급 요청 */
-      getTokenRefresh: async () => {
+      refreshToken: async () => {
         /* TODO: 토큰 재발급 요청 api 추가 */
-        // const response = await getRefreshToken();
+        const response = await refreshToken()
 
         if (response?.accessToken) {
           setToken(response?.accessToken)

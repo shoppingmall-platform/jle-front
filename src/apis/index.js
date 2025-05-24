@@ -54,7 +54,7 @@ export function useApi() {
           isTokenRefreshing = true
           alert('인증이 만료되었습니다.')
 
-          await authStore.getState().getTokenRefresh()
+          await authStore.getState().refreshToken()
 
           setTimeout(() => {
             isTokenRefreshing = false // 페이지 새로고침 전에 플래그 초기화
