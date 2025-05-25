@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CContainer,
   CCard,
@@ -17,41 +17,15 @@ import {
   CListGroup,
   CListGroupItem,
 } from '@coreui/react'
+import couponApi from '@/apis/promotion/couponApis'
 
 const MyCoupon = () => {
-  const mockCoupons = [
-    {
-      memberCouponId: 'c1',
-      couponIssueCode: 'ABC123',
-      couponName: '10% 할인 쿠폰',
-      couponeType: 'PERCENT',
-      discountAmount: 10,
-      minOrderPrice: 20000,
-      maxDiscountPrice: 5000,
-      issuedAt: '2025-05-01',
-      expiredAt: '2025-06-01',
-      comment: '모든 카테고리에서 사용 가능',
-      status: 'ACTIVE',
-    },
-    {
-      memberCouponId: 'c2',
-      couponIssueCode: 'XYZ789',
-      couponName: '5,000원 정액 할인',
-      couponeType: 'FIXED',
-      discountAmount: 5000,
-      minOrderPrice: 30000,
-      maxDiscountPrice: null,
-      issuedAt: '2025-04-20',
-      expiredAt: '2025-05-20',
-      comment: '일부 카테고리는 제외됩니다.',
-      status: 'EXPIRED',
-    },
-  ]
-
+  const [coupons, setCoupons] = useState([])
   const [visibleDetails, setVisibleDetails] = useState({})
   const [codeInput, setCodeInput] = useState('')
   const [alertMsg, setAlertMsg] = useState(null)
   const [showGuide, setShowGuide] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const toggleDetails = (id) => {
     setVisibleDetails((prev) => ({
@@ -60,19 +34,45 @@ const MyCoupon = () => {
     }))
   }
 
-  const handleCodeSubmit = (e) => {
+  const fetchCoupons = async () => {
+    try {
+      setLoading(true)
+      const data = await couponApi.getMyCoupons()
+      setCoupons(data || [])
+    } catch (error) {
+      setAlertMsg('쿠폰 정보를 불러오는 중 문제가 발생했습니다.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCodeSubmit = async (e) => {
     e.preventDefault()
     if (!/^[a-zA-Z0-9]{10,35}$/.test(codeInput)) {
       setAlertMsg('올바른 쿠폰 번호를 입력해주세요. (10~35자 영문/숫자)')
-    } else {
-      setAlertMsg('쿠폰 인증 요청을 보냈습니다! (연동 시 처리)')
-      // 실제 인증 API 연동 처리 필요
+      return
+    }
+
+    try {
+      setAlertMsg('쿠폰 인증 요청 중...')
+      const result = await couponApi.issueMyCoupon(codeInput)
+      setAlertMsg(result?.message || '쿠폰이 성공적으로 발급되었습니다.')
+      setCodeInput('')
+      fetchCoupons() // 쿠폰 목록 갱신
+    } catch (error) {
+      setAlertMsg('쿠폰 인증 중 오류가 발생했습니다.')
     }
   }
+
+  useEffect(() => {
+    fetchCoupons()
+  }, [])
 
   return (
     <CContainer className="mt-5 mb-5 text-center" style={{ maxWidth: '1000px' }}>
       <h4 className="mb-5">마이 쿠폰</h4>
+
+      {/* ✅ 쿠폰 목록 */}
       <CCard className="mb-5">
         <CCardBody>
           <CTable hover responsive>
@@ -86,60 +86,71 @@ const MyCoupon = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {mockCoupons.map((coupon) => (
-                <React.Fragment key={coupon.memberCouponId}>
-                  <CTableRow>
-                    <CTableDataCell>{coupon.couponName}</CTableDataCell>
-
-                    <CTableDataCell>
-                      {coupon.couponeType === 'PERCENT'
-                        ? `${coupon.discountAmount}%`
-                        : `${coupon.discountAmount.toLocaleString()}원`}
-                    </CTableDataCell>
-                    <CTableDataCell>{coupon.minOrderPrice.toLocaleString()}원 이상</CTableDataCell>
-                    <CTableDataCell>
-                      {coupon.issuedAt} ~ {coupon.expiredAt}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <CButton
-                        size="sm"
-                        color="primary"
-                        onClick={() => toggleDetails(coupon.memberCouponId)}
-                      >
-                        {visibleDetails[coupon.memberCouponId] ? '닫기' : '상세'}
-                      </CButton>
-                    </CTableDataCell>
-                  </CTableRow>
-                  <CTableRow>
-                    <CTableDataCell colSpan={6} className="p-0">
-                      <CCollapse visible={visibleDetails[coupon.memberCouponId]}>
-                        <div className="p-3 text-start bg-light">
-                          <strong>설명:</strong> {coupon.comment || '없음'} <br />
-                          <strong>최대 할인금액:</strong>{' '}
-                          {coupon.maxDiscountPrice
-                            ? `${coupon.maxDiscountPrice.toLocaleString()}원`
-                            : '제한 없음'}{' '}
-                          <br />
-                          <strong>상태:</strong>{' '}
-                          {coupon.status === 'ACTIVE'
-                            ? '사용 가능'
-                            : coupon.status === 'EXPIRED'
-                              ? '만료됨'
-                              : '삭제됨'}
-                        </div>
-                      </CCollapse>
-                    </CTableDataCell>
-                  </CTableRow>
-                </React.Fragment>
-              ))}
+              {loading ? (
+                <CTableRow>
+                  <CTableDataCell colSpan={5}>로딩 중...</CTableDataCell>
+                </CTableRow>
+              ) : coupons.length === 0 ? (
+                <CTableRow>
+                  <CTableDataCell colSpan={5}>보유한 쿠폰이 없습니다.</CTableDataCell>
+                </CTableRow>
+              ) : (
+                coupons.map((coupon) => (
+                  <React.Fragment key={coupon.memberCouponId}>
+                    <CTableRow>
+                      <CTableDataCell>{coupon.couponName}</CTableDataCell>
+                      <CTableDataCell>
+                        {coupon.couponeType === 'PERCENT'
+                          ? `${coupon.discountAmount}%`
+                          : `${coupon.discountAmount.toLocaleString()}원`}
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        {coupon.minOrderPrice?.toLocaleString() || 0}원 이상
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        {coupon.issuedAt} ~ {coupon.expiredAt}
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <CButton
+                          size="sm"
+                          color="primary"
+                          onClick={() => toggleDetails(coupon.memberCouponId)}
+                        >
+                          {visibleDetails[coupon.memberCouponId] ? '닫기' : '상세'}
+                        </CButton>
+                      </CTableDataCell>
+                    </CTableRow>
+                    <CTableRow>
+                      <CTableDataCell colSpan={6} className="p-0">
+                        <CCollapse visible={visibleDetails[coupon.memberCouponId]}>
+                          <div className="p-3 text-start bg-light">
+                            <strong>설명:</strong> {coupon.comment || '없음'} <br />
+                            <strong>최대 할인금액:</strong>{' '}
+                            {coupon.maxDiscountPrice
+                              ? `${coupon.maxDiscountPrice.toLocaleString()}원`
+                              : '제한 없음'}{' '}
+                            <br />
+                            <strong>상태:</strong>{' '}
+                            {coupon.status === 'ACTIVE'
+                              ? '사용 가능'
+                              : coupon.status === 'EXPIRED'
+                                ? '만료됨'
+                                : '삭제됨'}
+                          </div>
+                        </CCollapse>
+                      </CTableDataCell>
+                    </CTableRow>
+                  </React.Fragment>
+                ))
+              )}
             </CTableBody>
           </CTable>
         </CCardBody>
       </CCard>
 
+      {/* ✅ 쿠폰 등록 입력창 */}
       <CCard className="mb-4">
         <CCardBody className="d-flex flex-column align-items-center">
-          {/* 왼쪽 정렬을 위한 클래스 추가 */}
           <h6 className="mt-3 mb-3 align-self-start">쿠폰인증번호 등록하기</h6>
 
           <CForm className="d-flex gap-2 justify-content-center" onSubmit={handleCodeSubmit}>
@@ -166,7 +177,7 @@ const MyCoupon = () => {
         </CCardBody>
       </CCard>
 
-      {/* 쿠폰 이용 안내 */}
+      {/* ✅ 쿠폰 이용 안내 */}
       <CCard>
         <CCardBody>
           <div className="d-flex justify-content-between align-items-center mb-3">
