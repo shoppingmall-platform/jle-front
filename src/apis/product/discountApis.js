@@ -3,7 +3,7 @@ const api = useApi()
 
 export const getDiscountList = async (params) => {
   try {
-    const response = await api.get('/product/v1/discounts', { params })
+    const response = await api.get('/product/v1/discounts', params)
     console.log(response)
     return response.data
   } catch (error) {
