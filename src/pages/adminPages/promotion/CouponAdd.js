@@ -14,7 +14,7 @@ import {
 } from '@coreui/react'
 
 import DateRangePicker from '@/components/admin/DateRangePicker'
-import { registerCoupon } from '@/apis/product/couponApis'
+import { registerCoupon } from '@/apis/promotion/couponApis'
 
 const CouponAdd = () => {
   const [issueType, setIssueType] = useState('auto')

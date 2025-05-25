@@ -15,7 +15,7 @@ import {
 } from '@coreui/react'
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
-import { getCouponList, deleteCoupon } from '@/apis/product/couponApis'
+import { getCouponList, deleteCoupon } from '@/apis/promotion/couponApis'
 
 const CouponList = () => {
   const [couponName, setCouponName] = useState('')
