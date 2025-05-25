@@ -22,27 +22,26 @@ const Login = () => {
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
   const setUser = authStore((state) => state.setUser)
-  const setToken = authStore((state) => state.setToken)
 
   const handleLogin = async () => {
     try {
       const res = await loginApi(loginId, password)
-      if (res?.accessToken) {
-        // 토큰 저장
-        setToken(res.accessToken)
 
-        // 사용자 정보 조회
-        const userInfo = await getMemberInfo()
-        if (userInfo) {
-          setUser(userInfo)
-          navigate('/') // 로그인 성공 시 리디렉션
-        }
-      } else {
-        alert('로그인 실패: 아이디 또는 비밀번호를 확인해주세요.')
+      // 쿠키에서 accessToken 읽기 (HttpOnly 아닐 경우)
+      const accessToken = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('at='))
+        ?.split('=')[1]
+
+      if (!accessToken) {
+        alert('로그인 실패: 토큰이 없습니다.')
+        return
       }
+
+      authStore.getState().setToken(accessToken)
     } catch (error) {
       console.error(error)
-      alert('로그인 중 오류가 발생했습니다.')
+      alert('로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.')
     }
   }
 
@@ -54,10 +53,10 @@ const Login = () => {
           <CForm className="text-start" onSubmit={(e) => e.preventDefault()}>
             <CFormInput
               className="mb-3"
-              type="email"
-              id="email"
+              type="text"
+              id="loginId"
               label="ID"
-              placeholder="Enter your email"
+              placeholder="Enter your ID"
               value={loginId}
               onChange={(e) => setLoginId(e.target.value)}
               required
