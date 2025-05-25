@@ -1,9 +1,6 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CContainer,
-  CRow,
-  CCol,
-  CButton,
   CCard,
   CCardBody,
   CTable,
@@ -11,78 +8,128 @@ import {
   CTableHeaderCell,
   CTableDataCell,
   CTableBody,
-  CCardHeader,
-  CListGroup,
-  CListGroupItem,
+  CButton,
+  CFormCheck,
+  CAlert,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
+import addressApis from '@/apis/member/addressApis'
 
 const AddressList = () => {
   const navigate = useNavigate()
+  const [addressList, setAddressList] = useState([])
+  const [selectedAddressId, setSelectedAddressId] = useState(null)
+  const [alertMsg, setAlertMsg] = useState(null)
 
-  // 🚧 실제 API 대신 더미 데이터로 구성
-  const addressList = [
-    {
-      id: 1,
-      label: '집',
-      name: '홍길동',
-      phone: '010-1234-5678',
-      address: '서울특별시 강남구 테헤란로 123',
-      detailAddress: '101동 1001호',
-      isDefault: true,
-    },
-    {
-      id: 2,
-      label: '회사',
-      name: '김영희',
-      phone: '010-9876-5432',
-      address: '경기도 성남시 분당구 판교로 456',
-      detailAddress: '2층 프론트 앞',
-      isDefault: false,
-    },
-  ]
+  const fetchAddresses = async () => {
+    try {
+      const mockData = [
+        {
+          addressId: 1,
+          alias: '123',
+          receiverName: '홍길동',
+          zipcode: '06112',
+          address1: '서울 강남구 논현동 130-26',
+          address2: '',
+          phoneNumber: '010-1234-1234',
+          isDefault: true,
+        },
+      ]
+      setAddressList(mockData)
+    } catch {
+      setAlertMsg('배송지 정보를 불러오는 데 실패했습니다.')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!selectedAddressId) return setAlertMsg('삭제할 배송지를 선택해주세요.')
+    try {
+      await addressApis.deleteAddress(selectedAddressId)
+      setSelectedAddressId(null)
+      fetchAddresses()
+    } catch {
+      setAlertMsg('삭제 중 오류가 발생했습니다.')
+    }
+  }
+
+  const handleSetDefault = async () => {
+    const item = addressList.find((a) => a.addressId === selectedAddressId)
+    if (!item) return setAlertMsg('기본으로 설정할 배송지를 선택해주세요.')
+
+    try {
+      await addressApis.updateAddress({ ...item, isDefault: true })
+      fetchAddresses()
+    } catch {
+      setAlertMsg('기본 배송지 설정 중 오류가 발생했습니다.')
+    }
+  }
+
+  useEffect(() => {
+    fetchAddresses()
+  }, [])
 
   return (
-    <CContainer className="mt-5 mb-5 text-center" style={{ maxWidth: '1000px' }}>
-      <h4 className="mb-5">배송지 관리</h4>
-      <CCard className="mb-4">
-        <CCardHeader>배송지 목록</CCardHeader>
-        <CCardBody>
-          <CTable bordered hover responsive>
-            <thead>
-              <CTableRow>
-                <CTableHeaderCell>ID</CTableHeaderCell>
-                <CTableHeaderCell>주소지 별칭</CTableHeaderCell>
-                <CTableHeaderCell>수령인</CTableHeaderCell>
-                <CTableHeaderCell>주소</CTableHeaderCell>
-                <CTableHeaderCell>상세주소</CTableHeaderCell>
-                <CTableHeaderCell>전화번호</CTableHeaderCell>
-                <CTableHeaderCell>기본 배송지</CTableHeaderCell>
-              </CTableRow>
-            </thead>
-            <CTableBody>
-              {addressList.map((item) => (
-                <CTableRow key={item.id}>
-                  <CTableDataCell>{item.id}</CTableDataCell>
-                  <CTableDataCell>{item.label}</CTableDataCell>
-                  <CTableDataCell>{item.name}</CTableDataCell>
-                  <CTableDataCell>{item.address}</CTableDataCell>
-                  <CTableDataCell>{item.detailAddress}</CTableDataCell>
-                  <CTableDataCell>{item.phone}</CTableDataCell>
-                  <CTableDataCell>
-                    {item.isDefault ? <span className="badge bg-primary">기본</span> : '-'}
-                  </CTableDataCell>
-                </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
+    <CContainer style={{ maxWidth: '1200px' }} className="mt-5">
+      <h4 className="mb-1">배송 주소록 관리</h4>
+      <p className="text-muted mb-4">자주 쓰는 배송지들을 등록/관리하실 수 있습니다.</p>
 
-      <div className="text-end">
-        <CButton color="primary" onClick={() => navigate('/mypage/address/add')}>
-          주소지 등록
+      {alertMsg && <CAlert color="danger">{alertMsg}</CAlert>}
+
+      <CTable bordered hover responsive>
+        <thead>
+          <CTableRow>
+            <CTableHeaderCell style={{ width: '5%' }}></CTableHeaderCell> {/* 체크박스 */}
+            <CTableHeaderCell style={{ width: '10%' }}>배송지명</CTableHeaderCell>
+            <CTableHeaderCell style={{ width: '10%' }}>수령인</CTableHeaderCell>
+            <CTableHeaderCell style={{ width: '10%' }}>일반전화</CTableHeaderCell>
+            <CTableHeaderCell style={{ width: '15%' }}>휴대전화</CTableHeaderCell>
+            <CTableHeaderCell style={{ width: '45%' }}>주소</CTableHeaderCell>
+            <CTableHeaderCell style={{ width: '10%' }}>기본 여부</CTableHeaderCell>
+          </CTableRow>
+        </thead>
+        <CTableBody>
+          {addressList.map((item) => (
+            <CTableRow key={item.addressId}>
+              <CTableDataCell>
+                <CFormCheck
+                  type="radio"
+                  name="selectAddress"
+                  checked={selectedAddressId === item.addressId}
+                  onChange={() => setSelectedAddressId(item.addressId)}
+                />
+              </CTableDataCell>
+              <CTableDataCell>{item.alias}</CTableDataCell>
+              <CTableDataCell>{item.receiverName}</CTableDataCell>
+              <CTableDataCell>-</CTableDataCell>
+              <CTableDataCell>{item.phoneNumber}</CTableDataCell>
+              <CTableDataCell>{`(${item.zipcode})${item.address1} ${item.address2}`}</CTableDataCell>
+              <CTableDataCell>
+                {item.isDefault && <span className="badge bg-primary">기본</span>}
+              </CTableDataCell>
+            </CTableRow>
+          ))}
+        </CTableBody>
+      </CTable>
+
+      {/* 하단 버튼 영역 */}
+      <div className="d-flex justify-content-between mt-3">
+        <CButton
+          color="danger"
+          variant="outline"
+          onClick={handleDelete}
+          disabled={!selectedAddressId}
+        >
+          선택 주소록 삭제
         </CButton>
+
+        <div className="d-flex gap-2">
+          <CButton color="secondary" onClick={handleSetDefault} disabled={!selectedAddressId}>
+            기본 배송지로 설정
+          </CButton>
+          <CButton color="dark" onClick={() => navigate('/mypage/address/add')}>
+            배송지등록
+          </CButton>
+        </div>
       </div>
     </CContainer>
   )
