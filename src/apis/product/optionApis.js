@@ -3,7 +3,7 @@ const api = useApi()
 
 export const getOptionList = async (params) => {
   try {
-    const response = await api.get('/product/v1/options', { params })
+    const response = await api.get('/product/v1/options', params)
     console.log(response)
     return response.data
   } catch (error) {
