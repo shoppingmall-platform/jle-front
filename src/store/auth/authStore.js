@@ -1,63 +1,56 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { isEmpty } from 'es-toolkit/compat'
+import { logout, refreshToken } from '@/apis/member/memberApis'
 
-import api from '@/apis/index'
-import { isEmpty } from 'lodash'
-import Cookies from 'react-cookies'
-
-export const useAuthStore = create(
+export const authStore = create(
   persist(
     (set, get) => ({
-      userInfo: {
-        accessToken: 'test1',
-        refreshToken: 'test2',
-      }, // 사용자정보
-      referer: '', // 로그인완료후 이동할 페이지
+      userInfo: {}, // 사용자정보
+      tokenInfo: 'aasdfasfd', // 사용자정보
 
       /* 로그인 완료후 사용자 정보 설정 */
       setUser: (data) => set({ userInfo: data }),
-
-      /* 사용자 정보 초기화 - 로그아웃 시 */
-      reset: () => {
-        set({ userInfo: {} })
-        set({ referer: '' })
-      },
 
       /* 로그인 여부 */
       isLogin: () => {
         return !isEmpty(get().userInfo)
       },
 
+      /* 로그인 */
+      login: () => {
+        /* TODO: 로그인 페이지로 라우팅 */
+        // router.push('/login')
+        // 안 좋은 방식인데 우선 급하게 이걸로 처리
+        location.href = '/login'
+      },
+
+      /* 사용자 정보 초기화 - 로그아웃 시 */
+      logout: async () => {
+        /* TODO: 로그아웃 api 호출 필요 */
+        const response = await logout()
+        set({ userInfo: {} })
+        set({ tokenInfo: null })
+      },
+
       /* 로그인 완료후 사용자 정보 설정 */
-      setToken: (accessToken, refreshToken) => {
+      setToken: (accessToken) => {
         set((state) => ({
           ...state,
-          userInfo: {
-            ...state.userInfo,
-            accessToken,
-            refreshToken,
-          },
+          tokenInfo: accessToken,
         }))
       },
 
-      /* 로그인 완료후 이동할 페이지 */
-      setReferer: (param) => {
-        Cookies.save('loginReferer', param, { maxAge: 30 })
-      },
-      getReferer: () => {
-        return Cookies.load('loginReferer')
-      },
+      /* 토큰 재발급 요청 */
+      refreshToken: async () => {
+        /* TODO: 토큰 재발급 요청 api 추가 */
+        const response = await refreshToken()
 
-      /* 토큰 만료시 재 로그인 + 현재 페이지 기록 */
-      historyPage: (param) => {
-        get().setReferer(param)
-      },
-
-      /* 신규토큰 요청 */
-      requestToken: async () => {
-        const codeVerifier = Cookies.get('codeVerifier')
-        const url = `/v2/login?code=${new URLSearchParams(window.location.search).get('code')}&codeVerifier=${codeVerifier}`
-        return await api.post(url, {})
+        if (response?.accessToken) {
+          setToken(response?.accessToken)
+        } else {
+          return
+        }
       },
     }),
     {

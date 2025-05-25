@@ -1,53 +1,37 @@
 import React, { useState, useEffect } from 'react'
-import {
-  CForm,
-  CFormCheck,
-  CContainer,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CButton,
-} from '@coreui/react'
+import { CForm, CFormCheck, CContainer, CCard, CCardBody, CCardHeader } from '@coreui/react'
 
 const Agreement = ({ onAgreementChange }) => {
-  const [allChecked, setAllChecked] = useState(false)
-  const [requiredChecked, setRequiredChecked] = useState({
-    이용약관: false,
-    개인정보: false,
-  })
-  const [optionalChecked, setOptionalChecked] = useState(false)
+  const [tosAgreement, setTosAgreement] = useState(false)
+  const [privacyAgreement, setPrivacyAgreement] = useState(false)
+  const [marketingAgreement, setMarketingAgreement] = useState(false)
 
-  const handleAllChecked = (event) => {
-    const isChecked = event.target.checked
-    setAllChecked(isChecked)
-    setRequiredChecked({
-      이용약관: isChecked,
-      개인정보: isChecked,
-    })
-    setOptionalChecked(isChecked)
+  // 전체 동의 체크 상태 계산
+  const allChecked = tosAgreement && privacyAgreement && marketingAgreement
+
+  const handleAllChecked = (e) => {
+    const isChecked = e.target.checked
+    setTosAgreement(isChecked)
+    setPrivacyAgreement(isChecked)
+    setMarketingAgreement(isChecked)
   }
 
-  const handleRequiredChange = (event) => {
-    const { name, checked } = event.target
-    setRequiredChecked((prev) => ({
-      ...prev,
-      [name]: checked,
-    }))
-  }
-
-  const handleOptionalChange = (event) => {
-    setOptionalChecked(event.target.checked)
-  }
+  const handleTosChange = (e) => setTosAgreement(e.target.checked)
+  const handlePrivacyChange = (e) => setPrivacyAgreement(e.target.checked)
+  const handleMarketingChange = (e) => setMarketingAgreement(e.target.checked)
 
   useEffect(() => {
-    const allRequiredChecked = Object.values(requiredChecked).every(Boolean)
-    onAgreementChange(allRequiredChecked)
-    setAllChecked(allRequiredChecked && optionalChecked)
-  }, [requiredChecked, optionalChecked, onAgreementChange])
+    onAgreementChange({
+      tosAgreement,
+      privacyAgreement,
+      marketingAgreement,
+    })
+  }, [tosAgreement, privacyAgreement, marketingAgreement])
 
   return (
     <CContainer>
       <CForm>
+        {/* 전체 동의 */}
         <div className="mb-3">
           <CFormCheck
             id="allChecked"
@@ -57,79 +41,48 @@ const Agreement = ({ onAgreementChange }) => {
           />
         </div>
 
-        {/* 이용약관 */}
+        {/* [필수] 이용약관 */}
         <CCard className="mb-3">
           <CCardHeader>
             <CFormCheck
-              id="이용약관"
-              name="이용약관"
+              id="tosAgreement"
               label="[필수] 이용약관 동의"
-              checked={requiredChecked.이용약관}
-              onChange={handleRequiredChange}
+              checked={tosAgreement}
+              onChange={handleTosChange}
             />
           </CCardHeader>
           <CCardBody style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.875rem' }}>
-            이곳에 이용약관 전문이 들어갑니다. 이 텍스트는 스크롤이 가능하도록 제한된 높이의 카드에 들어갑니다.
-            여러 줄을 넣어서 실제 텍스트가 길어도 잘 보여지는지 확인해보세요. 예: Lorem ipsum dolor sit amet...
-            이곳에 이용약관 전문이 들어갑니다. 이 텍스트는 스크롤이 가능하도록 제한된 높이의 카드에 들어갑니다.
-            여러 줄을 넣어서 실제 텍스트가 길어도 잘 보여지는지 확인해보세요. 예: Lorem ipsum dolor sit amet...
-            이곳에 이용약관 전문이 들어갑니다. 이 텍스트는 스크롤이 가능하도록 제한된 높이의 카드에 들어갑니다.
-            여러 줄을 넣어서 실제 텍스트가 길어도 잘 보여지는지 확인해보세요. 예: Lorem ipsum dolor sit amet...
-            이곳에 이용약관 전문이 들어갑니다. 이 텍스트는 스크롤이 가능하도록 제한된 높이의 카드에 들어갑니다.
-            여러 줄을 넣어서 실제 텍스트가 길어도 잘 보여지는지 확인해보세요. 예: Lorem ipsum dolor sit amet...
-            이곳에 이용약관 전문이 들어갑니다. 이 텍스트는 스크롤이 가능하도록 제한된 높이의 카드에 들어갑니다.
-            여러 줄을 넣어서 실제 텍스트가 길어도 잘 보여지는지 확인해보세요. 예: Lorem ipsum dolor sit amet...
-            이곳에 이용약관 전문이 들어갑니다. 이 텍스트는 스크롤이 가능하도록 제한된 높이의 카드에 들어갑니다.
-            여러 줄을 넣어서 실제 텍스트가 길어도 잘 보여지는지 확인해보세요. 예: Lorem ipsum dolor sit amet...
+            이용약관 전문 내용이 들어갑니다. 스크롤 가능한 카드입니다. Lorem ipsum...
           </CCardBody>
         </CCard>
 
-        {/* 개인정보 */}
+        {/* [필수] 개인정보 처리방침 */}
         <CCard className="mb-3">
           <CCardHeader>
             <CFormCheck
-              id="개인정보"
-              name="개인정보"
+              id="privacyAgreement"
               label="[필수] 개인정보 수집 및 이용 동의"
-              checked={requiredChecked.개인정보}
-              onChange={handleRequiredChange}
+              checked={privacyAgreement}
+              onChange={handlePrivacyChange}
             />
           </CCardHeader>
           <CCardBody style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.875rem' }}>
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
-            여기에 개인정보 처리방침 내용을 넣으세요. 스크롤이 잘 되는지 확인도 필요합니다.
+            개인정보 처리방침 내용이 들어갑니다. 스크롤 가능. Lorem ipsum...
           </CCardBody>
         </CCard>
 
-        {/* 마케팅 수신 */}
+        {/* [선택] 마케팅 수신 동의 */}
         <CCard className="mb-3">
           <CCardHeader>
             <CFormCheck
-              id="optional"
+              id="marketingAgreement"
               label="[선택] 마케팅 정보 수신 동의 (이메일/SMS)"
-              checked={optionalChecked}
-              onChange={handleOptionalChange}
+              checked={marketingAgreement}
+              onChange={handleMarketingChange}
             />
           </CCardHeader>
           <CCardBody style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.875rem' }}>
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
-            마케팅 정보 수신에 대한 안내문을 이곳에 작성하세요. 선택 항목이므로 필수는 아닙니다.
+            마케팅 수신 안내문이 들어갑니다. 선택 항목입니다. Lorem ipsum...
           </CCardBody>
         </CCard>
       </CForm>

@@ -1,4 +1,5 @@
-import api from '@/apis/index'
+import { useApi } from '@/apis/index'
+const api = useApi()
 
 export const getProductList = async (conditions, params = { page: 0, size: 10 }) => {
   try {
