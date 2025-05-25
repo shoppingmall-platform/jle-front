@@ -3,7 +3,7 @@ const api = useApi()
 
 export const getProductList = async (conditions, params = { page: 0, size: 10 }) => {
   try {
-    const response = await api.post('/product/v1/products/read', conditions, { params })
+    const response = await api.post('/product/v1/products/read', conditions, params)
     console.log(response)
     return response.data
   } catch (error) {
@@ -17,7 +17,7 @@ export const getCategoryProductList = async (
   params = { page: 0, size: 10 },
 ) => {
   try {
-    const response = await api.post(`/product/v1/${categoryId}/products`, conditions, { params })
+    const response = await api.post(`/product/v1/${categoryId}/products`, conditions, params)
     console.log(response)
     return response.data
   } catch (error) {
