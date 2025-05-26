@@ -6,6 +6,7 @@ import AdminLayout from '@/layout/adminLayouts/AdminLayout'
 import { userRouter } from './UserRouter'
 import { adminRouter } from './AdminRouter'
 import { AUTH_EXCLUSIONS_ROUTER_NAME } from '@/apis/auth/authConstants'
+import { authStore } from '@/store/auth/authStore'
 
 const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate()
@@ -37,8 +38,10 @@ const ProtectedRoute = ({ children }) => {
       }
     }
 
+    console.log('isPublicPath : ', isPublicPath)
+
     // 사용자 권한 체크
-    if (!isPublicPath && !tokenInfo) {
+    if (!isPublicPath || !tokenInfo) {
       // 현재 시도한 URL을 state로 저장하여 로그인 후 리다이렉트
       navigate('/login', {
         state: { from: location.pathname },
