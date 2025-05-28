@@ -21,16 +21,6 @@ export const logout = async () => {
   }
 }
 
-export const checkToken = async () => {
-  try {
-    const response = await api.get('/token/auth/check-token')
-    console.log(response)
-    return response.data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 export const refreshToken = async () => {
   try {
     const response = await api.post('/token/auth/refresh')
@@ -94,7 +84,6 @@ export const withdrawMember = async () => {
 export default {
   login,
   logout,
-  checkToken,
   refreshToken,
   getMemberInfo,
   updateMember,

@@ -62,6 +62,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { isEmpty } from 'es-toolkit/compat'
+import { useNavigate } from 'react-router-dom'
 import { logout, refreshToken } from '@/apis/member/memberApis'
 
 export const authStore = create(
@@ -81,7 +82,9 @@ export const authStore = create(
 
       // ✅ 로그인 페이지 이동
       login: () => {
-        location.href = '/login'
+        const navigate = useNavigate()
+        navigate("/login")
+        // location.href = '/login'
       },
 
       // ✅ 로그아웃 처리

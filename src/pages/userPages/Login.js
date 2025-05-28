@@ -22,6 +22,7 @@ const Login = () => {
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
   const setUser = authStore((state) => state.setUser)
+  const setToken = authStore((state) => state.setToken)
 
   const handleLogin = async () => {
     try {
@@ -38,7 +39,16 @@ const Login = () => {
         return
       }
 
-      authStore.getState().setToken(accessToken)
+      setToken(accessToken)
+
+      const data = await getMemberInfo()
+      if (!data) {
+        alert('회원정보조회 실패')
+        return
+      }
+      setUser(data)
+      navigate("/")
+      
     } catch (error) {
       console.error(error)
       alert('로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.')

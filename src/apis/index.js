@@ -12,7 +12,6 @@ export function useApi() {
       withCredentials: true, // ✅ 쿠키 인증을 위한 설정
       headers: {
         'Content-Type': 'application/json',
-        ROLE: 'ADMIN',
       },
       timeout: 1800000, // 30분
     })
