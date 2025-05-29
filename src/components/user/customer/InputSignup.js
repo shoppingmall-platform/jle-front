@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { CForm, CFormInput, CFormSelect } from '@coreui/react'
 
 export default function InputSignup({ onValidityChange }) {
+  const [memberId, setMemberId] = useState('')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -10,9 +11,11 @@ export default function InputSignup({ onValidityChange }) {
   const [phoneNumber, setPhoneNumber] = useState('')
 
   useEffect(() => {
-    const isValid = !!name && !!password && password === passwordConfirm && !!phoneNumber
+    const isValid =
+      !!memberId && !!name && !!password && password === passwordConfirm && !!phoneNumber
 
     const formData = {
+      memberId,
       password,
       name,
       birthday: birthday || null,
@@ -27,9 +30,9 @@ export default function InputSignup({ onValidityChange }) {
     <CForm>
       <CFormInput
         className="mb-3"
-        label="이름"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        label="ID"
+        value={memberId}
+        onChange={(e) => setMemberId(e.target.value)}
       />
       <CFormInput
         className="mb-3"
@@ -44,6 +47,12 @@ export default function InputSignup({ onValidityChange }) {
         label="비밀번호 확인"
         value={passwordConfirm}
         onChange={(e) => setPasswordConfirm(e.target.value)}
+      />
+      <CFormInput
+        className="mb-3"
+        label="이름"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
       <CFormInput
         className="mb-3"
