@@ -35,7 +35,8 @@ const AddressList = () => {
           isDefault: true,
         },
       ]
-      setAddressList(mockData)
+      const addressData = await addressApis.getMyAddresses()
+      setAddressList(addressData || [])
     } catch {
       setAlertMsg('배송지 정보를 불러오는 데 실패했습니다.')
     }

@@ -13,7 +13,7 @@ const api = useApi()
 export const getTags = async () => {
   try {
     // http://localhost:8090/v1/categories
-    const response = await api.get('/product/v1/products/tags')
+    const response = await api.get('/public/v1/products/tags')
     console.log(response)
     return response.data
   } catch (error) {

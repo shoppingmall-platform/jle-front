@@ -2,10 +2,12 @@ name: NPM Installation
 
 on:
   push:
+    branches:
+      - main
     branches-ignore:
-      - "dependabot/**"
+      - 'dependabot/**'
   schedule:
-  - cron: '0 0 * * *'
+    - cron: '0 0 * * *'
 
 env:
   FORCE_COLOR: 2
@@ -32,3 +34,13 @@ jobs:
 
       - name: Run build
         run: npm run build
+
+      - name: Deploy to Server via SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: 22
+          source: 'build/*'
+          target: '/var/www/myapp'

@@ -4,7 +4,7 @@ const api = useApi()
 // 사용자용
 export const getMyCoupons = async () => {
   try {
-    const response = await api.get('/member/v1/coupons')
+    const response = await api.get('/member/v1/members/me/coupons')
     console.log(response)
     return response.data
   } catch (error) {
@@ -14,7 +14,7 @@ export const getMyCoupons = async () => {
 
 export const issueMyCoupon = async (couponIssueCode) => {
   try {
-    const response = await api.get('/member/v1/issue-coupon', { couponIssueCode })
+    const response = await api.post('/member/v1/coupons/issue', { couponIssueCode })
     console.log(response)
     return response.data
   } catch (error) {
@@ -25,7 +25,7 @@ export const issueMyCoupon = async (couponIssueCode) => {
 // 관리자용
 export const registerCoupon = async (newCoupon) => {
   try {
-    const response = await api.post('/member/v1/coupons', newCoupon, {
+    const response = await api.post('/product/v1/coupons', newCoupon, {
       headers: {
         'Content-Type': 'application/json',
       },

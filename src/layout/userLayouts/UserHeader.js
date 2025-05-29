@@ -21,19 +21,20 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCart, cilUser, cilMenu } from '@coreui/icons'
-import { useAuth } from '@/contexts/AuthContext'
-import { useCart } from '@/contexts/CartContext'
 import logo from '/public/logo.jpeg'
 import { getCategories } from '@/apis/product/categoryApis'
 import { getTags } from '@/apis/product/tagApis'
 import { useCategoryStore } from '@/store/product/categoryStore'
+import { authStore } from '@/store/auth/authStore'
 
 const Header = () => {
   const [visible, setVisible] = useState(false)
-  const { isAuthenticated, user, logout } = useAuth()
-  const { cartItemsCount } = useCart()
 
   const selectCategory = useCategoryStore((state) => state.selectCategory)
+
+  const isLogin = authStore((state) => state.isLogin())
+  const logout = authStore((state) => state.logout)
+  const userInfo = authStore((state) => state.userInfo)
 
   const [categories, setCategories] = useState([])
   const [tags, setTags] = useState([]) // ✅ tags 상태 추가
@@ -65,13 +66,13 @@ const Header = () => {
             </CCol>
             <CCol xs={12} md={6}>
               <div className="d-flex justify-content-center justify-content-md-end small">
-                {isAuthenticated ? (
+                {isLogin ? (
                   <>
-                    <span className="me-3">{user?.name}님</span>
-                    <Link to="/my-page" className="text-black me-3">
+                    <span className="me-3">{userInfo?.name}님</span>
+                    <Link to="/mypage" className="text-dark me-3">
                       MY PAGE
                     </Link>
-                    <Link to="/" onClick={logout} className="text-black">
+                    <Link to="/" onClick={logout} className="text-black me-3">
                       LOGOUT
                     </Link>
                   </>
@@ -86,10 +87,7 @@ const Header = () => {
                   </>
                 )}
                 <Link to="/cart" className="text-dark me-3">
-                  CART ({cartItemsCount})
-                </Link>
-                <Link to="/mypage" className="text-dark">
-                  MY PAGE
+                  CART
                 </Link>
               </div>
             </CCol>

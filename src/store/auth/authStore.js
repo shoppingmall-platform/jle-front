@@ -1,67 +1,7 @@
-// import { create } from 'zustand'
-// import { persist } from 'zustand/middleware'
-// import { isEmpty } from 'es-toolkit/compat'
-// import { logout, refreshToken } from '@/apis/member/memberApis'
-
-// export const authStore = create(
-//   persist(
-//     (set, get) => ({
-//       userInfo: {}, // 사용자정보
-//       tokenInfo: 'aasdfasfd', // 사용자정보
-
-//       /* 로그인 완료후 사용자 정보 설정 */
-//       setUser: (data) => set({ userInfo: data }),
-
-//       /* 로그인 여부 */
-//       isLogin: () => {
-//         return !isEmpty(get().userInfo)
-//       },
-
-//       /* 로그인 */
-//       login: () => {
-//         /* TODO: 로그인 페이지로 라우팅 */
-//         // router.push('/login')
-//         // 안 좋은 방식인데 우선 급하게 이걸로 처리
-//         location.href = '/login'
-//       },
-
-//       /* 사용자 정보 초기화 - 로그아웃 시 */
-//       logout: async () => {
-//         /* TODO: 로그아웃 api 호출 필요 */
-//         const response = await logout()
-//         set({ userInfo: {} })
-//         set({ tokenInfo: null })
-//       },
-
-//       /* 로그인 완료후 사용자 정보 설정 */
-//       setToken: (accessToken) => {
-//         set((state) => ({
-//           ...state,
-//           tokenInfo: accessToken,
-//         }))
-//       },
-
-//       /* 토큰 재발급 요청 */
-//       refreshToken: async () => {
-//         /* TODO: 토큰 재발급 요청 api 추가 */
-//         const response = await refreshToken()
-
-//         if (response?.accessToken) {
-//           setToken(response?.accessToken)
-//         } else {
-//           return
-//         }
-//       },
-//     }),
-//     {
-//       name: 'product-store', // 스토리지의 키
-//       getStorage: () => sessionStorage, // 세션 스토리지 사용
-//     },
-//   ),
-// )
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { isEmpty } from 'es-toolkit/compat'
+import { useNavigate } from 'react-router-dom'
 import { logout, refreshToken } from '@/apis/member/memberApis'
 
 export const authStore = create(
@@ -81,7 +21,9 @@ export const authStore = create(
 
       // ✅ 로그인 페이지 이동
       login: () => {
-        location.href = '/login'
+        const navigate = useNavigate()
+        navigate('/login')
+        // location.href = '/login'
       },
 
       // ✅ 로그아웃 처리
