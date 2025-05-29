@@ -33,29 +33,34 @@ export function useApi() {
     } catch (err) {
       // ✅ 예외 처리
       const status = err.response?.status
-      const errorCode = err.response?.data?.error
+      const message = err.response?.data?.message
 
       if (status === 400) {
         alert('시스템 오류입니다.\n관리자에게 문의바랍니다.')
         return
       }
 
-      if (status === 401 && errorCode === 'TokenExpiredError') {
+      if (status === 401 && message === 'expired') {
         if (!isTokenRefreshing) {
           isTokenRefreshing = true
-          alert('인증이 만료되었습니다.')
 
           try {
             await authStore.getState().refreshToken()
+            isTokenRefreshing = false
+
+            // ✅ 토큰 재발급에 성공했으면 요청 재시도
+            return await request(method, url, data, config)
           } catch (e) {
             console.error('토큰 재발급 실패', e)
+            isTokenRefreshing = false
+            authStore.getState().logout()
+            authStore.getState().login()
           }
 
-          setTimeout(() => {
-            isTokenRefreshing = false
-          }, 1500)
+          return
         }
 
+        // 다른 요청도 기다리게 하려면 Promise queue 등 구현 필요
         return
       }
 

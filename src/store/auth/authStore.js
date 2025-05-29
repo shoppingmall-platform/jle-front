@@ -41,9 +41,13 @@ export const authStore = create(
       refreshToken: async () => {
         try {
           const response = await refreshToken()
-          const newToken = response?.accessToken
-          if (newToken) {
-            get().setToken(newToken)
+          const accessToken = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('at='))
+            ?.split('=')[1]
+          if (accessToken) {
+            get().setToken(accessToken)
+            
           } else {
             console.warn('토큰 없음 → 강제 로그아웃')
             get().logout()
