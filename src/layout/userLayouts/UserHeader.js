@@ -68,11 +68,11 @@ const Header = () => {
               <div className="d-flex justify-content-center justify-content-md-end small">
                 {isLogin ? (
                   <>
-                    <span className="me-3">{user?.name}님</span>
-                    <Link to="/mypage" className="text-dark">
+                    <span className="me-3">{userInfo?.name}님</span>
+                    <Link to="/mypage" className="text-dark me-3">
                       MY PAGE
                     </Link>
-                    <Link to="/" onClick={logout} className="text-black">
+                    <Link to="/" onClick={logout} className="text-black me-3">
                       LOGOUT
                     </Link>
                   </>

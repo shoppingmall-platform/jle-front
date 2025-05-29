@@ -3,7 +3,7 @@ const api = useApi()
 
 export const getMyAddresses = async () => {
   try {
-    const response = await api.get('/member/v1/addresses')
+    const response = await api.get('/member/v1/address')
     console.log(response)
     return response.data
   } catch (error) {
@@ -33,7 +33,7 @@ export const deleteAddress = async (addressId) => {
 
 export const registerAddress = async (newAddressInfo) => {
   try {
-    const response = await api.get('/member/v1/issue-coupon', newAddressInfo)
+    const response = await api.post('/member/v1/address', newAddressInfo)
     console.log(response)
     return response.data
   } catch (error) {
