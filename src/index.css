@@ -71,3 +71,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.ql-editor {
+  max-width: 800px; /* ✅ 사용자 페이지 & 에디터 작성 영역 동일 너비 */
+  margin: 0 auto; /* ✅ 가운데 정렬 */
+  padding: 12px 15px; /* ✅ padding (에디터 기본 padding 유지 or 조정) */
+  line-height: 1.6; /* ✅ line-height 사용자 페이지와 맞춤 */
+  box-sizing: border-box;
+}
+.ql-editor img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  vertical-align: top;
+  margin: 0 5px 5px 0; /* 이미지 간격 */
+}

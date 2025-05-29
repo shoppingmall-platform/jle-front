@@ -13,6 +13,8 @@ import {
   cilPuzzle,
   cilSpeedometer,
   cilStar,
+  cilTag,
+  cilDollar,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -29,7 +31,7 @@ const _nav = [
   },
   {
     component: CNavTitle,
-    name: '여기 이름 뭘로 하지',
+    name: '관리자 메뉴',
   },
   {
     component: CNavGroup,
@@ -47,15 +49,20 @@ const _nav = [
         name: '상품목록',
         to: 'products/list',
       },
-      {
-        component: CNavItem,
-        name: '상품관리',
-        to: 'products/manage',
-      },
+      // {
+      //   component: CNavItem,
+      //   name: '상품관리',
+      //   to: 'products/manage',
+      // },
       {
         component: CNavItem,
         name: '카테고리',
         to: 'products/categories',
+      },
+      {
+        component: CNavItem,
+        name: '옵션관리',
+        to: 'products/option',
       },
     ],
   },
@@ -67,13 +74,13 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: '고객관리',
-        to: 'customers/manage',
+        name: '회원조회',
+        to: 'customers/list',
       },
       {
         component: CNavItem,
-        name: '고객목록',
-        to: 'customers/list',
+        name: '회원관리',
+        to: 'customers/manage',
       },
     ],
   },
@@ -85,48 +92,59 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: '주문 목록',
+        name: '주문목록',
         to: 'orders/list',
       },
       {
         component: CNavItem,
-        name: '주문 취소',
+        name: '주문취소',
         to: 'orders/cancel',
       },
     ],
   },
-
-  // {
-  //   component: CNavTitle,
-  //   name: 'Extras',
-  // },
-  // {
-  //   component: CNavGroup,
-  //   name: 'Pages',
-  //   icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
-  //   items: [
-  //     {
-  //       component: CNavItem,
-  //       name: 'Login',
-  //       to: '/login',
-  //     },
-  //     {
-  //       component: CNavItem,
-  //       name: 'Register',
-  //       to: '/register',
-  //     },
-  //     {
-  //       component: CNavItem,
-  //       name: 'Error 404',
-  //       to: '/404',
-  //     },
-  //     {
-  //       component: CNavItem,
-  //       name: 'Error 500',
-  //       to: '/500',
-  //     },
-  //   ],
-  // },
+  {
+    component: CNavGroup,
+    name: '프로모션',
+    icon: <CIcon icon={cilTag} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavGroup,
+        name: '할인',
+        to: '/promotion/discounts',
+        icon: <CIcon icon={cilDollar} customClassName="nav-icon" />,
+        items: [
+          {
+            component: CNavItem,
+            name: '할인등록',
+            to: 'promotion/discounts/add',
+          },
+          {
+            component: CNavItem,
+            name: '할인조회',
+            to: 'promotion/discounts/list',
+          },
+        ],
+      },
+      {
+        component: CNavGroup,
+        name: '쿠폰',
+        to: '/promotion/coupons',
+        icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
+        items: [
+          {
+            component: CNavItem,
+            name: '쿠폰등록',
+            to: 'promotion/coupons/add',
+          },
+          {
+            component: CNavItem,
+            name: '쿠폰조회',
+            to: 'promotion/coupons/list',
+          },
+        ],
+      },
+    ],
+  },
 ]
 
 export default _nav

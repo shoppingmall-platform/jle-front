@@ -1,4 +1,13 @@
 // Import styles
+$primary: #a79180;
+$secondary: #5e4c3b;
+$success: #28a745;
+$info: #17a2b8;
+$warning: #ffc107;
+$danger: #dc3545;
+$light: #f8f9fa;
+$dark: #343a40;
+
 @import '@coreui/coreui/scss/coreui';
 @import '@coreui/chartjs/scss/coreui-chartjs';
 

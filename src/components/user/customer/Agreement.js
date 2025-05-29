@@ -1,45 +1,32 @@
 import React, { useState, useEffect } from 'react'
-import { CForm, CFormCheck, CFormLabel, CContainer, CRow, CCol } from '@coreui/react'
+import { CForm, CFormCheck, CContainer, CCard, CCardBody, CCardHeader } from '@coreui/react'
 
 const Agreement = ({ onAgreementChange }) => {
-  const [allChecked, setAllChecked] = useState(false)
-  const [requiredChecked, setRequiredChecked] = useState({
-    필수1: false,
-    필수2: false,
-  })
-  const [optionalChecked, setOptionalChecked] = useState(false)
+  const [tosAgreement, setTosAgreement] = useState(false)
+  const [privacyAgreement, setPrivacyAgreement] = useState(false)
+  const [marketingAgreement, setMarketingAgreement] = useState(false)
 
-  // 전체동의 체크 상태 변화 처리
-  const handleAllChecked = (event) => {
-    const isChecked = event.target.checked
-    setAllChecked(isChecked)
-    setRequiredChecked({
-      필수1: isChecked,
-      필수2: isChecked,
-    })
-    setOptionalChecked(isChecked)
+  // 전체 동의 체크 상태 계산
+  const allChecked = tosAgreement && privacyAgreement && marketingAgreement
+
+  const handleAllChecked = (e) => {
+    const isChecked = e.target.checked
+    setTosAgreement(isChecked)
+    setPrivacyAgreement(isChecked)
+    setMarketingAgreement(isChecked)
   }
 
-  // 필수 약관 체크박스 상태 변화 처리
-  const handleRequiredChange = (event) => {
-    const { name, checked } = event.target
-    setRequiredChecked((prevState) => ({
-      ...prevState,
-      [name]: checked,
-    }))
-  }
+  const handleTosChange = (e) => setTosAgreement(e.target.checked)
+  const handlePrivacyChange = (e) => setPrivacyAgreement(e.target.checked)
+  const handleMarketingChange = (e) => setMarketingAgreement(e.target.checked)
 
-  // 선택 약관 체크 상태 변화 처리
-  const handleOptionalChange = (event) => {
-    setOptionalChecked(event.target.checked)
-  }
-
-  // 필수 약관 모두 체크 시 Next 버튼 활성화 상태 업데이트
   useEffect(() => {
-    const allRequiredChecked = Object.values(requiredChecked).every(Boolean)
-    onAgreementChange(allRequiredChecked)
-    setAllChecked(allRequiredChecked && optionalChecked) // 전체 동의 상태 업데이트
-  }, [requiredChecked, optionalChecked, onAgreementChange])
+    onAgreementChange({
+      tosAgreement,
+      privacyAgreement,
+      marketingAgreement,
+    })
+  }, [tosAgreement, privacyAgreement, marketingAgreement])
 
   return (
     <CContainer>
@@ -54,39 +41,50 @@ const Agreement = ({ onAgreementChange }) => {
           />
         </div>
 
-        {/* 필수 동의 항목 */}
-        <CRow className="mb-3">
-          <CCol>
+        {/* [필수] 이용약관 */}
+        <CCard className="mb-3">
+          <CCardHeader>
             <CFormCheck
-              id="필수1"
-              label="필수1"
-              name="필수1"
-              required
-              checked={requiredChecked.필수1}
-              onChange={handleRequiredChange}
+              id="tosAgreement"
+              label="[필수] 이용약관 동의"
+              checked={tosAgreement}
+              onChange={handleTosChange}
             />
-          </CCol>
-          <CCol>
-            <CFormCheck
-              id="필수2"
-              label="필수2"
-              name="필수2"
-              required
-              checked={requiredChecked.필수2}
-              onChange={handleRequiredChange}
-            />
-          </CCol>
-        </CRow>
+          </CCardHeader>
+          <CCardBody style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.875rem' }}>
+            이용약관 전문 내용이 들어갑니다. 스크롤 가능한 카드입니다. Lorem ipsum...
+          </CCardBody>
+        </CCard>
 
-        {/* 선택 동의 항목 */}
-        <div>
-          <CFormCheck
-            id="optional"
-            label="선택"
-            checked={optionalChecked}
-            onChange={handleOptionalChange}
-          />
-        </div>
+        {/* [필수] 개인정보 처리방침 */}
+        <CCard className="mb-3">
+          <CCardHeader>
+            <CFormCheck
+              id="privacyAgreement"
+              label="[필수] 개인정보 수집 및 이용 동의"
+              checked={privacyAgreement}
+              onChange={handlePrivacyChange}
+            />
+          </CCardHeader>
+          <CCardBody style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.875rem' }}>
+            개인정보 처리방침 내용이 들어갑니다. 스크롤 가능. Lorem ipsum...
+          </CCardBody>
+        </CCard>
+
+        {/* [선택] 마케팅 수신 동의 */}
+        <CCard className="mb-3">
+          <CCardHeader>
+            <CFormCheck
+              id="marketingAgreement"
+              label="[선택] 마케팅 정보 수신 동의 (이메일/SMS)"
+              checked={marketingAgreement}
+              onChange={handleMarketingChange}
+            />
+          </CCardHeader>
+          <CCardBody style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.875rem' }}>
+            마케팅 수신 안내문이 들어갑니다. 선택 항목입니다. Lorem ipsum...
+          </CCardBody>
+        </CCard>
       </CForm>
     </CContainer>
   )

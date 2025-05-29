@@ -7,7 +7,7 @@ const UserLayout = () => {
   return (
     <div className="wrapper d-flex flex-column min-vh-100">
       <UserHeader />
-      <div className="body flex-grow-1">
+      <div className="body flex-grow-1 bg-white">
         <UserContent />
       </div>
       <UserFooter />

@@ -9,6 +9,9 @@ export default defineConfig(() => {
     build: {
       outDir: 'build',
     },
+    define: {
+      global: {},
+    },
     css: {
       postcss: {
         plugins: [
@@ -43,12 +46,16 @@ export default defineConfig(() => {
           replacement: `${path.resolve(__dirname, 'src')}/`,
         },
       ],
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.scss'],
+      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.scss', '.css'],
     },
     server: {
       port: 3000,
       proxy: {
-        // https://vitejs.dev/config/server-options.html
+        '/api': {
+          target: 'http://152.67.211.72:18080',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+        },
       },
     },
   }
