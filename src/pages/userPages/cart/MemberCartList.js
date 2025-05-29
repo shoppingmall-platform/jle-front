@@ -19,131 +19,11 @@ import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 import { updateCartItem, deleteCartItems, getCartItems } from '@/apis/member/cartApis'
 
 const MemberCartList = () => {
-  //   const [cartItems, setCartItems] = useState([]) api연동시 주석해제
+  const [cartItems, setCartItems] = useState([])
   const [selectedOptions, setSelectedOptions] = useState({})
   const [visibleOption, setVisibleOption] = useState(null)
-  //   const [quantities, setQuantities] = useState({})api연동시 주석해제
+  const [quantities, setQuantities] = useState({})
 
-  // API 연동 시 삭제
-  const [quantities, setQuantities] = useState(
-    cartItems.reduce((acc, item) => ({ ...acc, [item.cartItemId]: item.quantity }), {}),
-  )
-  const cartItems = [
-    {
-      cartItemId: 1,
-      quantity: 1,
-      productOptionInfo: {
-        productOptionId: 1,
-        productInfo: {
-          productId: 101,
-          name: '[기획특가] 마프 카라 스트링 윈드 자켓 5 Color',
-          price: 39800,
-          discountedPrice: 29800,
-          thumbnailPath:
-            'https://vaidoh.com/web/product/tiny/202302/467585cbd65644e8cbd96dcf4f3261e9.webp',
-          productOptions: [
-            {
-              productOptionId: 1,
-              productOptionName: 'M/화이트',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'M' },
-                { productOptionType: '색상', productOptionDetailName: '화이트' },
-              ],
-              stockQuantity: 10,
-              additionalPrice: 0,
-            },
-            {
-              productOptionId: 2,
-              productOptionName: 'M/블랙',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'M' },
-                { productOptionType: '색상', productOptionDetailName: '블랙' },
-              ],
-              stockQuantity: 5,
-              additionalPrice: 0,
-            },
-            {
-              productOptionId: 3,
-              productOptionName: 'M/카키',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'M' },
-                { productOptionType: '색상', productOptionDetailName: '카키' },
-              ],
-              stockQuantity: 8,
-              additionalPrice: 0,
-            },
-            {
-              productOptionId: 4,
-              productOptionName: 'L/화이트',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'L' },
-                { productOptionType: '색상', productOptionDetailName: '화이트' },
-              ],
-              stockQuantity: 3,
-              additionalPrice: 0,
-            },
-            {
-              productOptionId: 5,
-              productOptionName: 'L/블랙',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'L' },
-                { productOptionType: '색상', productOptionDetailName: '블랙' },
-              ],
-              stockQuantity: 7,
-              additionalPrice: 0,
-            },
-            {
-              productOptionId: 6,
-              productOptionName: 'L/카키',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'L' },
-                { productOptionType: '색상', productOptionDetailName: '카키' },
-              ],
-              stockQuantity: 4,
-              additionalPrice: 0,
-            },
-          ],
-        },
-      },
-    },
-    {
-      cartItemId: 2,
-      quantity: 2,
-      productOptionInfo: {
-        productOptionId: 7,
-        productInfo: {
-          productId: 102,
-          name: '[Vidoh Made] 워시드 시그니처 크롭 데님 자켓 2 Color',
-          price: 118000,
-          discountedPrice: 118000,
-          thumbnailPath:
-            'https://vaidoh.com/web/product/tiny/202504/df67840462339e71359a968cd0e1b084.webp',
-          productOptions: [
-            {
-              productOptionId: 7,
-              productOptionName: 'FREE/화이트',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'FREE' },
-                { productOptionType: '색상', productOptionDetailName: '화이트' },
-              ],
-              stockQuantity: 5,
-              additionalPrice: 0,
-            },
-            {
-              productOptionId: 8,
-              productOptionName: 'FREE/블랙',
-              productOptionDetails: [
-                { productOptionType: '사이즈', productOptionDetailName: 'FREE' },
-                { productOptionType: '색상', productOptionDetailName: '블랙' },
-              ],
-              stockQuantity: 5,
-              additionalPrice: 0,
-            },
-          ],
-        },
-      },
-    },
-  ]
   const {
     selectedItems: selectedCartItemIds,
     handleSelectAll,
@@ -151,22 +31,23 @@ const MemberCartList = () => {
     handleDeleteSelected,
   } = useCheckboxSelection(cartItems, 'cartItemId')
 
-  //   useEffect(() => {
-  //     const fetchCartItems = async () => {
-  //       try {
-  //         const data = await getCartItems()
-  //         setCartItems(data)
-  //         const quantityMap = data.reduce((acc, item) => {
-  //           acc[item.cartItemId] = item.quantity
-  //           return acc
-  //         }, {})
-  //         setQuantities(quantityMap)
-  //       } catch (err) {
-  //         console.error('장바구니 데이터를 불러오는데 실패했습니다.')
-  //       }
-  //     }
-  //     fetchCartItems()
-  //   }, [])
+  const fetchCartItems = async () => {
+    try {
+      const data = await getCartItems()
+      setCartItems(data.cartItems)
+      const quantityMap = data.cartItems.reduce((acc, item) => {
+        acc[item.cartItemId] = item.quantity
+        return acc
+      }, {})
+      setQuantities(quantityMap)
+    } catch (err) {
+      console.error('장바구니 데이터를 불러오는데 실패했습니다.')
+    }
+  }
+
+  useEffect(() => {
+    fetchCartItems()
+  }, [])
 
   const handleQuantityChange = (cartItemId, value) => {
     setQuantities({ ...quantities, [cartItemId]: parseInt(value) })
@@ -179,6 +60,7 @@ const MemberCartList = () => {
       top: rect.top + window.scrollY + e.currentTarget.offsetHeight + 5,
       left: rect.left + window.scrollX,
     })
+    fetchCartItems()
   }
 
   const handleQuantityUpdate = async (cartItemId, productOptionId) => {
@@ -186,6 +68,7 @@ const MemberCartList = () => {
     const payload = [{ cartItemId, productOptionId, quantity }]
     try {
       await updateCartItem(payload)
+      fetchCartItems()
       alert('수량이 변경되었습니다!')
     } catch (err) {
       console.error('❌ 수량 변경 실패:', err)
@@ -199,6 +82,7 @@ const MemberCartList = () => {
       await deleteCartItems(payload)
       alert('삭제되었습니다.')
       handleDeleteSelected()
+      fetchCartItems()
     } catch (err) {
       console.error('❌ 삭제 실패:', err)
       alert('삭제에 실패했습니다.')
@@ -295,7 +179,7 @@ const MemberCartList = () => {
                       min="1"
                       size="sm"
                       style={{ width: '60px' }}
-                      value={quantities[item.cartItemId] || 1}
+                      value={quantities[item.cartItemId] ?? 1}
                       onChange={(e) => handleQuantityChange(item.cartItemId, e.target.value)}
                     />
                     <CButton
@@ -314,9 +198,25 @@ const MemberCartList = () => {
                     </CButton>
                   </div>
                 </CTableDataCell>
-                <CTableDataCell>{info.price.toLocaleString()}원</CTableDataCell>
-                <CTableDataCell>{info.discountedPrice.toLocaleString()}원</CTableDataCell>
-                <CTableDataCell>{info.discountedPrice >= 70000 ? '0원' : '3,000원'}</CTableDataCell>
+                <CTableDataCell>
+                  {typeof info.price === 'number'
+                    ? (info.price * (quantities[item.cartItemId] || 1)).toLocaleString() + '원'
+                    : '가격 없음'}
+                </CTableDataCell>
+
+                <CTableDataCell>
+                  {typeof info.discountedPrice === 'number' && info.discountedPrice !== info.price
+                    ? (info.discountedPrice * (quantities[item.cartItemId] || 1)).toLocaleString() +
+                      '원'
+                    : '-'}
+                </CTableDataCell>
+
+                <CTableDataCell>
+                  {info.discountedPrice * (quantities[item.cartItemId] || 1) >= 70000
+                    ? '0원'
+                    : '3,000원'}
+                </CTableDataCell>
+
                 <CTableDataCell>
                   <div className="d-flex flex-column">
                     <CButton color="primary" size="sm" className="mb-1">

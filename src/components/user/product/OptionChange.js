@@ -1,6 +1,7 @@
 import React from 'react'
 import { CButton } from '@coreui/react'
 import { updateCartItem } from '@/apis/member/cartApis'
+import useGuestCartStore from '@/store/member/guestCartStore'
 
 const OptionChange = ({
   top,
@@ -12,7 +13,9 @@ const OptionChange = ({
   handleSelectOption,
   onClose,
   onUpdateSuccess,
+  isGuest = false,
 }) => {
+  const { updateOption } = useGuestCartStore()
   const buildOptionTypes = (options) => {
     const grouped = {}
     options.forEach((option) => {
@@ -49,22 +52,34 @@ const OptionChange = ({
       return
     }
 
-    const payload = [
-      {
-        cartItemId,
-        productOptionId: matchedOption.productOptionId,
+    if (isGuest) {
+      // ✅ 비회원일 경우
+      updateOption(cartItemId, {
+        ...matchedOption,
         quantity,
-      },
-    ]
-    console.log('🛒 옵션 변경 요청 데이터:', payload)
-
-    try {
-      await updateCartItem(payload)
-      alert('✅ 장바구니 항목이 변경되었습니다.')
-      onUpdateSuccess?.() // 변경 완료 후 콜백 실행
+      })
+      alert('✅ 옵션이 변경되었습니다.')
+      onUpdateSuccess?.(matchedOption)
       onClose()
-    } catch (error) {
-      alert('❌ 변경 실패. 다시 시도해주세요.')
+    } else {
+      // ✅ 회원일 경우
+      const payload = [
+        {
+          cartItemId,
+          productOptionId: matchedOption.productOptionId,
+          quantity,
+        },
+      ]
+      console.log('🛒 옵션 변경 요청 데이터:', payload)
+
+      try {
+        await updateCartItem(payload)
+        alert('✅ 장바구니 항목이 변경되었습니다.')
+        onUpdateSuccess?.(matchedOption)
+        onClose()
+      } catch (error) {
+        alert('❌ 변경 실패. 다시 시도해주세요.')
+      }
     }
   }
 

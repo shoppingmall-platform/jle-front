@@ -53,3 +53,19 @@ export const clearGuestCart = () => {
     console.error('로컬스토리지 비우기 실패', err)
   }
 }
+
+export const updateGuestCartOption = (productOptionId, newOption) => {
+  const cart = getGuestCart()
+  const updatedCart = cart.map((item) =>
+    item.productOptionId === productOptionId
+      ? {
+          ...item,
+          productOptionId: newOption.productOptionId,
+          productOptionDetails: newOption.productOptionDetails,
+          discountedPrice: newOption.discountedPrice,
+        }
+      : item,
+  )
+  localStorage.setItem(GUEST_CART_KEY, JSON.stringify(updatedCart))
+  return updatedCart
+}

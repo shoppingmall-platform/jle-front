@@ -1,5 +1,10 @@
 import { create } from 'zustand'
-import { getGuestCart, setGuestCart, clearGuestCart } from '@/utils/guestCartUtils'
+import {
+  getGuestCart,
+  setGuestCart,
+  clearGuestCart,
+  updateGuestCartOption,
+} from '@/utils/guestCartUtils'
 
 const useGuestCartStore = create((set, get) => ({
   cartItems: getGuestCart(), // 초기값은 로컬스토리지에 있는 장바구니
@@ -34,6 +39,12 @@ const useGuestCartStore = create((set, get) => ({
     setGuestCart(updatedItems)
   },
 
+  //옵션 변경
+  updateOption: (oldOptionId, newOption) => {
+    const updatedCart = updateGuestCartOption(oldOptionId, newOption)
+    set({ cartItems: updatedCart })
+  },
+
   // 항목 삭제
   removeItem: (productOptionId) => {
     const updatedItems = get().cartItems.filter((item) => item.productOptionId !== productOptionId)
@@ -46,6 +57,10 @@ const useGuestCartStore = create((set, get) => ({
   clearCart: () => {
     set({ cartItems: [] })
     clearGuestCart()
+  },
+  setCartItems: (items) => {
+    set({ cartItems: items })
+    setGuestCart(items)
   },
 }))
 

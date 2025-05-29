@@ -13,6 +13,7 @@ import {
 } from '@coreui/react'
 import { getProductDetail } from '@/apis/product/productApis'
 import { addToCart } from '@/apis/member/cartApis'
+import useAddToCart from '@/hooks/useAddToCart'
 import { formatPrice } from '@/utils/utils'
 import 'react-quill/dist/quill.snow.css'
 
@@ -23,6 +24,7 @@ const ProductDetail = () => {
   const [selectedOptions, setSelectedOptions] = useState({})
   const [optionTypes, setOptionTypes] = useState({})
   const [quantity, setQuantity] = useState(1)
+  const { handleAddToCart } = useAddToCart()
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -41,13 +43,14 @@ const ProductDetail = () => {
     fetchProduct()
   }, [productId])
 
-  const handleAddToCart = async () => {
+  const onClickAddToCart = async () => {
+    if (!product) return
+
     if (Object.keys(selectedOptions).length === 0) {
       alert('옵션을 선택해주세요!')
       return
     }
 
-    // 선택한 옵션에 해당하는 productOptionId 찾기
     const matchedOption = product.productOptions.find((option) => {
       const selectedSet = new Set(
         Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
@@ -65,20 +68,11 @@ const ProductDetail = () => {
       return
     }
 
-    const payload = [
-      {
-        productOptionId: matchedOption.productOptionId,
-        quantity: quantity,
-      },
-    ]
-    console.log('🛒 장바구니 담기 요청 데이터:', payload)
-
-    try {
-      await addToCart(payload)
-      alert('장바구니에 담겼습니다!')
-    } catch (error) {
-      alert('장바구니 추가에 실패했습니다.')
-    }
+    await handleAddToCart({
+      product,
+      matchedOption,
+      quantity,
+    })
   }
 
   const extractOptionTypes = (productOptions) => {
@@ -217,7 +211,7 @@ const ProductDetail = () => {
                   </div>
 
                   <div className="mt-4">
-                    <CButton color="dark" className="w-100 mb-2" onClick={handleAddToCart}>
+                    <CButton color="dark" className="w-100 mb-2" onClick={onClickAddToCart}>
                       장바구니에 담기
                     </CButton>
                     <CButton color="danger" className="w-100">
