@@ -39,9 +39,13 @@ const ProtectedRoute = ({ children }) => {
     }
 
     console.log('isPublicPath : ', isPublicPath)
+    console.log('tokenInfo : ', tokenInfo)
+    console.log('!isPublicPath : ', !isPublicPath)
+    console.log('!tokenInfo : ', !tokenInfo)
+    console.log('!isPublicPath || !tokenInfo : ', !isPublicPath || !tokenInfo)
 
     // 사용자 권한 체크
-    if (!isPublicPath || !tokenInfo) {
+    if (!isPublicPath && !tokenInfo) {
       // 현재 시도한 URL을 state로 저장하여 로그인 후 리다이렉트
       navigate('/login', {
         state: { from: location.pathname },
