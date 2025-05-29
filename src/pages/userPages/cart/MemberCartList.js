@@ -1,10 +1,8 @@
+// pages/Cart/MemberCartList.js
 import React, { useState, useEffect } from 'react'
 import {
-  CContainer,
   CTable,
   CTableHead,
-  CRow,
-  CCol,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
@@ -13,13 +11,23 @@ import {
   CButton,
   CImage,
   CFormCheck,
+  CRow,
+  CCol,
 } from '@coreui/react'
 import OptionChange from '@/components/user/product/OptionChange'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 import { updateCartItem, deleteCartItems, getCartItems } from '@/apis/member/cartApis'
 
-const Cart = () => {
-  // 임시 mock data -> api 연결되면 삭제하고 주석처리로 대체
+const MemberCartList = () => {
+  //   const [cartItems, setCartItems] = useState([]) api연동시 주석해제
+  const [selectedOptions, setSelectedOptions] = useState({})
+  const [visibleOption, setVisibleOption] = useState(null)
+  //   const [quantities, setQuantities] = useState({})api연동시 주석해제
+
+  // API 연동 시 삭제
+  const [quantities, setQuantities] = useState(
+    cartItems.reduce((acc, item) => ({ ...acc, [item.cartItemId]: item.quantity }), {}),
+  )
   const cartItems = [
     {
       cartItemId: 1,
@@ -136,34 +144,6 @@ const Cart = () => {
       },
     },
   ]
-  //   const [cartItems, setCartItems] = useState([]) // 기존 mock data 대체
-
-  // useEffect(() => {
-  //   const fetchCartItems = async () => {
-  //     try {
-  //       const data = await getCartItems()
-  //       setCartItems(data)
-
-  //       // 수량 상태도 초기화
-  //       const quantityMap = data.reduce((acc, item) => {
-  //         acc[item.cartItemId] = item.quantity
-  //         return acc
-  //       }, {})
-  //       setQuantities(quantityMap)
-  //     } catch (err) {
-  //       console.error('장바구니 데이터를 불러오는데 실패했습니다.')
-  //     }
-  //   }
-
-  //   fetchCartItems()
-  // }, [])
-
-  const [selectedOptions, setSelectedOptions] = useState({})
-  const [visibleOption, setVisibleOption] = useState(null)
-  const [quantities, setQuantities] = useState(
-    cartItems.reduce((acc, item) => ({ ...acc, [item.cartItemId]: item.quantity }), {}),
-  )
-
   const {
     selectedItems: selectedCartItemIds,
     handleSelectAll,
@@ -171,9 +151,27 @@ const Cart = () => {
     handleDeleteSelected,
   } = useCheckboxSelection(cartItems, 'cartItemId')
 
+  //   useEffect(() => {
+  //     const fetchCartItems = async () => {
+  //       try {
+  //         const data = await getCartItems()
+  //         setCartItems(data)
+  //         const quantityMap = data.reduce((acc, item) => {
+  //           acc[item.cartItemId] = item.quantity
+  //           return acc
+  //         }, {})
+  //         setQuantities(quantityMap)
+  //       } catch (err) {
+  //         console.error('장바구니 데이터를 불러오는데 실패했습니다.')
+  //       }
+  //     }
+  //     fetchCartItems()
+  //   }, [])
+
   const handleQuantityChange = (cartItemId, value) => {
     setQuantities({ ...quantities, [cartItemId]: parseInt(value) })
   }
+
   const handleOptionChangeClick = (e, cartItemId) => {
     const rect = e.currentTarget.getBoundingClientRect()
     setVisibleOption({
@@ -183,25 +181,11 @@ const Cart = () => {
     })
   }
 
-  const closeOptionChange = () => setVisibleOption(null)
-
-  //수량변경
   const handleQuantityUpdate = async (cartItemId, productOptionId) => {
     const quantity = quantities[cartItemId]
-
-    const payload = [
-      {
-        cartItemId,
-        productOptionId,
-        quantity,
-      },
-    ]
-
-    console.log('🛒 수량 변경 요청 데이터:', payload)
-
+    const payload = [{ cartItemId, productOptionId, quantity }]
     try {
-      const response = await updateCartItem(payload)
-      console.log('✅ 수량 변경 응답:', response)
+      await updateCartItem(payload)
       alert('수량이 변경되었습니다!')
     } catch (err) {
       console.error('❌ 수량 변경 실패:', err)
@@ -209,11 +193,8 @@ const Cart = () => {
     }
   }
 
-  //삭제
   const handleDelete = async (ids) => {
     const payload = ids.map((id) => ({ cartItemId: id }))
-    console.log('🗑️ 장바구니 삭제 요청 데이터:', payload)
-
     try {
       await deleteCartItems(payload)
       alert('삭제되었습니다.')
@@ -223,7 +204,7 @@ const Cart = () => {
       alert('삭제에 실패했습니다.')
     }
   }
-  // 총 금액 계산
+
   const totalSelectedPrice = cartItems
     .filter((item) => selectedCartItemIds.includes(item.cartItemId))
     .reduce(
@@ -234,12 +215,10 @@ const Cart = () => {
     )
 
   const totalShippingFee = selectedCartItemIds.length === 0 || totalSelectedPrice < 70000 ? 3000 : 0
-
   const totalPayment = totalSelectedPrice + totalShippingFee
 
   return (
-    <CContainer className="mt-5 mb-5" style={{ maxWidth: '1100px' }}>
-      <h4 className="mb-4 text-center">장바구니</h4>
+    <>
       <CTable align="middle" responsive className="custom-header">
         <CTableHead color="light">
           <CTableRow>
@@ -304,10 +283,7 @@ const Cart = () => {
                           [item.cartItemId]: { ...prev[item.cartItemId], [type]: value },
                         }))
                       }
-                      onUpdateSuccess={() => {
-                        // 장바구니 재조회 or 수동 리렌더링
-                        console.log('✅ 변경 후 로직')
-                      }}
+                      onUpdateSuccess={() => console.log('✅ 변경 후 로직')}
                       onClose={() => setVisibleOption(null)}
                     />
                   )}
@@ -339,14 +315,8 @@ const Cart = () => {
                   </div>
                 </CTableDataCell>
                 <CTableDataCell>{info.price.toLocaleString()}원</CTableDataCell>
-                {/* <CTableDataCell>
-                  {info.discountedPrice !== info.price
-                    ? `${(info.price - info.discountedPrice).toLocaleString()}원`
-                    : '-'}
-                </CTableDataCell> 할인된 금액을 넣을건지 할인금액을 넣을건지..?  */}
                 <CTableDataCell>{info.discountedPrice.toLocaleString()}원</CTableDataCell>
                 <CTableDataCell>{info.discountedPrice >= 70000 ? '0원' : '3,000원'}</CTableDataCell>
-
                 <CTableDataCell>
                   <div className="d-flex flex-column">
                     <CButton color="primary" size="sm" className="mb-1">
@@ -396,7 +366,6 @@ const Cart = () => {
 
       <hr />
 
-      {/* 총 금액 영역 */}
       <CRow className="text-center my-4">
         <CCol>
           <div className="text-muted small">총 상품금액</div>
@@ -419,7 +388,7 @@ const Cart = () => {
       </CRow>
 
       <hr />
-      {/* 주문 버튼 */}
+
       <div className="text-center">
         <CButton color="dark" className="me-2">
           전체상품주문
@@ -428,8 +397,8 @@ const Cart = () => {
           선택상품주문
         </CButton>
       </div>
-    </CContainer>
+    </>
   )
 }
 
-export default Cart
+export default MemberCartList
