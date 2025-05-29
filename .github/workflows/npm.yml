@@ -11,11 +11,6 @@ env:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest, windows-latest]
-        node-version: [16.x, 17.x, 18.x]
-    runs-on: ${{ matrix.platform }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
