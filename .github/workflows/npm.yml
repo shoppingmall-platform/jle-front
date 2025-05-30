@@ -43,4 +43,4 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           source: 'build/*'
-          target: '/var/www/myapp'
+          target: '/var/www/jle'
