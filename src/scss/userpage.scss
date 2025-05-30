@@ -20,3 +20,51 @@
   font-size: 0.85rem;
   text-align: center;
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div:not([role]),
+label:not([for]),
+strong,
+em,
+b,
+i,
+ul,
+ol,
+li,
+td,
+th,
+table,
+tbody,
+thead,
+tr,
+img,
+figure,
+figcaption,
+small,
+code,
+pre,
+blockquote,
+section,
+article,
+aside,
+header,
+footer,
+main,
+nav {
+  outline: none;
+  caret-color: transparent; /* ← 커서 숨김 */
+  -webkit-user-select: none;
+  -ms-user-select: none;
+
+  &:focus {
+    outline: none;
+    caret-color: transparent;
+  }
+}
