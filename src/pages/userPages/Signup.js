@@ -40,6 +40,9 @@ export default function Signup() {
       } finally {
         setIsSubmitting(false)
       }
+    } else if (activeStep === 2) {
+      // ✅ Finish 단계면 바로 로그인으로 이동
+      navigate('/login')
     } else {
       setActiveStep((prev) => prev + 1)
     }

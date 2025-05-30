@@ -11,8 +11,11 @@ export default function InputSignup({ onValidityChange }) {
   const [phoneNumber, setPhoneNumber] = useState('')
 
   useEffect(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const isEmailValid = emailRegex.test(memberId)
+
     const isValid =
-      !!memberId && !!name && !!password && password === passwordConfirm && !!phoneNumber
+      isEmailValid && !!name && !!password && password === passwordConfirm && !!phoneNumber
 
     const formData = {
       memberId,
@@ -24,13 +27,15 @@ export default function InputSignup({ onValidityChange }) {
     }
 
     onValidityChange(isValid, isValid ? formData : null)
-  }, [name, password, passwordConfirm, gender, birthday, phoneNumber])
+  }, [memberId, name, password, passwordConfirm, gender, birthday, phoneNumber])
 
   return (
     <CForm>
       <CFormInput
         className="mb-3"
-        label="ID"
+        type="email" // 이메일 타입 지정
+        label="이메일(ID)"
+        placeholder="example@email.com"
         value={memberId}
         onChange={(e) => setMemberId(e.target.value)}
       />
