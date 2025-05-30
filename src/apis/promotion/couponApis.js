@@ -40,7 +40,7 @@ export const registerCoupon = async (newCoupon) => {
 
 export const getCouponList = async (params) => {
   try {
-    const response = await api.post('/member/v1/coupons-read', params, {
+    const response = await api.post('/member/v1/coupons/search', params, {
       headers: {
         'Content-Type': 'application/json',
       },
