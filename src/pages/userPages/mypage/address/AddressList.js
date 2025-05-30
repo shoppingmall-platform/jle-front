@@ -23,18 +23,6 @@ const AddressList = () => {
 
   const fetchAddresses = async () => {
     try {
-      const mockData = [
-        {
-          addressId: 1,
-          alias: '123',
-          receiverName: '홍길동',
-          zipcode: '06112',
-          address1: '서울 강남구 논현동 130-26',
-          address2: '',
-          phoneNumber: '010-1234-1234',
-          isDefault: true,
-        },
-      ]
       const addressData = await addressApis.getMyAddresses()
       setAddressList(addressData || [])
     } catch {
@@ -58,7 +46,7 @@ const AddressList = () => {
     if (!item) return setAlertMsg('기본으로 설정할 배송지를 선택해주세요.')
 
     try {
-      await addressApis.updateAddress({ ...item, isDefault: true })
+      await addressApis.updateAddress({ ...item, isDefault: 1 })
       fetchAddresses()
     } catch {
       setAlertMsg('기본 배송지 설정 중 오류가 발생했습니다.')
