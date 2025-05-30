@@ -151,3 +151,13 @@ nav {
     caret-color: transparent;
   }
 }
+
+/* ✅ 입력 가능한 요소는 포커스와 커서 표시 유지 */
+input,
+textarea,
+select {
+  &:focus {
+    outline: auto; /* 또는 revert, 또는 원하는 스타일 */
+    caret-color: auto;
+  }
+}
