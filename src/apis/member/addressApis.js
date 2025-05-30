@@ -23,7 +23,7 @@ export const updateAddress = async (updateAddressInfo) => {
 
 export const deleteAddress = async (addressId) => {
   try {
-    const response = await api.post('/member/v1/update-address', { addressId })
+    const response = await api.post('/member/v1/delete-address', { addressId })
     console.log(response)
     return response.data
   } catch (error) {
