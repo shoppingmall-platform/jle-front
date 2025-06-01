@@ -41,9 +41,6 @@ const ProductList = () => {
           startDate: startDate ? new Date(startDate).toISOString() : null,
           endDate: endDate ? new Date(endDate).toISOString() : null,
           categoryId: category || null,
-          isSelling: null,
-          isDeleted: null,
-          conditionEmpty: false,
         },
         pageable: {
           page,
