@@ -33,6 +33,8 @@ export const authStore = create(
       logout: async () => {
         try {
           await logout()
+          const navigate = useNavigate()
+          navigate('/')
         } catch (e) {
           console.error('Logout API error', e)
         } finally {
