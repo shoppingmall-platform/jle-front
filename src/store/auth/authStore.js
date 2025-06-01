@@ -19,6 +19,9 @@ export const authStore = create(
       // ✅ 로그인 여부 판단
       isLogin: () => !isEmpty(get().userInfo) && !!get().tokenInfo,
 
+      // ✅ 관리자 여부 판단
+      isAdmin: () => get().userInfo.authority == 'ADMIN',
+
       // ✅ 로그인 페이지 이동
       login: () => {
         const navigate = useNavigate()
@@ -30,6 +33,8 @@ export const authStore = create(
       logout: async () => {
         try {
           await logout()
+          const navigate = useNavigate()
+          navigate('/')
         } catch (e) {
           console.error('Logout API error', e)
         } finally {
@@ -47,7 +52,6 @@ export const authStore = create(
             ?.split('=')[1]
           if (accessToken) {
             get().setToken(accessToken)
-            
           } else {
             console.warn('토큰 없음 → 강제 로그아웃')
             get().logout()

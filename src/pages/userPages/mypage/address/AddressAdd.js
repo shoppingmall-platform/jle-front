@@ -39,9 +39,24 @@ const AddressAdd = () => {
     setShowModal(false)
   }
 
+  // ✅ 전화번호 자동 하이픈 처리 함수
+  const formatPhoneNumber = (value) => {
+    const onlyNums = value.replace(/[^\d]/g, '')
+    if (onlyNums.length <= 3) return onlyNums
+    if (onlyNums.length <= 7) return `${onlyNums.slice(0, 3)}-${onlyNums.slice(3)}`
+    return `${onlyNums.slice(0, 3)}-${onlyNums.slice(3, 7)}-${onlyNums.slice(7, 11)}`
+  }
+
   const handleSubmit = async () => {
     if (!alias || !receiverName || !zipcode || !address1 || !phoneNumber) {
       setAlertMsg('필수 항목을 모두 입력해주세요.')
+      return
+    }
+
+    // ✅ 전화번호 형식 검증
+    const isValidPhoneNumber = /^01[016789]-\d{3,4}-\d{4}$/.test(phoneNumber)
+    if (!isValidPhoneNumber) {
+      setAlertMsg('전화번호 형식이 올바르지 않습니다.')
       return
     }
 
@@ -52,7 +67,7 @@ const AddressAdd = () => {
       address2,
       receiverName,
       phoneNumber,
-      isDefault,
+      isDefault: isDefault ? 1 : 0,
     }
 
     try {
@@ -103,7 +118,11 @@ const AddressAdd = () => {
             </div>
             <div className="mb-3">
               <CFormLabel>전화번호</CFormLabel>
-              <CFormInput value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+              <CFormInput
+                value={phoneNumber}
+                placeholder="010-1234-5678"
+                onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))}
+              />
             </div>
             <div className="mb-3">
               <CFormCheck

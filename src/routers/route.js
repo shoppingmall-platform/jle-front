@@ -34,6 +34,10 @@ const ProtectedRoute = ({ children }) => {
       if (!isAdmin) {
         // 인증은 되어있지만 admin이 아닌 경우
         alert('접근 권한이 없습니다.')
+        navigate('/', {
+          state: { from: location.pathname },
+          replace: true,
+        })
         return
       }
     }

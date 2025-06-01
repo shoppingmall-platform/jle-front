@@ -24,44 +24,15 @@ const CouponList = () => {
   const [selectedCoupon, setSelectedCoupon] = useState(null)
   const [modalVisible, setModalVisible] = useState(false)
 
-  const [couponList, setCouponList] = useState([
-    {
-      couponId: 'f78282be-21d8-4af3-a933-b82c84a17bba',
-      couponIssueCode: 'WELCOME10',
-      issueType: 'AUTO',
-      couponName: '신규회원 10% 할인',
-      couponType: 'PERCENT',
-      discountAmount: 10,
-      minOrderPrice: 30000,
-      maxDiscountPrice: 1000,
-      couponStartDate: '2025-05-01',
-      couponEndDate: '2025-06-01',
-      comment: '신규회원 전용 쿠폰',
-      isIssued: false,
-    },
-    {
-      couponId: 'a12345be-12ab-4abc-9d88-xyz123456789',
-      couponIssueCode: 'SAVE5000',
-      issueType: 'CODE',
-      couponName: '5천원 즉시 할인',
-      couponType: 'FIXED',
-      discountAmount: 5000,
-      minOrderPrice: 50000,
-      maxDiscountPrice: 0,
-      couponStartDate: '2025-05-10',
-      couponEndDate: '2025-06-10',
-      comment: '앱 전용 할인 쿠폰',
-      isIssued: true,
-    },
-  ])
+  const [couponList, setCouponList] = useState([])
 
   const couponCheckbox = useCheckboxSelection(couponList, 'couponId')
 
   const handleSearch = async () => {
     const params = {
       couponName: couponName || '', // 빈 문자열이면 전체 검색
-      couponStartDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : '',
-      couponEndDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : '',
+      couponStartDate: startDate,
+      couponEndDate: endDate,
     }
 
     console.log('📤 검색 파라미터:', params)
