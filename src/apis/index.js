@@ -8,7 +8,7 @@ export function useApi() {
   const request = async (method, url, data = null, config = {}) => {
     // ✅ Axios 인스턴스 생성 (쿠키 포함)
     const api = axios.create({
-      baseURL: 'http://localhost:3000/api', // 환경변수로 바꾸는 게 이상적
+      baseURL: import.meta.env.VITE_API_BASE_URL, // ✅ 환경변수로 baseURL 설정
       withCredentials: true, // ✅ 쿠키 인증을 위한 설정
       headers: {
         'Content-Type': 'application/json',

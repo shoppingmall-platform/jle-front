@@ -105,3 +105,59 @@
 tbody td {
   text-align: center; /* 테이블 본문 데이터도 가운데 정렬 가능 */
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div:not([role]),
+label:not([for]),
+strong,
+em,
+b,
+i,
+ul,
+ol,
+li,
+td,
+th,
+table,
+tbody,
+thead,
+tr,
+img,
+figure,
+figcaption,
+small,
+code,
+pre,
+blockquote,
+section,
+article,
+aside,
+header,
+footer,
+main,
+nav {
+  outline: none;
+  caret-color: transparent; /* ← 커서 숨김 */
+
+  &:focus {
+    outline: none;
+    caret-color: transparent;
+  }
+}
+
+/* ✅ 입력 가능한 요소는 포커스와 커서 표시 유지 */
+input,
+textarea,
+select {
+  &:focus {
+    outline: auto; /* 또는 revert, 또는 원하는 스타일 */
+    caret-color: auto;
+  }
+}

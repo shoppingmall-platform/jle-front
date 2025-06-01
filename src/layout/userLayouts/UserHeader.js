@@ -72,7 +72,16 @@ const Header = () => {
                     <Link to="/mypage" className="text-dark me-3">
                       MY PAGE
                     </Link>
-                    <Link to="/" onClick={logout} className="text-black me-3">
+                    <Link
+                      to="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (window.confirm('로그아웃 하시겠습니까?')) {
+                          logout()
+                        }
+                      }}
+                      className="text-black me-3"
+                    >
                       LOGOUT
                     </Link>
                   </>

@@ -43,7 +43,7 @@ export const getMemberInfo = async () => {
 
 export const registerMember = async (newMemberInfo) => {
   try {
-    const response = await api.post('/member/v1/members', newMemberInfo)
+    const response = await api.post('/public/v1/members', newMemberInfo)
     console.log(response)
     return response.data
   } catch (error) {
