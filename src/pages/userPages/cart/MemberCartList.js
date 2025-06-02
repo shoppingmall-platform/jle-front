@@ -167,7 +167,10 @@ const MemberCartList = () => {
                           [item.cartItemId]: { ...prev[item.cartItemId], [type]: value },
                         }))
                       }
-                      onUpdateSuccess={() => console.log('✅ 변경 후 로직')}
+                      onUpdateSuccess={() => {
+                        fetchCartItems()
+                        setVisibleOption(null)
+                      }}
                       onClose={() => setVisibleOption(null)}
                     />
                   )}
