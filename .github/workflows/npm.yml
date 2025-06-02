@@ -56,3 +56,15 @@ jobs:
           port: 22
           source: 'build/*'
           target: '/home/ubuntu/jle'
+          
+      - name: Set permissions for nginx access
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: 22
+          script: |
+            sudo chmod +x /home/ubuntu
+            sudo chown -R www-data:www-data /home/ubuntu/jle
+            sudo chmod -R 755 /home/ubuntu/jle
