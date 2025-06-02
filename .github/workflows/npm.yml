@@ -1,4 +1,4 @@
-name: NPM Installation
+name: NPM Installation & Deployment
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -20,24 +20,24 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.node-version }}
+          node-version: ${{ env.NODE }}
+
+      - name: Generate .env.production
+        run: |
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
+          echo "VITE_AWS_REGION=${{ secrets.VITE_AWS_REGION }}" >> .env.production
+          echo "VITE_AWS_IDENTITY_POOL_ID=${{ secrets.VITE_AWS_IDENTITY_POOL_ID }}" >> .env.production
+          echo "VITE_BUCKET_NAME=${{ secrets.VITE_BUCKET_NAME }}" >> .env.production
+          echo "VITE_ACCESS_KEY_ID=${{ secrets.VITE_ACCESS_KEY_ID }}" >> .env.production
+          echo "VITE_SECRET_ACCESS_KEY=${{ secrets.VITE_SECRET_ACCESS_KEY }}" >> .env.production
 
       - name: Install npm dependencies
         run: npm install
 
-      - name: Generate .env.production
-        run: |
-          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
-          echo "VITE_AWS_REGION=${{ secrets.VITE_AWS_REGION }}" > .env.production
-          echo "VITE_AWS_IDENTITY_POOL_ID=${{ secrets.VITE_AWS_IDENTITY_POOL_ID }}" > .env.production
-          echo "VITE_BUCKET_NAME=${{ secrets.VITE_BUCKET_NAME }}" > .env.production
-          echo "VITE_ACCESS_KEY_ID=${{ secrets.VITE_ACCESS_KEY_ID }}" > .env.production
-          echo "VITE_SECRET_ACCESS_KEY=${{ secrets.VITE_SECRET_ACCESS_KEY }}" > .env.production
-
-      - name: Run build
+      - name: Build React App
         run: npm run build -- --mode production
 
-      - name: Clean server build directory
+      - name: Clean target server build directory
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -45,7 +45,9 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           script: |
-            rm -rf /home/ubuntu/jle/*
+            sudo rm -rf /var/www/jle/*
+            sudo mkdir -p /var/www/jle
+            sudo chown -R $USER:$USER /var/www/jle
 
       - name: Deploy to Server via SCP
         uses: appleboy/scp-action@v0.1.4
@@ -55,9 +57,9 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           source: 'build/*'
-          target: '/home/ubuntu/jle'
-          
-      - name: Set permissions for nginx access
+          target: '/var/www/jle'
+
+      - name: Fix permissions on server
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -65,6 +67,5 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           script: |
-            sudo chmod +x /home/ubuntu
-            sudo chown -R www-data:www-data /home/ubuntu/jle
-            sudo chmod -R 755 /home/ubuntu/jle
+            sudo chown -R www-data:www-data /var/www/jle
+            sudo chmod -R 755 /var/www/jle
