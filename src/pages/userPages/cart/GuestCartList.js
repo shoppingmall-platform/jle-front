@@ -239,6 +239,17 @@ const GuestCartList = () => {
           </div>
         </CCol>
       </CRow>
+
+      <hr />
+
+      <div className="text-center">
+        <CButton color="dark" className="me-2">
+          전체상품주문
+        </CButton>
+        <CButton color="secondary" variant="outline">
+          선택상품주문
+        </CButton>
+      </div>
     </>
   )
 }

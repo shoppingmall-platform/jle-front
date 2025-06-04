@@ -1,20 +1,32 @@
 const GUEST_CART_KEY = 'guest_cart'
-
-export const getGuestCart = () => {
-  try {
-    const data = localStorage.getItem(GUEST_CART_KEY)
-    return data ? JSON.parse(data) : []
-  } catch (err) {
-    console.error('로컬스토리지에서 비회원 장바구니 불러오기 실패', err)
-    return []
-  }
-}
+const EXPIRATION_MS = 1000 * 60 * 60 * 48 // 48시간
 
 export const setGuestCart = (cartItems) => {
   try {
-    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cartItems))
+    const payload = {
+      data: cartItems,
+      expiresAt: Date.now() + EXPIRATION_MS,
+    }
+    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(payload))
   } catch (err) {
     console.error('로컬스토리지에 비회원 장바구니 저장 실패', err)
+  }
+}
+
+export const getGuestCart = () => {
+  try {
+    const raw = localStorage.getItem(GUEST_CART_KEY)
+    if (!raw) return []
+
+    const parsed = JSON.parse(raw)
+    if (parsed.expiresAt && parsed.expiresAt < Date.now()) {
+      localStorage.removeItem(GUEST_CART_KEY)
+      return []
+    }
+    return parsed.data || []
+  } catch (err) {
+    console.error('로컬스토리지에서 비회원 장바구니 불러오기 실패', err)
+    return []
   }
 }
 
