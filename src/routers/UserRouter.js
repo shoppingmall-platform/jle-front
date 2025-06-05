@@ -13,6 +13,7 @@ const Profile = React.lazy(() => import('@/pages/userPages/mypage/Profile'))
 const Coupon = React.lazy(() => import('@/pages/userPages/mypage/MyCoupon'))
 const AddressList = React.lazy(() => import('@/pages/userPages/mypage/address/AddressList'))
 const AddressAdd = React.lazy(() => import('@/pages/userPages/mypage/address/AddressAdd'))
+const Order = React.lazy(() => import('@/pages/userPages/Order'))
 
 export const userRouter = [
   { path: '/', element: Home },
@@ -27,4 +28,5 @@ export const userRouter = [
   { path: '/mypage/coupon', element: Coupon },
   { path: '/mypage/address', element: AddressList },
   { path: '/mypage/address/add', element: AddressAdd },
+  { path: '/order', element: Order },
 ]
