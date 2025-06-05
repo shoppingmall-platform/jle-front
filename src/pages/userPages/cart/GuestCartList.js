@@ -114,18 +114,25 @@ const GuestCartList = () => {
                 <CTableDataCell className="text-start">
                   <div>{info.name}</div>
                   <div className="text-muted small">
+                    {/* productOptionDetails가 undefined/null이어도 안전하게 처리 */}
                     {option.productOptionDetails
                       ?.map((opt) => `${opt.productOptionType}: ${opt.productOptionDetailName}`)
                       .join(' / ')}
                   </div>
-                  <CButton
-                    color="secondary"
-                    size="sm"
-                    className="mt-1"
-                    onClick={(e) => handleOptionChangeClick(e, item.productOptionId)}
-                  >
-                    옵션변경
-                  </CButton>
+
+                  {/* productOptionName이 '없음'일 때, 옵션변경 버튼을 숨김 */}
+                  {option.productOptionName !== '없음' && (
+                    <CButton
+                      color="secondary"
+                      size="sm"
+                      className="mt-1"
+                      onClick={(e) => handleOptionChangeClick(e, item.productOptionId)}
+                    >
+                      옵션변경
+                    </CButton>
+                  )}
+
+                  {/* 옵션변경 드롭다운 */}
                   {visibleOption?.productOptionId === item.productOptionId && (
                     <OptionChange
                       cartItemId={item.productOptionId}
@@ -137,7 +144,10 @@ const GuestCartList = () => {
                       handleSelectOption={(type, value) =>
                         setSelectedOptions((prev) => ({
                           ...prev,
-                          [item.productOptionId]: { ...prev[item.productOptionId], [type]: value },
+                          [item.productOptionId]: {
+                            ...prev[item.productOptionId],
+                            [type]: value,
+                          },
                         }))
                       }
                       onUpdateSuccess={(newOption) =>
@@ -148,6 +158,7 @@ const GuestCartList = () => {
                     />
                   )}
                 </CTableDataCell>
+
                 <CTableDataCell>
                   <div className="d-flex align-items-center">
                     <CFormInput

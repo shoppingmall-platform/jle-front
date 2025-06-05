@@ -46,11 +46,17 @@ const ProductDetail = () => {
   const onClickAddToCart = async () => {
     if (!product) return
 
-    if (Object.keys(selectedOptions).length === 0) {
+    // “없음” 옵션 예외 처리: product.productOptions가 딱 하나이고 이름이 “없음”인 경우
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    // selectedOptions가 비어 있고, “없음” 옵션 예외도 아닐 때만 경고
+    if (Object.keys(selectedOptions).length === 0 && !hasOnlyNoneOption) {
       alert('옵션을 선택해주세요!')
       return
     }
 
+    // matchedOption 계산 (selectedOptions가 비어 있어도 “없음” 옵션의 details가 []이므로 매칭됨)
     const matchedOption = product.productOptions.find((option) => {
       const selectedSet = new Set(
         Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),

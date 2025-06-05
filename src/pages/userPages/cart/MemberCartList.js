@@ -141,18 +141,22 @@ const MemberCartList = () => {
                 <CTableDataCell className="text-start">
                   <div>{info.name}</div>
                   <div className="text-muted small">
-                    {option.productOptionDetails
+                    {(option.productOptionDetails ?? [])
                       .map((opt) => `${opt.productOptionType}: ${opt.productOptionDetailName}`)
                       .join(' / ')}
                   </div>
-                  <CButton
-                    color="secondary"
-                    size="sm"
-                    className="mt-1"
-                    onClick={(e) => handleOptionChangeClick(e, item.cartItemId)}
-                  >
-                    옵션변경
-                  </CButton>
+
+                  {option.productOptionName !== '없음' && (
+                    <CButton
+                      color="secondary"
+                      size="sm"
+                      className="mt-1"
+                      onClick={(e) => handleOptionChangeClick(e, item.cartItemId)}
+                    >
+                      옵션변경
+                    </CButton>
+                  )}
+
                   {visibleOption?.cartItemId === item.cartItemId && (
                     <OptionChange
                       cartItemId={item.cartItemId}
@@ -175,6 +179,7 @@ const MemberCartList = () => {
                     />
                   )}
                 </CTableDataCell>
+
                 <CTableDataCell>
                   <div className="d-flex align-items-center">
                     <CFormInput

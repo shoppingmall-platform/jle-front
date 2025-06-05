@@ -19,6 +19,15 @@ import {
 import { MultiSelect } from 'react-multi-select-component'
 import { getOptionList } from '@/apis/product/optionApis'
 
+const NONE_OPTION = [
+  {
+    productOptionName: '없음',
+    productOptionDetails: [],
+    stockQuantity: 0,
+    additionalPrice: 0,
+  },
+]
+
 const OptionTable = ({ onOptionsChange }) => {
   const [useOption, setUseOption] = useState(false) // 옵션 사용 여부
   const [optionSetting, setOptionSetting] = useState('optionset') // 옵션세트: optionset, 옵션: options
@@ -237,12 +246,21 @@ const OptionTable = ({ onOptionsChange }) => {
   //   }
   // }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
   useEffect(() => {
-    const optionsData = getFinalOptionsJSON()
-    console.log('생성된 옵션 데이터:', JSON.stringify(optionsData, null, 2))
+    let optionsData
+
+    if (!useOption) {
+      // 옵션 사용안함 → "없음" 옵션 하나만 넘겨줌
+      optionsData = NONE_OPTION
+    } else {
+      // 옵션 사용함 → 기존 로직대로 조합된 옵션 데이터를 계산
+      optionsData = getFinalOptionsJSON()
+    }
+
+    console.log('전달할 옵션 데이터:', JSON.stringify(optionsData, null, 2))
     if (onOptionsChange) {
       onOptionsChange(optionsData)
     }
-  }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
+  }, [useOption, optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
 
   return (
     <div>
