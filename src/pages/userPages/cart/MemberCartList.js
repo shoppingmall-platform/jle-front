@@ -16,9 +16,12 @@ import {
 } from '@coreui/react'
 import OptionChange from '@/components/user/product/OptionChange'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
+import { useNavigate } from 'react-router-dom'
 import { updateCartItem, deleteCartItems, getCartItems } from '@/apis/member/cartApis'
 
 const MemberCartList = () => {
+  const navigate = useNavigate()
+
   const [cartItems, setCartItems] = useState([])
   const [selectedOptions, setSelectedOptions] = useState({})
   const [visibleOption, setVisibleOption] = useState(null)
@@ -100,6 +103,29 @@ const MemberCartList = () => {
 
   const totalShippingFee = selectedCartItemIds.length === 0 || totalSelectedPrice < 70000 ? 3000 : 0
   const totalPayment = totalSelectedPrice + totalShippingFee
+
+  // 1) 선택된 상품만 주문
+  const handleOrderSelected = () => {
+    if (selectedCartItemIds.length === 0) {
+      alert('주문할 상품을 선택해주세요.')
+      return
+    }
+    // e.g. selectedCartItemIds = [6, 8] → "6,8"
+    const qs = selectedCartItemIds.join(',')
+    navigate(`/order?cartItems=${qs}`)
+  }
+
+  // 2) 전체 상품 주문
+  const handleOrderAll = () => {
+    if (cartItems.length === 0) {
+      alert('장바구니에 상품이 없습니다.')
+      return
+    }
+    // allCartIds = [6, 8, ...]
+    const allCartIds = cartItems.map((item) => item.cartItemId)
+    const qs = allCartIds.join(',')
+    navigate(`/order?cartItems=${qs}`)
+  }
 
   return (
     <>
@@ -227,7 +253,12 @@ const MemberCartList = () => {
 
                 <CTableDataCell>
                   <div className="d-flex flex-column">
-                    <CButton color="primary" size="sm" className="mb-1">
+                    <CButton
+                      color="primary"
+                      size="sm"
+                      className="mb-1"
+                      onClick={() => navigate(`/order?cartItems=${item.cartItemId}`)}
+                    >
                       주문하기
                     </CButton>
                     <CButton
@@ -298,10 +329,15 @@ const MemberCartList = () => {
       <hr />
 
       <div className="text-center">
-        <CButton color="dark" className="me-2">
+        <CButton color="dark" className="me-2" onClick={handleOrderAll}>
           전체상품주문
         </CButton>
-        <CButton color="secondary" variant="outline">
+        <CButton
+          color="secondary"
+          variant="outline"
+          onClick={handleOrderSelected}
+          disabled={selectedCartItemIds.length === 0}
+        >
           선택상품주문
         </CButton>
       </div>
