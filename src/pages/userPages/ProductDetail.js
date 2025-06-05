@@ -125,7 +125,7 @@ const ProductDetail = () => {
                     borderRadius: '6px',
                   }}
                 />
-                <div className="d-flex justify-content-center mt-3">
+                <div className="d-flex justify-content-start mt-3 overflow-x-auto">
                   {images.map((img, idx) => (
                     <CImage
                       key={idx}
