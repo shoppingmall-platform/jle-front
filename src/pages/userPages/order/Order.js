@@ -18,6 +18,10 @@ import OrderItemsSection from '@/components/user/order/OrderItemsSection'
 import DiscountSection from '@/components/user/order/DiscountSection'
 import PaymentSection from '@/components/user/order/PaymentSection'
 
+// 표준.js 로 로드된 전역 모듈
+const CLIENT_KEY = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
+let tossInstance
+
 function useQuery() {
   return new URLSearchParams(useLocation().search)
 }
@@ -91,6 +95,13 @@ const Order = () => {
     }
   }, [cartItemsParam])
 
+  // 0. 페이먼트 모듈 초기화
+  useEffect(() => {
+    if (window.TossPayments && !tossInstance) {
+      tossInstance = window.TossPayments(CLIENT_KEY)
+    }
+  }, [])
+
   // (부모가 “추가 할인액”을 받는 콜백)
   const handleAdditionalDiscountChange = (sum) => {
     setAdditionalDiscountSum(sum)
@@ -147,6 +158,34 @@ const Order = () => {
 
   const estimatedPoints = Math.floor(discountedSum * 0.01)
 
+  // 5. 최종 결제 요청 함수
+  const handleFinalPayment = () => {
+    if (!tossInstance) {
+      alert('결제 모듈을 불러올 수 없습니다.')
+      return
+    }
+    if (!selectedPaymentMethod) {
+      alert('결제 수단을 선택해주세요.')
+      return
+    }
+    // 주문번호는 백엔드와 동기 맞추실 때, 실제 orderId를 사용하세요.
+    const orderId = `order-${Date.now()}`
+    tossInstance.requestPayment(
+      {
+        method: selectedPaymentMethod, // e.g. 'card', '카카오페이' 등
+        amount: finalPayment, // 최종 결제 금액
+        orderId,
+        orderName: 'JLE 쇼핑몰 주문',
+        successUrl: `${window.location.origin}/order/success?paymentKey={{paymentKey}}&orderId=${orderId}&amount=${finalPayment}`,
+        failUrl: `${window.location.origin}/order/fail?code={{code}}&message={{message}}`,
+      },
+      (error) => {
+        console.error('결제 요청 실패', error)
+        alert('결제 요청에 실패했습니다.')
+      },
+    )
+  }
+
   return (
     <CContainer className="mt-5 mb-5" style={{ maxWidth: '700px' }}>
       <h4 className="mb-4 text-center">주문/결제</h4>
@@ -187,6 +226,7 @@ const Order = () => {
           <CAccordionHeader>결제수단</CAccordionHeader>
           <CAccordionBody>
             <PaymentSection
+              finalPayment={finalPayment}
               selectedPaymentMethod={selectedPaymentMethod}
               setSelectedPaymentMethod={setSelectedPaymentMethod}
               cardCompany={cardCompany}
@@ -229,7 +269,7 @@ const Order = () => {
         </div>
 
         <div className="text-center">
-          <CButton color="dark" size="lg">
+          <CButton color="dark" size="lg" onClick={handleFinalPayment}>
             결제하기
           </CButton>
         </div>
