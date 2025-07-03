@@ -1,73 +1,53 @@
 // src/components/user/order/PaymentSection.jsx
-import React from 'react'
-import { CRow, CCol, CFormCheck, CFormLabel, CFormSelect, CAlert } from '@coreui/react'
+import React, { useEffect, useState } from 'react'
+import { loadTossPayments, ANONYMOUS } from '@tosspayments/tosspayments-sdk'
+import { CRow, CCol, CAlert } from '@coreui/react'
 
-/**
- * @param {string} selectedPaymentMethod
- * @param {function} setSelectedPaymentMethod
- * @param {string} cardCompany
- * @param {function} setCardCompany
- */
-const PaymentSection = ({
-  selectedPaymentMethod,
-  setSelectedPaymentMethod,
-  cardCompany,
-  setCardCompany,
-}) => {
+const CLIENT_KEY = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
+
+export default function PaymentSection({ finalPayment }) {
+  const [widgets, setWidgets] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    loadTossPayments(CLIENT_KEY)
+      .then((tossPayments) => {
+        // customerKey ANONYMOUS for non-logged in
+        const w = tossPayments.widgets({ customerKey: ANONYMOUS })
+        setWidgets(w)
+      })
+      .catch((err) => {
+        console.error('Toss SDK 로드 실패', err)
+        setError('결제 모듈 로드에 실패했습니다.')
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!widgets) return
+
+    // 1) 금액 설정 (반드시 먼저)
+    widgets.setAmount({ currency: 'KRW', value: finalPayment })
+
+    // 2) 결제수단 버튼 렌더링
+    widgets.renderPaymentMethods({
+      selector: '#payment-method',
+      variantKey: 'DEFAULT',
+    })
+
+    // 3) 약관 렌더링
+    widgets.renderAgreement({
+      selector: '#agreement',
+      variantKey: 'AGREEMENT',
+    })
+  }, [widgets, finalPayment])
+
+  if (error) return <CAlert color="danger">{error}</CAlert>
+
   return (
     <div style={{ padding: '1rem' }}>
-      <CFormLabel className="fw-semibold mb-2">결제 방법 선택</CFormLabel>
-
-      <CRow className="mb-3">
-        <CCol xs={12} md={6}>
-          <CFormCheck
-            type="radio"
-            id="pm_card"
-            name="paymentMethod"
-            label="신용/체크카드"
-            value="card"
-            checked={selectedPaymentMethod === 'card'}
-            onChange={() => setSelectedPaymentMethod('card')}
-          />
-        </CCol>
-        <CCol xs={12} md={6}>
-          <CFormCheck
-            type="radio"
-            id="pm_bank"
-            name="paymentMethod"
-            label="계좌 이체"
-            value="bank"
-            checked={selectedPaymentMethod === 'bank'}
-            onChange={() => setSelectedPaymentMethod('bank')}
-          />
-        </CCol>
-      </CRow>
-
-      {selectedPaymentMethod === 'card' && (
-        <div className="mb-3">
-          <CFormLabel>카드사 선택</CFormLabel>
-          <CFormSelect value={cardCompany} onChange={(e) => setCardCompany(e.target.value)}>
-            <option value="">카드사 선택</option>
-            <option value="visa">VISA</option>
-            <option value="master">MasterCard</option>
-            <option value="amex">AMEX</option>
-          </CFormSelect>
-        </div>
-      )}
-
-      {selectedPaymentMethod === 'bank' && (
-        <div className="text-muted small mb-3">
-          * 은행 계좌 이체는 실제 API 연동이 필요합니다. (현재는 샘플 UI)
-        </div>
-      )}
-
-      {!selectedPaymentMethod && (
-        <CAlert color="warning" className="mt-2">
-          결제 수단을 선택해주세요.
-        </CAlert>
-      )}
+      <h6 className="fw-semibold mb-3">결제 방법 선택</h6>
+      <div id="payment-method" style={{ marginBottom: '1rem' }} />
+      <div id="agreement" style={{ marginBottom: '1rem' }} />
     </div>
   )
 }
-
-export default PaymentSection
