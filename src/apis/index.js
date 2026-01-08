@@ -12,6 +12,7 @@ export function useApi() {
       withCredentials: true, // ✅ 쿠키 인증을 위한 설정
       headers: {
         'Content-Type': 'application/json',
+        ROLE: 'ADMIN', // TODO: 현재 프론트에서 강제로 어드민 권한을 부여하는데 백엔드에서 토큰 기반으로 부여할 수 있게 수정 필요요
       },
       timeout: 1800000, // 30분
     })
@@ -22,7 +23,7 @@ export function useApi() {
     try {
       const response =
         method === 'GET'
-          ? await api.get(url, { params: data, ...config })
+          ? await api.get(url, data, { ...config })
           : await api.post(url, data, config)
 
       return {

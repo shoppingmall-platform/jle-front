@@ -42,11 +42,11 @@ const ProtectedRoute = ({ children }) => {
       }
     }
 
-    console.log('isPublicPath : ', isPublicPath)
-    console.log('tokenInfo : ', tokenInfo)
-    console.log('!isPublicPath : ', !isPublicPath)
-    console.log('!tokenInfo : ', !tokenInfo)
-    console.log('!isPublicPath || !tokenInfo : ', !isPublicPath || !tokenInfo)
+    // console.log('isPublicPath : ', isPublicPath)
+    // console.log('tokenInfo : ', tokenInfo)
+    // console.log('!isPublicPath : ', !isPublicPath)
+    // console.log('!tokenInfo : ', !tokenInfo)
+    // console.log('!isPublicPath || !tokenInfo : ', !isPublicPath || !tokenInfo)
 
     // 사용자 권한 체크
     if (!isPublicPath && !tokenInfo) {
