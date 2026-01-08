@@ -13,7 +13,7 @@ import {
   CModalTitle,
   CFormTextarea,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
+import { CIcon } from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 import React, { useState } from 'react'
 
