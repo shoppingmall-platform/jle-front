@@ -11,14 +11,19 @@ const api = useApi()
     ]
  */
 export const getCategories = async () => {
-  try {
-    // http://localhost:8090/v1/categories
-    const response = await api.get('/public/v1/categories')
-    console.log(response)
-    return response.data
-  } catch (error) {
-    console.error(error)
+  const res = await api.get('/public/v1/categories') // 혹은 '/v1/categories' 아래 참고
+
+  // ✅ useApi는 {status, data} 형태로 반환하니까 status로 성공/실패 판단
+  if (!res || res.status < 200 || res.status >= 300) {
+    console.error('getCategories failed:', res)
+    return []
   }
+
+  // ✅ 데이터 형태도 안전하게
+  const data = res.data
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.content)) return data.content
+  return []
 }
 
 /**

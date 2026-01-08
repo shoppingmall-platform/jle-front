@@ -47,13 +47,12 @@ const ProductCategories = () => {
   }, [])
 
   async function callGetCategoriesApi() {
-    try {
-      const categories = await getCategories()
-      setCategories(categories)
-    } catch (err) {
-      console.log(err)
-      alert(err)
-    }
+    const result = await getCategories()
+
+    // getCategories가 [] / 배열 / 혹은 {status, errorInfo} 같은 걸 줄 수 있으니 방어
+    const safeCategories = Array.isArray(result) ? result : []
+
+    setCategories(safeCategories)
   }
 
   const handleCategoryClick = (category) => {
