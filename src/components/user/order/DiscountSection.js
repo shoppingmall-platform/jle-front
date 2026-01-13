@@ -20,7 +20,7 @@ const DUMMY_COUPONS = [
   { couponId: 3, name: '기념일 쿠폰 (₩5,000 할인)', discountAmount: 5000 },
 ]
 
-const DiscountSection = ({ orderItems = [] }) => {
+const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
   // ─────────────────────────────────────────────────────────────
   // 1) 상품별 할인합 계산
   // ─────────────────────────────────────────────────────────────
@@ -103,6 +103,15 @@ const DiscountSection = ({ orderItems = [] }) => {
     const couponAmt = couponObj ? couponObj.discountAmount : 0
     const pointAmt = usePoints
     setAdditionalDiscount(couponAmt + pointAmt)
+
+    // 부모 컴포넌트에 쿠폰 ID, 포인트, 추가 할인액 전달
+    if (onDiscountChange) {
+      onDiscountChange({
+        couponId: Number(selectedCouponId) || 0,
+        points: usePoints,
+        additionalDiscount: couponAmt + pointAmt,
+      })
+    }
   }, [usePoints, selectedCouponId, ownedCoupons])
 
   // ─────────────────────────────────────────────────────────────

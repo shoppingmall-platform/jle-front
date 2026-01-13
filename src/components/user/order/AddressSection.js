@@ -6,7 +6,6 @@ import {
   CNavLink,
   CTabContent,
   CTabPane,
-  CAccordionBody,
   CRow,
   CCol,
   CCard,
@@ -155,7 +154,7 @@ const AddressSection = ({ onAddressSelected }) => {
   const displayedAddresses = showAll ? addressList : addressList.slice(0, 3)
 
   return (
-    <CAccordionBody>
+    <div>
       {/* 탭 네비게이션 */}
       <CNav variant="tabs" className="mb-3">
         <CNavItem>
@@ -366,7 +365,7 @@ const AddressSection = ({ onAddressSelected }) => {
           </CModal>
         </CTabPane>
       </CTabContent>
-    </CAccordionBody>
+    </div>
   )
 }
 

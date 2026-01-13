@@ -3,24 +3,20 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   CContainer,
-  CAccordion,
-  CAccordionItem,
+  CCard,
+  CCardHeader,
+  CCardBody,
   CFormLabel,
-  CAccordionHeader,
-  CAccordionBody,
   CButton,
   CSpinner,
   CAlert,
 } from '@coreui/react'
 import { getCartItems } from '@/apis/member/cartApis'
+import { createOrder } from '@/apis/order/orderApis'
 import AddressSection from '@/components/user/order/AddressSection'
 import OrderItemsSection from '@/components/user/order/OrderItemsSection'
 import DiscountSection from '@/components/user/order/DiscountSection'
 import PaymentSection from '@/components/user/order/PaymentSection'
-
-// 표준.js 로 로드된 전역 모듈
-const CLIENT_KEY = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm'
-let tossInstance
 
 function useQuery() {
   return new URLSearchParams(useLocation().search)
@@ -48,8 +44,17 @@ const Order = () => {
   // 3) “추가 할인(적립금+쿠폰)” 상태
   const [additionalDiscountSum, setAdditionalDiscountSum] = useState(0)
 
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('')
-  const [cardCompany, setCardCompany] = useState('')
+  // 4) 결제 위젯 인스턴스 (PaymentSection에서 받아옴)
+  const [paymentWidgets, setPaymentWidgets] = useState(null)
+  // 5) 선택된 배송지 정보
+  const [selectedAddress, setSelectedAddress] = useState(null)
+
+  // 6) 쿠폰 및 포인트 정보
+  const [discountInfo, setDiscountInfo] = useState({
+    couponId: 0,
+    points: 0,
+    additionalDiscount: 0,
+  })
 
   useEffect(() => {
     const fetch = async () => {
@@ -95,16 +100,11 @@ const Order = () => {
     }
   }, [cartItemsParam])
 
-  // 0. 페이먼트 모듈 초기화
-  useEffect(() => {
-    if (window.TossPayments && !tossInstance) {
-      tossInstance = window.TossPayments(CLIENT_KEY)
-    }
-  }, [])
-
   // (부모가 “추가 할인액”을 받는 콜백)
-  const handleAdditionalDiscountChange = (sum) => {
-    setAdditionalDiscountSum(sum)
+  // (부모가 할인 정보를 받는 콜백)
+  const handleDiscountChange = (data) => {
+    setDiscountInfo(data)
+    setAdditionalDiscountSum(data.additionalDiscount)
   }
 
   // “상품별 할인합 + 추가 할인합” = 최종 할인금액
@@ -159,94 +159,114 @@ const Order = () => {
   const estimatedPoints = Math.floor(discountedSum * 0.01)
 
   // 5. 최종 결제 요청 함수
-  const handleFinalPayment = () => {
-    if (!tossInstance) {
+  const handleFinalPayment = async () => {
+    if (!paymentWidgets) {
       alert('결제 모듈을 불러올 수 없습니다.')
       return
     }
-    if (!selectedPaymentMethod) {
-      alert('결제 수단을 선택해주세요.')
+
+    // 배송지 선택 확인
+    if (!selectedAddress) {
+      alert('배송지를 선택해주세요.')
       return
     }
-    // 주문번호는 백엔드와 동기 맞추실 때, 실제 orderId를 사용하세요.
-    const orderId = `order-${Date.now()}`
-    tossInstance.requestPayment(
-      {
-        method: selectedPaymentMethod, // e.g. 'card', '카카오페이' 등
-        amount: finalPayment, // 최종 결제 금액
-        orderId,
+
+    try {
+      // 1. 주문 생성 API 호출
+      const orderData = {
+        addressInfo: {
+          receiver: selectedAddress.receiverName,
+          address1: selectedAddress.address1,
+          address2: selectedAddress.address2 || '',
+          postalCode: selectedAddress.zipcode,
+          phoneNumber: selectedAddress.phoneNumber,
+          email: 'user@example.com', // TODO: 실제 사용자 이메일로 교체 필요
+        },
+        items: orderItems.map((item) => ({
+          cartItemId: item.cartItemId,
+          productId: item.productOptionInfo.productInfo.productId,
+          productOptionId: item.productOptionInfo.productOptionId,
+          quantity: item.quantity,
+        })),
+        paymentMethod: '카드', // TODO: PaymentSection에서 선택한 결제수단으로 교체 필요
+        orderDiscount: {
+          couponId: discountInfo.couponId,
+          points: discountInfo.points,
+        },
+        orderDetail: {
+          originalTotal: originalSum,
+          discountedTotal: discountedSum,
+          productDiscount: itemsDiscountSum,
+          additionalDiscount: additionalDiscountSum,
+          shippingFee: shippingFee,
+          finalAmount: finalPayment,
+        },
+      }
+
+      console.log('📦 주문 생성 요청:', orderData)
+      const orderResponse = await createOrder(orderData)
+      console.log('✅ 주문 생성 성공:', orderResponse)
+
+      // 2. 토스 페이먼츠 결제 요청
+      await paymentWidgets.requestPayment({
+        orderId: orderResponse.orderId, // 백엔드에서 받은 실제 주문번호
         orderName: 'JLE 쇼핑몰 주문',
-        successUrl: `${window.location.origin}/order/success?paymentKey={{paymentKey}}&orderId=${orderId}&amount=${finalPayment}`,
-        failUrl: `${window.location.origin}/order/fail?code={{code}}&message={{message}}`,
-      },
-      (error) => {
-        console.error('결제 요청 실패', error)
-        alert('결제 요청에 실패했습니다.')
-      },
-    )
+        successUrl: `${window.location.origin}/order/success?orderId=${orderResponse.orderId}&amount=${finalPayment}`,
+        failUrl: `${window.location.origin}/order/fail`,
+      })
+    } catch (error) {
+      console.error('주문/결제 실패:', error)
+      alert('주문 생성에 실패했습니다: ' + error.message)
+    }
   }
 
   return (
     <CContainer className="mt-5 mb-5" style={{ maxWidth: '700px' }}>
       <h4 className="mb-4 text-center">주문/결제</h4>
 
-      <CAccordion alwaysOpen activeItemKey={['0']}>
-        {/* 1. 배송지 */}
-        <CAccordionItem itemKey="0">
-          <CAccordionHeader>배송지</CAccordionHeader>
-          <CAccordionBody>
-            <AddressSection />
-          </CAccordionBody>
-        </CAccordionItem>
+      {/* 1. 배송지 */}
+      <CCard className="mb-3">
+        <CCardHeader className="fw-semibold">배송지</CCardHeader>
+        <CCardBody>
+          <AddressSection onAddressSelected={setSelectedAddress} />
+        </CCardBody>
+      </CCard>
 
-        {/* 2. 주문상품  */}
-        <CAccordionItem itemKey="1">
-          <CAccordionHeader>주문상품</CAccordionHeader>
-          <CAccordionBody>
-            <OrderItemsSection
-              orderItems={orderItems}
-              onItemsDiscountChange={setItemsDiscountSum}
-            />
-          </CAccordionBody>
-        </CAccordionItem>
+      {/* 2. 주문상품 */}
+      <CCard className="mb-3">
+        <CCardHeader className="fw-semibold">주문상품</CCardHeader>
+        <CCardBody>
+          <OrderItemsSection orderItems={orderItems} onItemsDiscountChange={setItemsDiscountSum} />
+        </CCardBody>
+      </CCard>
 
-        {/* 3. 할인/부가결제 */}
-        <CAccordionItem itemKey="2">
-          <CAccordionHeader>할인/부가결제</CAccordionHeader>
-          <CAccordionBody>
-            <DiscountSection
-              orderItems={orderItems}
-              onTotalDiscountChange={handleAdditionalDiscountChange}
-            />
-          </CAccordionBody>
-        </CAccordionItem>
+      {/* 3. 할인/부가결제 */}
+      <CCard className="mb-3">
+        <CCardHeader className="fw-semibold">할인/부가결제</CCardHeader>
+        <CCardBody>
+          <DiscountSection orderItems={orderItems} onDiscountChange={handleDiscountChange} />
+        </CCardBody>
+      </CCard>
 
-        {/* 4. 결제수단 */}
-        <CAccordionItem itemKey="3">
-          <CAccordionHeader>결제수단</CAccordionHeader>
-          <CAccordionBody>
-            <PaymentSection
-              finalPayment={finalPayment}
-              selectedPaymentMethod={selectedPaymentMethod}
-              setSelectedPaymentMethod={setSelectedPaymentMethod}
-              cardCompany={cardCompany}
-              setCardCompany={setCardCompany}
-            />
-          </CAccordionBody>
-        </CAccordionItem>
+      {/* 4. 결제수단 */}
+      <CCard className="mb-3">
+        <CCardHeader className="fw-semibold">결제수단</CCardHeader>
+        <CCardBody>
+          <PaymentSection finalPayment={finalPayment} onPaymentReady={setPaymentWidgets} />
+        </CCardBody>
+      </CCard>
 
-        {/* 5. 적립 혜택 (추후 구현) */}
-        <CAccordionItem itemKey="5">
-          <CAccordionHeader>적립 혜택</CAccordionHeader>
-          <CAccordionBody>
-            <div style={{ padding: '1rem' }}>
-              <CFormLabel className="fw-semibold">적립 예정 금액</CFormLabel>{' '}
-              <div className="mt-2">{estimatedPoints.toLocaleString()}원</div>{' '}
-              <div className="text-muted small mt-1">(할인가 합의 1%를 포인트로 적립)</div>{' '}
-            </div>
-          </CAccordionBody>
-        </CAccordionItem>
-      </CAccordion>
+      {/* 5. 적립 혜택 */}
+      <CCard className="mb-3">
+        <CCardHeader className="fw-semibold">적립 혜택</CCardHeader>
+        <CCardBody>
+          <div style={{ padding: '1rem' }}>
+            <CFormLabel className="fw-semibold">적립 예정 금액</CFormLabel>{' '}
+            <div className="mt-2">{estimatedPoints.toLocaleString()}원</div>{' '}
+            <div className="text-muted small mt-1">(할인가 합의 1%를 포인트로 적립)</div>{' '}
+          </div>
+        </CCardBody>
+      </CCard>
 
       {/*  화면 하단에 “총 할인금액”과 “결제하기 버튼”  */}
       <div style={{ marginTop: '2rem', padding: '1rem', borderTop: '1px solid #ddd' }}>
