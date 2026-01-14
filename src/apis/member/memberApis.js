@@ -81,6 +81,18 @@ export const withdrawMember = async () => {
   }
 }
 
+// 관리자용
+
+export const searchMember = async (conditions, params = { page: 0, size: 10 }) => {
+  try {
+    const response = await api.post('/member/v1/members/search', conditions, params)
+    console.log(response)
+    return response.data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 export default {
   login,
   logout,
@@ -90,4 +102,5 @@ export default {
   registerMember,
   changePassword,
   withdrawMember,
+  searchMember,
 }
