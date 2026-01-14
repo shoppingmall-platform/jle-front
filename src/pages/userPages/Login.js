@@ -11,8 +11,6 @@ import {
   CCardBody,
   CNavLink,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilApple, cilMenu } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import { login as loginApi, getMemberInfo } from '@/apis/member/memberApis'
 import { authStore } from '@/store/auth/authStore'
@@ -47,8 +45,7 @@ const Login = () => {
         return
       }
       setUser(data)
-      navigate("/")
-      
+      navigate('/')
     } catch (error) {
       console.error(error)
       alert('로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.')
@@ -105,35 +102,6 @@ const Login = () => {
             </CCol>
             <CCol>
               <CNavLink href="#">비밀번호 찾기</CNavLink>
-            </CCol>
-          </CRow>
-
-          <hr style={{ border: '1px solid #ddd', margin: '16px 0' }} />
-          <CRow className="d-grid gap-3">
-            <CCol>
-              <CButton
-                variant="outline"
-                color="dark"
-                className="w-100"
-                startIcon={<CIcon icon={cilMenu} />}
-              >
-                네이버로 로그인
-              </CButton>
-            </CCol>
-            <CCol>
-              <CButton color="dark" className="w-100" startIcon={<CIcon icon={cilMenu} />}>
-                카카오로 로그인
-              </CButton>
-            </CCol>
-            <CCol>
-              <CButton
-                variant="outline"
-                color="dark"
-                className="w-100"
-                startIcon={<CIcon icon={cilApple} />}
-              >
-                Apple로 로그인
-              </CButton>
             </CCol>
           </CRow>
         </CCardBody>

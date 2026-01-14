@@ -264,9 +264,6 @@ const MemberCartList = () => {
                     >
                       삭제
                     </CButton>
-                    <CButton color="black" size="sm" variant="outline" className="mt-1">
-                      관심상품등록
-                    </CButton>
                   </div>
                 </CTableDataCell>
               </CTableRow>
