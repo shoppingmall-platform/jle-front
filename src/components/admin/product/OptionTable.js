@@ -19,13 +19,19 @@ import {
 import { MultiSelect } from 'react-multi-select-component'
 import { getOptionList } from '@/apis/product/optionApis'
 
+const NONE_OPTION = [
+  {
+    productOptionName: '없음',
+    productOptionDetails: [],
+    stockQuantity: 0,
+    additionalPrice: 0,
+  },
+]
+
 const OptionTable = ({ onOptionsChange }) => {
   const [useOption, setUseOption] = useState(false) // 옵션 사용 여부
-  const [optionSetting, setOptionSetting] = useState('optionset') // 옵션세트: optionset, 옵션: options
 
   const [options, setOptions] = useState([]) // MultiSelect에 사용할 옵션 데이터
-  const [optionSets, setOptionSets] = useState([]) // 옵션세트 데이터
-  const [selectedOptionSet, setSelectedOptionSet] = useState(null) // 선택된 옵션세트
   // 선택된 옵션: { [옵션명]: [선택된 옵션값들] }
   const [selectedOptions, setSelectedOptions] = useState({})
 
@@ -59,33 +65,6 @@ const OptionTable = ({ onOptionsChange }) => {
       console.error('옵션 데이터를 가져오는 중 오류 발생:', error)
       setOptions([]) // 오류 발생 시 안전하게 빈 배열로 설정
     }
-
-    // 기존 옵션 세트 로직 유지
-    try {
-      const initialOptionSets = [
-        {
-          id: 1,
-          name: '세트1',
-          options: [
-            {
-              id: 1,
-              name: '색상',
-              values: ['블랙', '화이트'],
-            },
-            {
-              id: 2,
-              name: '사이즈',
-              values: ['S', 'M', 'L'],
-            },
-          ],
-          description: '기본세트입니다.',
-          use: true,
-        },
-      ]
-      setOptionSets(initialOptionSets)
-    } catch (error) {
-      console.error('옵션 세트 데이터를 설정하는 중 오류 발생:', error)
-    }
   }
 
   useEffect(() => {
@@ -97,26 +76,9 @@ const OptionTable = ({ onOptionsChange }) => {
     setUseOption(e.target.value === 'T')
   }
 
-  // 옵션 설정 라디오 버튼 핸들러
-  const handleOptionSettingChange = (e) => {
-    setOptionSetting(e.target.value)
-    setSelectedOptionSet(null)
+  // 옵션 초기화 핸들러
+  const handleResetOptions = () => {
     setSelectedOptions({})
-    setOptionCombinations([])
-  }
-
-  // 옵션세트 선택 핸들러
-  const handleOptionSetChange = (e) => {
-    const selectedSet = optionSets.find((set) => set.id === Number(e.target.value))
-    setSelectedOptionSet(selectedSet || null)
-    setSelectedOptions(
-      selectedSet
-        ? selectedSet.options.reduce((acc, option) => {
-            acc[option.name] = [...option.values]
-            return acc
-          }, {})
-        : {},
-    )
     setOptionCombinations([])
   }
 
@@ -141,16 +103,7 @@ const OptionTable = ({ onOptionsChange }) => {
     setOptionCombinations([])
   }
 
-  // MultiSelect 옵션 변경 핸들러 (옵션 불러오기 모드)
-  // const handleMultiSelectChange = (selected) => {
-  //   const newSelectedOptions = selected.reduce((acc, option) => {
-  //     acc[option.label] = [...option.values] // 값 입력은 나중에 사용자가 체크박스로 하게 됨
-  //     return acc
-  //   }, {})
-  //   setSelectedOptions(newSelectedOptions)
-  //   setOptionCombinations([])
-  // }
-
+  // MultiSelect 옵션 변경 핸들러
   const handleMultiSelectChange = (selected) => {
     console.log('선택된 옵션:', selected)
 
@@ -204,10 +157,9 @@ const OptionTable = ({ onOptionsChange }) => {
   // 최종적으로 상품 옵션 JSON 구조를 만드는 함수
   const getFinalOptionsJSON = () => {
     // 옵션 구성 정보를 위해 옵션 종류 리스트 (예: ['색상', '사이즈'])를 가져옴
-    const optionKinds =
-      optionSetting === 'optionset'
-        ? selectedOptionSet?.options.map((opt) => opt.name)
-        : options.filter((opt) => selectedOptions.hasOwnProperty(opt.label)).map((opt) => opt.label)
+    const optionKinds = options
+      .filter((opt) => selectedOptions.hasOwnProperty(opt.label))
+      .map((opt) => opt.label)
 
     // 각 조합에 대해 상품옵션이름은 조합의 각 값들을 '/'로 이어붙인 값으로 설정
     const productOptions = optionCombinations.map((comboObj) => {
@@ -231,18 +183,22 @@ const OptionTable = ({ onOptionsChange }) => {
     return productOptions // 리스트 형태로 반환
   }
 
-  // useEffect(() => {
-  //   if (onOptionsChange) {
-  //     onOptionsChange(getFinalOptionsJSON())
-  //   }
-  // }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
   useEffect(() => {
-    const optionsData = getFinalOptionsJSON()
-    console.log('생성된 옵션 데이터:', JSON.stringify(optionsData, null, 2))
+    let optionsData
+
+    if (!useOption) {
+      // 옵션 사용안함 → "없음" 옵션 하나만 넘겨줌
+      optionsData = NONE_OPTION
+    } else {
+      // 옵션 사용함 → 기존 로직대로 조합된 옵션 데이터를 계산
+      optionsData = getFinalOptionsJSON()
+    }
+
+    console.log('전달할 옵션 데이터:', JSON.stringify(optionsData, null, 2))
     if (onOptionsChange) {
       onOptionsChange(optionsData)
     }
-  }, [optionCombinations, selectedOptions, selectedOptionSet, optionSetting])
+  }, [useOption, optionCombinations, selectedOptions])
 
   return (
     <div>
@@ -274,63 +230,21 @@ const OptionTable = ({ onOptionsChange }) => {
           {useOption && (
             <>
               <tr>
-                <td className="text-center">옵션 설정</td>
+                <td className="text-center">옵션 불러오기</td>
                 <td colSpan="4">
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '15px' }}
-                  >
-                    <CFormCheck
-                      type="radio"
-                      name="optionSettings"
-                      value="optionset"
-                      label="옵션세트 불러오기"
-                      checked={optionSetting === 'optionset'}
-                      onChange={handleOptionSettingChange}
-                    />
-                    <CFormCheck
-                      type="radio"
-                      name="optionSettings"
-                      value="options"
-                      label="옵션 불러오기"
-                      checked={optionSetting === 'options'}
-                      onChange={handleOptionSettingChange}
-                    />
-                  </div>
+                  <MultiSelect
+                    options={options}
+                    value={options.filter((opt) => selectedOptions.hasOwnProperty(opt.label))}
+                    onChange={handleMultiSelectChange}
+                    labelledBy="옵션 선택"
+                    overrideStrings={{
+                      selectSomeItems: '옵션 선택',
+                      allItemsAreSelected: '모든 옵션 선택됨',
+                      search: '검색...',
+                    }}
+                  />
                 </td>
               </tr>
-              {optionSetting === 'optionset' && (
-                <tr>
-                  <td className="text-center">옵션세트 불러오기</td>
-                  <td colSpan="4">
-                    <CFormSelect onChange={handleOptionSetChange}>
-                      <option value="">옵션세트 선택</option>
-                      {optionSets.map((set) => (
-                        <option key={set.id} value={set.id}>
-                          {set.name}
-                        </option>
-                      ))}
-                    </CFormSelect>
-                  </td>
-                </tr>
-              )}
-              {optionSetting === 'options' && (
-                <tr>
-                  <td>옵션 불러오기</td>
-                  <td colSpan="4">
-                    <MultiSelect
-                      options={options}
-                      value={options.filter((opt) => selectedOptions.hasOwnProperty(opt.label))}
-                      onChange={handleMultiSelectChange}
-                      labelledBy="옵션 선택"
-                      overrideStrings={{
-                        selectSomeItems: '옵션 선택',
-                        allItemsAreSelected: '모든 옵션 선택됨',
-                        search: '검색...',
-                      }}
-                    />
-                  </td>
-                </tr>
-              )}
 
               <tr>
                 <td className="text-center">사용된 옵션</td>
@@ -345,11 +259,8 @@ const OptionTable = ({ onOptionsChange }) => {
                     <CTableBody>
                       {Object.keys(selectedOptions).length > 0 ? (
                         Object.keys(selectedOptions).map((optionName) => {
-                          // 옵션세트 모드이면 selectedOptionSet에서, 옵션불러오기 모드이면 options 배열에서 가져옴
-                          const optionData =
-                            optionSetting === 'optionset'
-                              ? selectedOptionSet?.options.find((opt) => opt.name === optionName)
-                              : options.find((opt) => opt.label === optionName)
+                          // options 배열에서 가져옴
+                          const optionData = options.find((opt) => opt.label === optionName)
                           const values = optionData && optionData.values ? optionData.values : []
                           return (
                             <CTableRow key={optionName}>
@@ -423,12 +334,9 @@ const OptionTable = ({ onOptionsChange }) => {
                       <CTableBody>
                         {optionCombinations.map((combo, idx) => {
                           // 옵션 종류 리스트 (예: 색상, 사이즈)
-                          const optionKinds =
-                            optionSetting === 'optionset'
-                              ? selectedOptionSet?.options.map((opt) => opt.name)
-                              : options
-                                  .filter((opt) => selectedOptions.hasOwnProperty(opt.label))
-                                  .map((opt) => opt.label)
+                          const optionKinds = options
+                            .filter((opt) => selectedOptions.hasOwnProperty(opt.label))
+                            .map((opt) => opt.label)
                           // 옵션 구성: 각 옵션종류와 해당 조합 값 매핑
                           const 옵션구성 = optionKinds.map((kind, index) => (
                             <span key={kind}>
