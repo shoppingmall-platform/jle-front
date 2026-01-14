@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import {
   CContainer,
@@ -12,13 +12,14 @@ import {
   CBadge,
 } from '@coreui/react'
 import { getProductDetail } from '@/apis/product/productApis'
-import { addToCart } from '@/apis/member/cartApis'
+import { addToCart, getCartItems } from '@/apis/member/cartApis'
 import useAddToCart from '@/hooks/useAddToCart'
 import { formatPrice } from '@/utils/utils'
 import 'react-quill/dist/quill.snow.css'
 
 const ProductDetail = () => {
   const { productId } = useParams()
+  const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [selectedImage, setSelectedImage] = useState('')
   const [selectedOptions, setSelectedOptions] = useState({})
@@ -46,11 +47,17 @@ const ProductDetail = () => {
   const onClickAddToCart = async () => {
     if (!product) return
 
-    if (Object.keys(selectedOptions).length === 0) {
+    // “없음” 옵션 예외 처리: product.productOptions가 딱 하나이고 이름이 “없음”인 경우
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    // selectedOptions가 비어 있고, “없음” 옵션 예외도 아닐 때만 경고
+    if (Object.keys(selectedOptions).length === 0 && !hasOnlyNoneOption) {
       alert('옵션을 선택해주세요!')
       return
     }
 
+    // matchedOption 계산 (selectedOptions가 비어 있어도 “없음” 옵션의 details가 []이므로 매칭됨)
     const matchedOption = product.productOptions.find((option) => {
       const selectedSet = new Set(
         Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
@@ -94,6 +101,92 @@ const ProductDetail = () => {
     setSelectedOptions((prev) => ({ ...prev, [type]: value }))
   }
 
+  const handleDirectPurchase = async () => {
+    if (!product) return
+
+    // "없음" 옵션 예외 처리
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    // 옵션 선택 확인
+    if (Object.keys(selectedOptions).length === 0 && !hasOnlyNoneOption) {
+      alert('옵션을 선택해주세요!')
+      return
+    }
+
+    // 선택된 옵션 조합 찾기
+    const matchedOption = product.productOptions.find((option) => {
+      const selectedSet = new Set(
+        Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
+      )
+      const optionSet = new Set(
+        option.productOptionDetails.map(
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
+        ),
+      )
+      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
+    })
+
+    if (!matchedOption) {
+      alert('해당 옵션 조합이 존재하지 않습니다.')
+      return
+    }
+
+    // 장바구니에 임시 추가
+    const payload = [
+      {
+        productOptionId: matchedOption.productOptionId,
+        quantity,
+      },
+    ]
+
+    try {
+      console.log('🛒 바로 구매 - 장바구니 추가:', payload)
+      const result = await addToCart(payload)
+      console.log('✅ 장바구니 추가 결과:', result)
+
+      // 짧은 딜레이 (서버 반영 대기)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // 장바구니 전체 조회
+      console.log('📦 장바구니 전체 조회 시작...')
+      const cartData = await getCartItems()
+      console.log('📦 장바구니 조회 결과:', cartData)
+
+      if (!cartData.cartItems || cartData.cartItems.length === 0) {
+        alert('장바구니가 비어있습니다.')
+        return
+      }
+
+      // 방금 추가한 productOptionId와 일치하는 항목 찾기
+      const targetOptionId = matchedOption.productOptionId
+      console.log('🔍 찾을 productOptionId:', targetOptionId)
+
+      // productOptionId로 매칭 (가장 정확)
+      const addedItem = cartData.cartItems.find(
+        (item) => item.productOptionInfo?.productOptionId === targetOptionId,
+      )
+
+      if (!addedItem) {
+        console.error('❌ 추가한 상품을 장바구니에서 찾을 수 없습니다.')
+        console.log('📋 장바구니 항목들:', cartData.cartItems)
+        alert('주문 페이지 이동에 실패했습니다.')
+        return
+      }
+
+      const cartItemId = addedItem.cartItemId
+      console.log('🎯 찾은 장바구니 항목:', addedItem)
+      console.log('🎯 최종 cartItemId:', cartItemId)
+
+      // 주문 페이지로 이동
+      navigate(`/order?cartItems=${cartItemId}`)
+    } catch (error) {
+      console.error('❌ 바로 구매 실패:', error)
+      console.error('❌ 에러 상세:', error.response?.data || error.message)
+      alert('주문 페이지 이동에 실패했습니다.')
+    }
+  }
+
   if (!product) {
     return (
       <CContainer className="text-center mt-5">
@@ -125,7 +218,7 @@ const ProductDetail = () => {
                     borderRadius: '6px',
                   }}
                 />
-                <div className="d-flex justify-content-start mt-3 overflow-x-auto">
+                <div className="d-flex justify-content-center mt-3">
                   {images.map((img, idx) => (
                     <CImage
                       key={idx}
@@ -214,7 +307,7 @@ const ProductDetail = () => {
                     <CButton color="dark" className="w-100 mb-2" onClick={onClickAddToCart}>
                       장바구니에 담기
                     </CButton>
-                    <CButton color="danger" className="w-100">
+                    <CButton color="danger" className="w-100" onClick={handleDirectPurchase}>
                       바로 구매하기
                     </CButton>
                   </div>

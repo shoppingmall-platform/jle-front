@@ -21,22 +21,10 @@ const Mypage = () => {
       path: '/mypage/orders',
     },
     {
-      key: 'WISHLIST',
-      title: '관심상품',
-      description: '찜한 상품 목록을 확인할 수 있습니다.',
-      path: '/mypage/wishlist',
-    },
-    {
       key: 'PROFILE',
       title: '회원정보',
       description: '회원정보 및 배송지를 수정할 수 있습니다.',
       path: '/mypage/profile',
-    },
-    {
-      key: 'SETTINGS',
-      title: '설정',
-      description: '알림 및 보안 설정을 변경할 수 있습니다.',
-      path: '/mypage/settings',
     },
     {
       key: 'COUPON',

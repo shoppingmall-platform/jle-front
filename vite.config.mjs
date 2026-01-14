@@ -56,6 +56,12 @@ export default defineConfig(() => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
+        //토스 테스트용 서버 -> 나중에 백엔드 완성되면 바꾸기?
+        '/sandbox-dev/api': {
+          target: 'http://localhost:4242',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/sandbox-dev\/api/, ''),
+        },
       },
     },
   }
