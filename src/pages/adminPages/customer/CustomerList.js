@@ -57,9 +57,11 @@ const CustomerList = () => {
 
     try {
       const data = await searchMember(conditions)
-      setMemberData(data)
+      console.log('✅ 회원 검색 결과:', data)
+      setMemberData(data || [])
     } catch (error) {
-      console.error('회원 검색 오류:', error)
+      console.error('❌ 회원 검색 오류:', error)
+      setMemberData([])
     }
   }
 
@@ -187,7 +189,7 @@ const CustomerList = () => {
           <div className="body-section">
             <CRow className="align-items-center">
               <CCol md="6">
-                <span className="fw-bold">총 {memberData.length}명</span>
+                <span className="fw-bold">총 {memberData?.length || 0}명</span>
               </CCol>
               <CCol md="6" className="d-flex justify-content-end gap-2">
                 <CFormSelect size="sm" style={{ width: 'auto' }}>
@@ -207,7 +209,10 @@ const CustomerList = () => {
               <tr>
                 <th>
                   <CFormCheck
-                    checked={memberCheckbox.selectedItems.length === memberData.length}
+                    checked={
+                      memberData.length > 0 &&
+                      memberCheckbox.selectedItems.length === memberData.length
+                    }
                     onChange={memberCheckbox.handleSelectAll}
                   />
                 </th>
@@ -222,24 +227,32 @@ const CustomerList = () => {
               </tr>
             </thead>
             <CTableBody>
-              {memberData.map((member) => (
-                <CTableRow key={member.memberId}>
-                  <CTableDataCell>
-                    <CFormCheck
-                      checked={memberCheckbox.selectedItems.includes(member.memberId)}
-                      onChange={() => memberCheckbox.handleSelectItem(member.memberId)}
-                    />
+              {memberData && memberData.length > 0 ? (
+                memberData.map((member) => (
+                  <CTableRow key={member.memberId}>
+                    <CTableDataCell>
+                      <CFormCheck
+                        checked={memberCheckbox.selectedItems.includes(member.memberId)}
+                        onChange={() => memberCheckbox.handleSelectItem(member.memberId)}
+                      />
+                    </CTableDataCell>
+                    <CTableDataCell>{member.createAt?.slice(0, 10)}</CTableDataCell>
+                    <CTableDataCell>{member.name}</CTableDataCell>
+                    <CTableDataCell>{member.memberId}</CTableDataCell>
+                    <CTableDataCell>{member.level}</CTableDataCell>
+                    <CTableDataCell>{member.phoneNumber}</CTableDataCell>
+                    <CTableDataCell>{member.gender}</CTableDataCell>
+                    <CTableDataCell>{member.birthday}</CTableDataCell>
+                    <CTableDataCell>{member.status}</CTableDataCell>
+                  </CTableRow>
+                ))
+              ) : (
+                <CTableRow>
+                  <CTableDataCell colSpan="9" className="text-center">
+                    검색 결과가 없습니다.
                   </CTableDataCell>
-                  <CTableDataCell>{member.createAt?.slice(0, 10)}</CTableDataCell>
-                  <CTableDataCell>{member.name}</CTableDataCell>
-                  <CTableDataCell>{member.memberId}</CTableDataCell>
-                  <CTableDataCell>{member.level}</CTableDataCell>
-                  <CTableDataCell>{member.phoneNumber}</CTableDataCell>
-                  <CTableDataCell>{member.gender}</CTableDataCell>
-                  <CTableDataCell>{member.birthday}</CTableDataCell>
-                  <CTableDataCell>{member.status}</CTableDataCell>
                 </CTableRow>
-              ))}
+              )}
             </CTableBody>
           </CTable>
         </CCardBody>
