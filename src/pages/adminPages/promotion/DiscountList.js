@@ -43,20 +43,74 @@ const DiscountList = () => {
       return
     }
 
-    try {
-      for (const discountId of discountCheckbox.selectedItems) {
-        await deleteDiscount({ discountId }) // 개별 삭제 요청
-      }
-
-      alert('삭제가 완료되었습니다.')
-
-      discountCheckbox.handleDeleteSelected() // 선택 초기화
-    } catch (error) {
-      console.error('삭제 중 오류 발생:', error)
-      alert('삭제에 실패했습니다.')
+    if (
+      !window.confirm(`선택한 ${discountCheckbox.selectedItems.length}개 항목을 삭제하시겠습니까?`)
+    ) {
+      return
     }
 
-    handleSearch()
+    try {
+      console.log('🗑️ 삭제 요청:', discountCheckbox.selectedItems)
+
+      const failedDeletes = []
+
+      for (const discountId of discountCheckbox.selectedItems) {
+        try {
+          await deleteDiscount({ discountId })
+        } catch (error) {
+          // 외래키 제약 조건 에러 확인
+          const isForeignKeyError =
+            error.response?.data?.errorInfo?.includes('foreign key constraint')
+
+          if (isForeignKeyError) {
+            // 🔥 사용 중인 할인코드 - 강제 삭제 확인
+            const forceDelete = window.confirm(
+              `⚠️ 할인코드 ID ${discountId}는 과거 주문에서 사용된 이력이 있습니다.\n\n` +
+                `(만료된 할인이어도 주문 이력이 남아있으면 삭제할 수 없습니다)\n\n` +
+                `강제로 삭제하시겠습니까?\n` +
+                `→ 관련된 주문 할인 정보도 함께 삭제됩니다.`,
+            )
+
+            if (forceDelete) {
+              try {
+                // 강제 삭제 API 호출
+                await deleteDiscount({ discountId, force: true })
+                console.log(`✅ 할인코드 ${discountId} 강제 삭제 성공`)
+              } catch (forceError) {
+                failedDeletes.push(discountId)
+                console.error(`❌ 할인코드 ${discountId} 강제 삭제 실패:`, forceError)
+              }
+            } else {
+              failedDeletes.push(discountId)
+            }
+          } else {
+            failedDeletes.push(discountId)
+            console.error(`❌ 할인코드 ${discountId} 삭제 실패:`, error)
+          }
+        }
+      }
+
+      console.log('✅ 삭제 완료')
+
+      // 결과에 따라 다른 메시지 표시
+      if (failedDeletes.length === 0) {
+        alert('삭제가 완료되었습니다.')
+      } else if (failedDeletes.length === discountCheckbox.selectedItems.length) {
+        alert('삭제가 취소되었습니다.')
+        return // 재조회 하지 않음
+      } else {
+        alert(`일부 항목이 삭제되었습니다.\n\n삭제 실패: ${failedDeletes.length}개`)
+      }
+
+      // ✅ 삭제 성공 후 재조회
+      await handleSearch()
+
+      // ✅ 선택 초기화
+      discountCheckbox.handleDeleteSelected()
+    } catch (error) {
+      console.error('❌ 삭제 중 오류 발생:', error)
+      alert('삭제 중 오류가 발생했습니다.')
+    }
   }
 
   const handleReferenceDateChange = (event) => {
@@ -160,25 +214,40 @@ const DiscountList = () => {
                 <th>할인값</th>
                 <th>시작일</th>
                 <th>종료일</th>
+                <th>상태</th>
               </tr>
             </thead>
             <tbody className="table-body">
-              {discountList.map((discount) => (
-                <tr key={discount.discountId}>
-                  <td>
-                    <CFormCheck
-                      checked={discountCheckbox.selectedItems.includes(discount.discountId)}
-                      onChange={() => discountCheckbox.handleSelectItem(discount.discountId)} // 개별 선택
-                    />
-                  </td>
-                  <td>{discount.discountId}</td>
-                  <td>{discount.discountName}</td>
-                  <td>{discount.discountType}</td>
-                  <td>{discount.discountValue}</td>
-                  <td>{discount.discountStartDate}</td>
-                  <td>{discount.discountEndDate}</td>
-                </tr>
-              ))}
+              {discountList.map((discount) => {
+                // 현재 시간과 종료일 비교
+                const now = new Date()
+                const endDate = new Date(discount.discountEndDate)
+                const isExpired = endDate < now
+
+                return (
+                  <tr key={discount.discountId}>
+                    <td>
+                      <CFormCheck
+                        checked={discountCheckbox.selectedItems.includes(discount.discountId)}
+                        onChange={() => discountCheckbox.handleSelectItem(discount.discountId)} // 개별 선택
+                      />
+                    </td>
+                    <td>{discount.discountId}</td>
+                    <td>{discount.discountName}</td>
+                    <td>{discount.discountType}</td>
+                    <td>{discount.discountValue}</td>
+                    <td>{discount.discountStartDate}</td>
+                    <td>{discount.discountEndDate}</td>
+                    <td>
+                      {isExpired ? (
+                        <span style={{ color: 'red', fontWeight: 'bold' }}>만료됨</span>
+                      ) : (
+                        <span style={{ color: 'green', fontWeight: 'bold' }}>진행중</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </CCardBody>

@@ -18,12 +18,6 @@ import DateRangePicker from '@/components/admin/DateRangePicker'
 import CategoryPicker from '@/components/admin/product/CategoryPicker'
 import { getProductList } from '@/apis/product/productApis'
 
-const data = {
-  total: 5,
-  sold: 3,
-  unsold: 2,
-}
-
 const ProductList = () => {
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
@@ -32,6 +26,13 @@ const ProductList = () => {
   const [searchKeyword, setSearchKeyword] = useState('')
   const [page, setPage] = useState(0)
   const [size, setSize] = useState(20)
+
+  // ✅ 통계 데이터 state 추가
+  const [statistics, setStatistics] = useState({
+    total: 0,
+    sold: 0,
+    unsold: 0,
+  })
 
   const fetchProducts = async () => {
     try {
@@ -61,13 +62,29 @@ const ProductList = () => {
             : '-',
           category: `${product.categoryId}`,
           note: '-',
+          // ✅ 판매 상태 추가 (백엔드 응답에 있다면 사용, 없으면 기본값)
+          isSelling: product.isSelling ?? true,
         }))
         setProductData(formattedProductData)
+
+        // ✅ 통계 계산
+        const total = formattedProductData.length
+        const sold = formattedProductData.filter((p) => p.isSelling).length
+        const unsold = total - sold
+
+        setStatistics({
+          total,
+          sold,
+          unsold,
+        })
       } else {
         setProductData([])
+        setStatistics({ total: 0, sold: 0, unsold: 0 })
       }
     } catch (error) {
       console.error('❌ 상품 목록 조회 실패:', error)
+      setProductData([])
+      setStatistics({ total: 0, sold: 0, unsold: 0 })
     }
   }
 
@@ -79,6 +96,7 @@ const ProductList = () => {
         <h3>상품 목록</h3>
       </CRow>
 
+      {/* ✅ 통계 카드 - 실제 데이터 반영 */}
       <CCard className="mb-4">
         <CCardBody>
           <div>
@@ -91,9 +109,9 @@ const ProductList = () => {
                   alignItems: 'center',
                 }}
               >
-                <span>전체: {data.total}건</span>
-                <span>판매함: {data.sold}건</span>
-                <span>판매안함: {data.unsold}건</span>
+                <span>전체: {statistics.total}건</span>
+                <span>판매함: {statistics.sold}건</span>
+                <span>판매안함: {statistics.unsold}건</span>
               </div>
             </CRow>
           </div>

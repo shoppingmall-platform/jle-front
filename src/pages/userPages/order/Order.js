@@ -190,8 +190,8 @@ const Order = () => {
         })),
         paymentMethod: '카드', // TODO: PaymentSection에서 선택한 결제수단으로 교체 필요
         orderDiscount: {
-          couponId: discountInfo.couponId,
-          points: discountInfo.points,
+          couponId: discountInfo.couponId || null,
+          points: discountInfo.points || 0,
         },
         orderDetail: {
           originalTotal: originalSum,
@@ -204,14 +204,19 @@ const Order = () => {
       }
 
       console.log('📦 주문 생성 요청:', orderData)
+      // 1. 주문 생성 후 응답 처리
       const orderResponse = await createOrder(orderData)
       console.log('✅ 주문 생성 성공:', orderResponse)
 
+      // ✅ orderNumber로 받기
+      const orderId = orderResponse.orderNumber // ← 여기만 변경!
+      console.log('📝 주문번호:', orderId)
+
       // 2. 토스 페이먼츠 결제 요청
       await paymentWidgets.requestPayment({
-        orderId: orderResponse.orderId, // 백엔드에서 받은 실제 주문번호
+        orderId: orderId, // ✅ 토스는 orderId로 받음 (그대로)
         orderName: 'JLE 쇼핑몰 주문',
-        successUrl: `${window.location.origin}/order/success?orderId=${orderResponse.orderId}&amount=${finalPayment}`,
+        successUrl: `${window.location.origin}/order/success?orderId=${orderId}&amount=${finalPayment}`,
         failUrl: `${window.location.origin}/order/fail`,
       })
     } catch (error) {
