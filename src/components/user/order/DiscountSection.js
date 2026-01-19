@@ -1,4 +1,3 @@
-// src/components/order/DiscountSection.jsx
 import React, { useEffect, useState } from 'react'
 import {
   CRow,
@@ -12,13 +11,7 @@ import {
   CCardBody,
   CCardHeader,
 } from '@coreui/react'
-
-// 더미 쿠폰 데이터: 실제 API 호출 시 교체하세요.
-const DUMMY_COUPONS = [
-  { couponId: 1, name: '첫구매 쿠폰 (₩3,000 할인)', discountAmount: 3000 },
-  { couponId: 2, name: '회원 등급 쿠폰 (₩2,000 할인)', discountAmount: 2000 },
-  { couponId: 3, name: '기념일 쿠폰 (₩5,000 할인)', discountAmount: 5000 },
-]
+import couponApi from '@/apis/promotion/couponApis'
 
 const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
   // ─────────────────────────────────────────────────────────────
@@ -42,41 +35,80 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
 
   const shippingFee = totalDiscountedSum >= 70000 ? 0 : 3000
   // ─────────────────────────────────────────────────────────────
-  // 2) 적립금(포인트) 사용 관련 상태
-  // ─────────────────────────────────────────────────────────────
-
-  // 예시: 보유 포인트 더미 2,000원 (실제 API 연동 필요)
-  const DUMMY_AVAILABLE_POINTS = 2000
-
-  const [availablePoints] = useState(DUMMY_AVAILABLE_POINTS)
-  const [usePoints, setUsePoints] = useState(0)
-
-  const handlePointsChange = (value) => {
-    const onlyNums = value.replace(/[^0-9]/g, '')
-    const num = Number(onlyNums) || 0
-    if (num > availablePoints) {
-      setUsePoints(availablePoints)
-    } else {
-      setUsePoints(num)
-    }
-  }
-
-  const handleUseAllPoints = () => {
-    setUsePoints(availablePoints)
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // 3) 쿠폰 사용 관련 상태
+  // 2) 쿠폰 사용 관련 상태
   // ─────────────────────────────────────────────────────────────
 
   const [ownedCoupons, setOwnedCoupons] = useState([])
   const [selectedCouponId, setSelectedCouponId] = useState('')
   const [couponError, setCouponError] = useState(null)
+  const [loadingCoupons, setLoadingCoupons] = useState(true)
 
   useEffect(() => {
-    // 실제 API 호출하여 setOwnedCoupons(response.data) 로 교체 필요
-    setOwnedCoupons(DUMMY_COUPONS)
-  }, [])
+    // ✅ 실제 내 쿠폰 조회 API 호출
+    const fetchMyCoupons = async () => {
+      try {
+        setLoadingCoupons(true)
+        console.log('🎫 주문 페이지 - 내 쿠폰 조회 중...')
+        const coupons = await couponApi.getMyCoupons()
+        console.log('🎫 주문 페이지 - 조회된 쿠폰:', coupons)
+
+        // API 응답 형식을 컴포넌트에서 사용하는 형식으로 변환
+        const formattedCoupons = (coupons || [])
+          .filter((coupon) => coupon.status === 'ACTIVE') // 사용 가능한 쿠폰만
+          .map((coupon) => ({
+            selectId: coupon.memberCouponId, // select의 value로 사용
+            couponId: coupon.couponId, // 실제 쿠폰 ID (백엔드로 전송)
+            memberCouponId: coupon.memberCouponId,
+            name: formatCouponName(coupon),
+            discountAmount: calculateDiscountAmount(coupon, totalDiscountedSum),
+            couponType: coupon.couponType,
+            originalDiscountAmount: coupon.discountAmount,
+            maxDiscountPrice: coupon.maxDiscountPrice,
+            minOrderPrice: coupon.minOrderPrice,
+          }))
+
+        console.log('🎫 변환된 쿠폰 데이터:', formattedCoupons)
+        setOwnedCoupons(formattedCoupons)
+      } catch (error) {
+        console.error('❌ 쿠폰 조회 실패:', error)
+        setCouponError('쿠폰을 불러오는 중 오류가 발생했습니다.')
+      } finally {
+        setLoadingCoupons(false)
+      }
+    }
+
+    fetchMyCoupons()
+  }, [totalDiscountedSum])
+
+  // 쿠폰 이름 포맷팅
+  const formatCouponName = (coupon) => {
+    if (coupon.couponType === 'PERCENT') {
+      return `${coupon.couponName} (${coupon.discountAmount}% 할인)`
+    } else {
+      return `${coupon.couponName} (₩${coupon.discountAmount.toLocaleString()} 할인)`
+    }
+  }
+
+  // 실제 할인 금액 계산
+  const calculateDiscountAmount = (coupon, orderAmount) => {
+    // 최소 주문금액 체크
+    if (orderAmount < coupon.minOrderPrice) {
+      return 0
+    }
+
+    if (coupon.couponType === 'PERCENT') {
+      // 할인율 쿠폰
+      const discount = Math.floor(orderAmount * (coupon.discountAmount / 100))
+      // 최대 할인금액 제한
+      if (coupon.maxDiscountPrice > 0) {
+        return Math.min(discount, coupon.maxDiscountPrice)
+      }
+      return discount
+    } else {
+      // 정액 할인 쿠폰
+      return coupon.discountAmount
+    }
+  }
 
   const handleCouponSelect = (couponIdStr) => {
     setCouponError(null)
@@ -86,33 +118,37 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
       return
     }
     const id = Number(couponIdStr)
-    const found = ownedCoupons.find((c) => c.couponId === id)
+    const found = ownedCoupons.find((c) => c.selectId === id)
     if (!found) {
       setCouponError('유효한 쿠폰을 선택해주세요.')
+    } else if (totalDiscountedSum < found.minOrderPrice) {
+      setCouponError(
+        `이 쿠폰은 ${found.minOrderPrice.toLocaleString()}원 이상 구매 시 사용 가능합니다.`,
+      )
     }
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 4) 추가 할인액(쿠폰+포인트) 계산
+  // 3) 추가 할인액(쿠폰) 계산
   // ─────────────────────────────────────────────────────────────
 
   const [additionalDiscount, setAdditionalDiscount] = useState(0)
 
   useEffect(() => {
-    const couponObj = ownedCoupons.find((c) => c.couponId === Number(selectedCouponId))
+    const couponObj = ownedCoupons.find((c) => c.selectId === Number(selectedCouponId))
     const couponAmt = couponObj ? couponObj.discountAmount : 0
-    const pointAmt = usePoints
-    setAdditionalDiscount(couponAmt + pointAmt)
+    setAdditionalDiscount(couponAmt)
 
-    // 부모 컴포넌트에 쿠폰 ID, 포인트, 추가 할인액 전달
+    // 부모 컴포넌트에 쿠폰 ID (실제 couponId), 추가 할인액 전달
     if (onDiscountChange) {
       onDiscountChange({
-        couponId: Number(selectedCouponId) || 0,
-        points: usePoints,
-        additionalDiscount: couponAmt + pointAmt,
+        couponId: couponObj ? couponObj.couponId : 0, // ← 실제 쿠폰 ID
+        memberCouponId: couponObj ? couponObj.memberCouponId : 0,
+        points: 0, // 적립금 사용 안 함
+        additionalDiscount: couponAmt,
       })
     }
-  }, [usePoints, selectedCouponId, ownedCoupons])
+  }, [selectedCouponId, ownedCoupons])
 
   // ─────────────────────────────────────────────────────────────
   // 5) 총 할인금액 & 최종 결제금액 계산
@@ -154,32 +190,14 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
         </CCardBody>
       </CCard>
 
-      {/* ───────────── 2) 적립금 + 쿠폰 적용 ───────────── */}
-      <CRow className="mb-4">
-        {/* 적립금 사용 */}
-        <CCol xs={12} md={6}>
-          <CFormLabel>적립금 사용</CFormLabel>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <CFormInput
-              type="number"
-              placeholder="0"
-              value={usePoints}
-              onChange={(e) => handlePointsChange(e.target.value)}
-              style={{ maxWidth: '120px' }}
-            />
-            <CButton color="outline-dark" onClick={handleUseAllPoints}>
-              전액 사용
-            </CButton>
-          </div>
-          <div className="text-muted small" style={{ marginTop: '0.5rem' }}>
-            보유 잔액: {availablePoints.toLocaleString()}원
-          </div>
-        </CCol>
-
-        {/* 쿠폰 선택 */}
-        <CCol xs={12} md={6}>
+      {/* ───────────── 2) 쿠폰 적용 ───────────── */}
+      <CCard className="mb-4">
+        <CCardHeader>쿠폰 선택</CCardHeader>
+        <CCardBody>
           <CFormLabel>보유 쿠폰</CFormLabel>
-          {ownedCoupons.length === 0 ? (
+          {loadingCoupons ? (
+            <div className="text-muted small">쿠폰 불러오는 중...</div>
+          ) : ownedCoupons.length === 0 ? (
             <div className="text-muted small">사용 가능한 쿠폰이 없습니다.</div>
           ) : (
             <CFormSelect
@@ -188,8 +206,14 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
             >
               <option value="">-- 쿠폰 선택 (선택 안 함) --</option>
               {ownedCoupons.map((coupon) => (
-                <option key={coupon.couponId} value={coupon.couponId}>
-                  {coupon.name} (₩{coupon.discountAmount.toLocaleString()})
+                <option
+                  key={coupon.selectId}
+                  value={coupon.selectId}
+                  disabled={totalDiscountedSum < coupon.minOrderPrice}
+                >
+                  {coupon.name}
+                  {totalDiscountedSum < coupon.minOrderPrice &&
+                    ` (최소 ${coupon.minOrderPrice.toLocaleString()}원 이상)`}
                 </option>
               ))}
             </CFormSelect>
@@ -202,8 +226,8 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
           <div className="text-muted small" style={{ marginTop: '0.5rem' }}>
             보유 쿠폰 개수: {ownedCoupons.length}개
           </div>
-        </CCol>
-      </CRow>
+        </CCardBody>
+      </CCard>
 
       {/* ───────────── 3) 최종 결제정보 ───────────── */}
       <CCard>
@@ -219,10 +243,10 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
           </CRow>
           <CRow className="mb-2">
             <CCol xs={6}>
-              <CFormLabel>추가 할인 금액</CFormLabel>
+              <CFormLabel>쿠폰 할인</CFormLabel>
             </CCol>
             <CCol xs={6} className="text-end" style={{ color: '#d9534f', fontWeight: 'bold' }}>
-              {additionalDiscount.toLocaleString()}원
+              {additionalDiscount > 0 ? `-${additionalDiscount.toLocaleString()}원` : '0원'}
             </CCol>
           </CRow>
           <hr />

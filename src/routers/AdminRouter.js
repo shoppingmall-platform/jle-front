@@ -10,7 +10,7 @@ const ProductCategories = React.lazy(() => import('@/pages/adminPages/product/Pr
 const ProductOption = React.lazy(() => import('@/pages/adminPages/product/ProductOption'))
 const CustomerMain = React.lazy(() => import('@/pages/adminPages/customer/CustomerMain'))
 const CustomerList = React.lazy(() => import('@/pages/adminPages/customer/CustomerList'))
-const OrderMain = React.lazy(() => import('@/pages/adminPages/order/OrderMain'))
+const OrderDetail = React.lazy(() => import('@/pages/adminPages/order/OrderDetail'))
 const OrderList = React.lazy(() => import('@/pages/adminPages/order/OrderList'))
 const DiscountAdd = React.lazy(() => import('@/pages/adminPages/promotion/DiscountAdd'))
 const DiscountList = React.lazy(() => import('@/pages/adminPages/promotion/DiscountList'))
@@ -27,7 +27,7 @@ export const adminRouter = [
   { path: 'products/option', element: ProductOption },
   { path: 'customers', element: CustomerMain },
   { path: 'customers/list', element: CustomerList },
-  { path: 'orders', element: OrderMain },
+  { path: 'orders/:orderId', element: OrderDetail },
   { path: 'orders/list', element: OrderList },
   { path: 'promotion/discounts/add', element: DiscountAdd },
   { path: 'promotion/discounts/list', element: DiscountList },

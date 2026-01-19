@@ -23,8 +23,14 @@ export function useApi() {
     try {
       const response =
         method === 'GET'
-          ? await api.get(url, data, { ...config })
-          : await api.post(url, data, config)
+          ? await api.get(url, { params: data, ...config })
+          : method === 'DELETE'
+            ? await api.delete(url, { data, ...config })
+            : method === 'PUT'
+              ? await api.put(url, data, config)
+              : method === 'PATCH'
+                ? await api.patch(url, data, config)
+                : await api.post(url, data, config)
 
       return {
         status: response?.status,
@@ -56,13 +62,13 @@ export function useApi() {
             isTokenRefreshing = false
             authStore.getState().logout()
             authStore.getState().login()
+            return
           }
-
-          return
+        } else {
+          // ✅ 다른 요청이 토큰을 갱신 중이면 1초 대기 후 재시도
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          return await request(method, url, data, config)
         }
-
-        // 다른 요청도 기다리게 하려면 Promise queue 등 구현 필요
-        return
       }
 
       if (status === 401) {
@@ -83,6 +89,9 @@ export function useApi() {
 
   const get = (url, params, config) => request('GET', url, params, config)
   const post = (url, params, config) => request('POST', url, params, config)
+  const del = (url, params, config) => request('DELETE', url, params, config)
+  const put = (url, params, config) => request('PUT', url, params, config)
+  const patch = (url, params, config) => request('PATCH', url, params, config)
 
-  return { get, post }
+  return { get, post, delete: del, put, patch }
 }

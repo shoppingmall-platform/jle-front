@@ -43,9 +43,7 @@ const Mypage = () => {
   return (
     <CContainer className="mt-5 mb-5 text-center" style={{ maxWidth: '1000px' }}>
       <h4 className="mb-5">마이페이지</h4>
-      <CCard className="mb-4" style={{ minHeight: '150px' }}>
-        적립금
-      </CCard>
+
       <CCard className="mb-4" style={{ minHeight: '150px' }}>
         주문처리 현황
       </CCard>

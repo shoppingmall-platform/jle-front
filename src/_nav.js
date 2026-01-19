@@ -97,8 +97,8 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: '주문취소',
-        to: 'orders/cancel',
+        name: '주문상세',
+        to: 'orders/detail',
       },
     ],
   },
