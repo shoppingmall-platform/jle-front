@@ -139,7 +139,11 @@ const OrderDetail = () => {
           <h4>주문 상세 정보</h4>
         </CCol>
         <CCol className="text-end">
-          <CButton color="secondary" variant="outline" onClick={() => navigate('/admin/orders')}>
+          <CButton
+            color="secondary"
+            variant="outline"
+            onClick={() => navigate('/admin/orders/list')}
+          >
             목록으로
           </CButton>
         </CCol>
@@ -245,14 +249,20 @@ const OrderDetail = () => {
               {order.products && order.products.length > 0 ? (
                 order.products.map((product, index) => (
                   <CTableRow key={index}>
-                    <CTableDataCell>{product.productName || '-'}</CTableDataCell>
-                    <CTableDataCell>{product.optionName || '-'}</CTableDataCell>
+                    <CTableDataCell>{product.productInfo?.productName || '-'}</CTableDataCell>
+
+                    <CTableDataCell>
+                      {product.productInfo?.options && product.productInfo.options.length > 0
+                        ? product.productInfo.options.map((opt) => opt.optionName).join(', ')
+                        : '-'}
+                    </CTableDataCell>
                     <CTableDataCell className="text-center">{product.quantity}개</CTableDataCell>
                     <CTableDataCell className="text-center">
-                      {product.discountType === 'RATE' && product.discountId && (
-                        <span className="text-danger">할인 적용</span>
+                      {product.discountType === 'RATE' && product.discountValue ? (
+                        <span className="text-danger">{product.discountValue}% 할인</span>
+                      ) : (
+                        <span className="text-muted">-</span>
                       )}
-                      {!product.discountType && <span className="text-muted">-</span>}
                     </CTableDataCell>
                     <CTableDataCell className="text-end">
                       {product.price?.toLocaleString()}원

@@ -44,7 +44,10 @@ export function useApi() {
 
       if (status === 400) {
         alert('시스템 오류입니다.\n관리자에게 문의바랍니다.')
-        return
+        return {
+          status: status,
+          errorInfo: err.response?.data || {},
+        }
       }
 
       if (status === 401 && message === 'expired') {
@@ -62,7 +65,10 @@ export function useApi() {
             isTokenRefreshing = false
             authStore.getState().logout()
             authStore.getState().login()
-            return
+            return {
+              status: 401,
+              errorInfo: { message: 'Token refresh failed' },
+            }
           }
         } else {
           // ✅ 다른 요청이 토큰을 갱신 중이면 1초 대기 후 재시도
@@ -77,7 +83,10 @@ export function useApi() {
         setTimeout(() => {
           authStore.getState().login()
         }, 1500)
-        return
+        return {
+          status: status,
+          errorInfo: err.response?.data || {},
+        }
       }
 
       return {

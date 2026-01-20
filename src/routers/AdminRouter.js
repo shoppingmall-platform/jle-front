@@ -2,13 +2,10 @@ import { PrimeReactContext } from 'primereact/api'
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('@/pages/adminPages/dashboard/Dashboard'))
-const ProductMain = React.lazy(() => import('@/pages/adminPages/product/ProductMain'))
 const ProductAdd = React.lazy(() => import('@/pages/adminPages/product/ProductAdd'))
 const ProductList = React.lazy(() => import('@/pages/adminPages/product/ProductList'))
-const ProductManage = React.lazy(() => import('@/pages/adminPages/product/ProductManage'))
 const ProductCategories = React.lazy(() => import('@/pages/adminPages/product/ProductCategories'))
 const ProductOption = React.lazy(() => import('@/pages/adminPages/product/ProductOption'))
-const CustomerMain = React.lazy(() => import('@/pages/adminPages/customer/CustomerMain'))
 const CustomerList = React.lazy(() => import('@/pages/adminPages/customer/CustomerList'))
 const OrderDetail = React.lazy(() => import('@/pages/adminPages/order/OrderDetail'))
 const OrderList = React.lazy(() => import('@/pages/adminPages/order/OrderList'))
@@ -19,13 +16,10 @@ const CouponList = React.lazy(() => import('@/pages/adminPages/promotion/CouponL
 
 export const adminRouter = [
   { path: '', element: Dashboard },
-  { path: 'products', element: ProductMain },
   { path: 'products/add', element: ProductAdd },
   { path: 'products/list', element: ProductList },
-  { path: 'products/manage', element: ProductManage },
   { path: 'products/categories', element: ProductCategories },
   { path: 'products/option', element: ProductOption },
-  { path: 'customers', element: CustomerMain },
   { path: 'customers/list', element: CustomerList },
   { path: 'orders/:orderId', element: OrderDetail },
   { path: 'orders/list', element: OrderList },

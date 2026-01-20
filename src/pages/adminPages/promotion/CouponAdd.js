@@ -206,14 +206,14 @@ const CouponAdd = () => {
                 <td className="text-center table-header">발급 방식</td>
                 <td colSpan="4">
                   <div className="d-flex align-items-center gap-4">
-                    <CFormCheck
+                    {/* <CFormCheck
                       type="radio"
                       name="issueType"
                       value="auto"
                       label="자동 발급"
                       checked={issueType === 'auto'}
                       onChange={(e) => setIssueType(e.target.value)}
-                    />
+                    /> */}
                     <CFormCheck
                       type="radio"
                       name="issueType"
