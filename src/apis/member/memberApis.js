@@ -92,13 +92,22 @@ export const changePassword = async (memberId, oldPassword, newPassword) => {
   }
 }
 
-export const withdrawMember = async () => {
+export const withdrawMember = async (memberId) => {
   try {
-    const response = await api.post('/member/v1/members/me/withdraw')
-    console.log(response)
+    console.log('🚪 회원 탈퇴 API 호출 - memberId:', memberId)
+    const response = await api.post(
+      '/member/v1/members/me/withdraw',
+      { memo: '사용자 본인 탈퇴' },
+      {
+        headers: {
+          'X-MEMBER-ID': memberId,
+        },
+      },
+    )
+    console.log('✅ 탈퇴 API 성공:', response)
     return response.data
   } catch (error) {
-    console.error(error)
+    console.error('❌ 탈퇴 API 실패:', error)
     throw error
   }
 }
@@ -117,6 +126,38 @@ export const searchMember = async (conditions, params = { page: 0, size: 10 }) =
   }
 }
 
+// 관리자용: 회원 탈퇴/삭제 (여러 회원)
+export const withdrawMembers = async (memberIds) => {
+  try {
+    console.log('🗑️ 회원 탈퇴 요청:', memberIds)
+
+    // 각 회원마다 개별적으로 관리자 탈퇴 API 호출
+    const results = await Promise.allSettled(
+      memberIds.map((memberId) =>
+        api.post(`/member/v1/members/${memberId}/withdraw`, { memo: '관리자에 의한 탈퇴 처리' }),
+      ),
+    )
+
+    // 성공/실패 카운트
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
+
+    console.log(`✅ 탈퇴 완료: ${succeeded}명, ❌ 실패: ${failed}명`)
+
+    // 실패한 항목 로그
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`❌ ${memberIds[index]} 탈퇴 실패:`, result.reason)
+      }
+    })
+
+    return { succeeded, failed, results }
+  } catch (error) {
+    console.error('❌ 회원 탈퇴 오류:', error)
+    throw error
+  }
+}
+
 export default {
   login,
   logout,
@@ -127,4 +168,5 @@ export default {
   changePassword,
   withdrawMember,
   searchMember,
+  withdrawMembers,
 }

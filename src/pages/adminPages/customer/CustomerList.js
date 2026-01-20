@@ -21,7 +21,7 @@ import {
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import { React, useState, useEffect } from 'react'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
-import { searchMember } from '@/apis/member/memberApis'
+import { searchMember, withdrawMembers } from '@/apis/member/memberApis'
 
 const CustomerList = () => {
   const [startDate1, setStartDate1] = useState(null)
@@ -36,12 +36,14 @@ const CustomerList = () => {
   const [keyword, setKeyword] = useState('')
   const [level, setLevel] = useState('')
   const [gender, setGender] = useState('')
+  const [status, setStatus] = useState('') // 회원 상태 필터
 
   const fetchMemberData = async () => {
     const conditions = {
       name: searchField === 'name' ? keyword : null,
       email: searchField === 'email' ? keyword : null,
       level: level || null,
+      status: status || null, // 상태 필터 추가
       gender: gender || null,
       dateSearch: 'JOIN',
       startDate: startDate1 ? startDate1.toISOString().slice(0, 10) : null,
@@ -67,6 +69,37 @@ const CustomerList = () => {
 
   const handleSearchClick = () => {
     fetchMemberData()
+  }
+
+  const handleWithdrawClick = async () => {
+    if (memberCheckbox.selectedItems.length === 0) {
+      alert('탈퇴시킬 회원을 선택해주세요.')
+      return
+    }
+
+    const confirmMessage = `선택한 ${memberCheckbox.selectedItems.length}명의 회원을 탈퇴시키시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+    if (!window.confirm(confirmMessage)) {
+      return
+    }
+
+    try {
+      const result = await withdrawMembers(memberCheckbox.selectedItems)
+
+      if (result.failed > 0) {
+        alert(`처리 완료\n성공: ${result.succeeded}명\n실패: ${result.failed}명`)
+      } else {
+        alert(`선택한 ${result.succeeded}명의 회원이 성공적으로 탈퇴 처리되었습니다.`)
+      }
+
+      // 목록 새로고침
+      fetchMemberData()
+
+      // 체크박스 초기화
+      memberCheckbox.handleSelectItem([])
+    } catch (error) {
+      console.error('❌ 회원 탈퇴 처리 오류:', error)
+      alert('회원 탈퇴 처리 중 오류가 발생했습니다.\n' + error.message)
+    }
   }
 
   const memberCheckbox = useCheckboxSelection(memberData, 'memberId')
@@ -112,8 +145,21 @@ const CustomerList = () => {
                     <option value="VIP">VIP 회원</option>
                   </CFormSelect>
                 </td>
-                <td className="text-center table-header">성별</td>
+                <td className="text-center table-header">회원상태</td>
                 <td colSpan="2">
+                  <CFormSelect value={status} onChange={(e) => setStatus(e.target.value)}>
+                    <option value="">전체</option>
+                    <option value="ACTIVE">활성</option>
+                    <option value="INACTIVE">비활성</option>
+                    <option value="DORMANT">휴면</option>
+                    <option value="WITHDRAWN">탈퇴</option>
+                    <option value="SUSPENDED">정지</option>
+                  </CFormSelect>
+                </td>
+              </tr>
+              <tr>
+                <td className="text-center table-header">성별</td>
+                <td colSpan="5">
                   <div className="radio-group">
                     <CFormCheck
                       type="radio"
@@ -202,7 +248,13 @@ const CustomerList = () => {
           </div>
           <div className="body-section my-2">
             <CButton className="custom-button">불량회원 설정</CButton>
-            <CButton className="custom-button">탈퇴/삭제</CButton>
+            <CButton
+              className="custom-button"
+              onClick={handleWithdrawClick}
+              disabled={memberCheckbox.selectedItems.length === 0}
+            >
+              탈퇴/삭제
+            </CButton>
           </div>
           <CTable>
             <thead className="table-head">
@@ -229,11 +281,23 @@ const CustomerList = () => {
             <CTableBody>
               {memberData && memberData.length > 0 ? (
                 memberData.map((member) => (
-                  <CTableRow key={member.memberId}>
+                  <CTableRow
+                    key={member.memberId}
+                    style={
+                      member.withdrawn || member.status === 'WITHDRAWN'
+                        ? {
+                            backgroundColor: '#f8f9fa',
+                            opacity: 0.7,
+                            textDecoration: 'line-through',
+                          }
+                        : {}
+                    }
+                  >
                     <CTableDataCell>
                       <CFormCheck
                         checked={memberCheckbox.selectedItems.includes(member.memberId)}
                         onChange={() => memberCheckbox.handleSelectItem(member.memberId)}
+                        disabled={member.withdrawn || member.status === 'WITHDRAWN'}
                       />
                     </CTableDataCell>
                     <CTableDataCell>{member.createAt?.slice(0, 10)}</CTableDataCell>
@@ -243,7 +307,21 @@ const CustomerList = () => {
                     <CTableDataCell>{member.phoneNumber}</CTableDataCell>
                     <CTableDataCell>{member.gender}</CTableDataCell>
                     <CTableDataCell>{member.birthday}</CTableDataCell>
-                    <CTableDataCell>{member.status}</CTableDataCell>
+                    <CTableDataCell>
+                      {member.withdrawn || member.status === 'WITHDRAWN' ? (
+                        <span className="badge bg-secondary">탈퇴</span>
+                      ) : member.status === 'ACTIVE' ? (
+                        <span className="badge bg-success">활성</span>
+                      ) : member.status === 'INACTIVE' ? (
+                        <span className="badge bg-warning">비활성</span>
+                      ) : member.status === 'DORMANT' ? (
+                        <span className="badge bg-info">휴면</span>
+                      ) : member.status === 'SUSPENDED' ? (
+                        <span className="badge bg-danger">정지</span>
+                      ) : (
+                        member.status
+                      )}
+                    </CTableDataCell>
                   </CTableRow>
                 ))
               ) : (

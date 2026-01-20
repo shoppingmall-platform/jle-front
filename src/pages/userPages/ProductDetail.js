@@ -27,6 +27,65 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1)
   const { handleAddToCart } = useAddToCart()
 
+  // 선택된 옵션의 재고 확인
+  const getSelectedOptionStock = () => {
+    if (!product) return null
+
+    // "없음" 옵션 처리
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    if (hasOnlyNoneOption) {
+      return product.productOptions[0].stockQuantity
+    }
+
+    // 옵션 미선택 시
+    if (Object.keys(selectedOptions).length === 0) {
+      return null
+    }
+
+    // 선택된 옵션 조합 찾기
+    const matchedOption = product.productOptions.find((option) => {
+      const selectedSet = new Set(
+        Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
+      )
+      const optionSet = new Set(
+        option.productOptionDetails.map(
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
+        ),
+      )
+      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
+    })
+
+    return matchedOption ? matchedOption.stockQuantity : null
+  }
+
+  // 품절 여부 확인
+  const isOutOfStock = () => {
+    const stock = getSelectedOptionStock()
+    return stock !== null && stock === 0
+  }
+
+  // 재고 부족 확인
+  const isStockInsufficient = () => {
+    const stock = getSelectedOptionStock()
+    return stock !== null && stock < quantity
+  }
+
+  // 개별 옵션의 재고 확인 (품절 옵션 표시용)
+  const getOptionStock = (type, value) => {
+    if (!product) return 999
+
+    const matchedOptions = product.productOptions.filter((option) => {
+      return option.productOptionDetails.some(
+        (d) => d.productOptionType === type && d.productOptionDetailName === value,
+      )
+    })
+
+    if (matchedOptions.length === 0) return 0
+    return Math.min(...matchedOptions.map((o) => o.stockQuantity))
+  }
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -54,6 +113,19 @@ const ProductDetail = () => {
     // selectedOptions가 비어 있고, “없음” 옵션 예외도 아닐 때만 경고
     if (Object.keys(selectedOptions).length === 0 && !hasOnlyNoneOption) {
       alert('옵션을 선택해주세요!')
+      return
+    }
+
+    // 품절 확인
+    if (isOutOfStock()) {
+      alert('품절된 상품입니다.')
+      return
+    }
+
+    // 재고 부족 확인
+    if (isStockInsufficient()) {
+      const stock = getSelectedOptionStock()
+      alert(`재고가 부족합니다. (재고: ${stock}개)`)
       return
     }
 
@@ -111,6 +183,19 @@ const ProductDetail = () => {
     // 옵션 선택 확인
     if (Object.keys(selectedOptions).length === 0 && !hasOnlyNoneOption) {
       alert('옵션을 선택해주세요!')
+      return
+    }
+
+    // 품절 확인
+    if (isOutOfStock()) {
+      alert('품절된 상품입니다.')
+      return
+    }
+
+    // 재고 부족 확인
+    if (isStockInsufficient()) {
+      const stock = getSelectedOptionStock()
+      alert(`재고가 부족합니다. (재고: ${stock}개)`)
       return
     }
 
@@ -275,40 +360,109 @@ const ProductDetail = () => {
                       <div className="mt-4" key={type}>
                         <h6 className="fw-semibold">{type}</h6>
                         <div className="d-flex flex-wrap">
-                          {values.map((value) => (
-                            <CButton
-                              key={value}
-                              color={selectedOptions[type] === value ? 'dark' : 'light'}
-                              className="me-2 mb-2"
-                              onClick={() => handleSelectOption(type, value)}
-                            >
-                              {value}
-                            </CButton>
-                          ))}
+                          {values.map((value) => {
+                            const optionStock = getOptionStock(type, value)
+                            const isSoldOut = optionStock === 0
+
+                            return (
+                              <CButton
+                                key={value}
+                                color={selectedOptions[type] === value ? 'dark' : 'light'}
+                                className="me-2 mb-2"
+                                onClick={() => handleSelectOption(type, value)}
+                                disabled={isSoldOut}
+                              >
+                                {value}
+                                {isSoldOut && (
+                                  <CBadge
+                                    color="danger"
+                                    className="ms-2"
+                                    style={{ fontSize: '0.7em' }}
+                                  >
+                                    품절
+                                  </CBadge>
+                                )}
+                              </CButton>
+                            )
+                          })}
                         </div>
                         {!selectedOptions[type] && (
                           <div className="text-danger mt-1 small">[필수] 옵션을 선택해 주세요</div>
                         )}
                       </div>
                     ))}
+
+                    {/* 선택된 옵션의 재고 표시 */}
+                    {Object.keys(selectedOptions).length > 0 && (
+                      <div className="mt-3">
+                        {isOutOfStock() ? (
+                          <CBadge color="danger" className="p-2">
+                            😢 현재 품절된 상품입니다
+                          </CBadge>
+                        ) : (
+                          <div className="d-flex align-items-center gap-2">
+                            <span className="text-muted">재고:</span>
+                            <span className="fw-bold">{getSelectedOptionStock()}개</span>
+                            {isStockInsufficient() && (
+                              <CBadge color="warning">
+                                재고 부족 (최대 {getSelectedOptionStock()}개)
+                              </CBadge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="mt-3">
                     <h6 className="fw-semibold">수량</h6>
                     <input
                       type="number"
                       min="1"
+                      max={getSelectedOptionStock() || 999}
                       value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      onChange={(e) => {
+                        const newQty = Number(e.target.value)
+                        const stock = getSelectedOptionStock()
+
+                        if (stock && newQty > stock) {
+                          alert(`재고가 부족합니다. (재고: ${stock}개)`)
+                          setQuantity(stock)
+                        } else {
+                          setQuantity(newQty)
+                        }
+                      }}
+                      disabled={isOutOfStock()}
                       style={{ width: '80px', padding: '4px', textAlign: 'center' }}
                     />
+                    {Object.keys(selectedOptions).length > 0 && getSelectedOptionStock() && (
+                      <small className="text-muted ms-2">(최대 {getSelectedOptionStock()}개)</small>
+                    )}
                   </div>
 
                   <div className="mt-4">
-                    <CButton color="dark" className="w-100 mb-2" onClick={onClickAddToCart}>
-                      장바구니에 담기
+                    <CButton
+                      color="dark"
+                      className="w-100 mb-2"
+                      onClick={onClickAddToCart}
+                      disabled={isOutOfStock() || isStockInsufficient()}
+                    >
+                      {isOutOfStock()
+                        ? '품절'
+                        : isStockInsufficient()
+                          ? '재고 부족'
+                          : '장바구니에 담기'}
                     </CButton>
-                    <CButton color="danger" className="w-100" onClick={handleDirectPurchase}>
-                      바로 구매하기
+                    <CButton
+                      color="danger"
+                      className="w-100"
+                      onClick={handleDirectPurchase}
+                      disabled={isOutOfStock() || isStockInsufficient()}
+                    >
+                      {isOutOfStock()
+                        ? '품절'
+                        : isStockInsufficient()
+                          ? '재고 부족'
+                          : '바로 구매하기'}
                     </CButton>
                   </div>
                 </div>

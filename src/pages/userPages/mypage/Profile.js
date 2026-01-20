@@ -27,7 +27,9 @@ import {
   updateMember,
   withdrawMember,
   changePassword,
+  logout,
 } from '@/apis/member/memberApis'
+import { authStore } from '@/store/auth/authStore'
 
 const Profile = () => {
   const navigate = useNavigate()
@@ -197,15 +199,42 @@ const Profile = () => {
   }
 
   const handleWithdraw = async () => {
-    if (window.confirm('정말 탈퇴하시겠습니까?')) {
+    if (
+      window.confirm('정말 탈퇴하시겠습니까?\n탈퇴 시 모든 정보가 삭제되며 복구할 수 없습니다.')
+    ) {
       try {
-        await withdrawMember()
+        console.log('🚪 회원 탈퇴 시작 - memberId:', id)
+
+        // 1. 탈퇴 API 호출 (memberId 전달)
+        await withdrawMember(id)
+        console.log('✅ 탈퇴 API 성공')
+
+        // 2. 로그아웃 API 호출 (서버 세션 정리)
+        try {
+          await logout()
+          console.log('✅ 로그아웃 API 성공')
+        } catch (logoutError) {
+          // 로그아웃 실패해도 계속 진행
+          console.warn('⚠️ 로그아웃 API 실패 (무시):', logoutError)
+        }
+
+        // 3. 클라이언트 상태 정리
+        authStore.getState().setUser({})
+        authStore.getState().setToken(null)
+        console.log('✅ 클라이언트 상태 정리 완료')
+
+        // 4. 세션 스토리지 정리
+        sessionStorage.clear()
+        console.log('✅ 세션 스토리지 정리 완료')
+
         alert('탈퇴가 완료되었습니다.')
-        // 로그아웃 또는 이동 처리
+
+        // 5. 홈으로 이동 (페이지 새로고침)
         window.location.href = '/'
       } catch (error) {
         console.error('❌ 회원 탈퇴 실패:', error)
-        alert('회원 탈퇴에 실패했습니다.')
+        const errorMessage = error.response?.data?.message || error.message || '알 수 없는 오류'
+        alert(`회원 탈퇴에 실패했습니다.\n${errorMessage}`)
       }
     }
   }
