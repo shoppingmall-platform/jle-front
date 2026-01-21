@@ -71,6 +71,7 @@ const Order = () => {
         setOrderItems(filtered)
 
         // 상품별 할인합 계산: Σ[(price – discountedPrice) × quantity]
+        // 주의: additionalPrice는 할인 전후 모두 동일하므로 할인액 계산에서 제외
         const sumDiscount = filtered.reduce((sum, item) => {
           const info = item.productOptionInfo.productInfo
           const original = info.price || 0
@@ -139,16 +140,24 @@ const Order = () => {
     )
   }
 
-  // ① 원래 금액 = Σ[원가(price) × quantity]
+  // ① 원래 금액 = Σ[(원가 + 추가금) × quantity]
   const originalSum = orderItems.reduce((sum, item) => {
     const info = item.productOptionInfo.productInfo
-    return sum + (info.price || 0) * (item.quantity || 1)
+    const option = info.productOptions.find(
+      (opt) => opt.productOptionId === item.productOptionInfo.productOptionId,
+    )
+    const additionalPrice = option?.additionalPrice || 0
+    return sum + (info.price + additionalPrice) * (item.quantity || 1)
   }, 0)
 
-  // ② 할인가 합 = Σ[할인가(discountedPrice) × quantity]
+  // ② 할인가 합 = Σ[(할인가 + 추가금) × quantity]
   const discountedSum = orderItems.reduce((sum, item) => {
     const info = item.productOptionInfo.productInfo
-    return sum + (info.discountedPrice || 0) * (item.quantity || 1)
+    const option = info.productOptions.find(
+      (opt) => opt.productOptionId === item.productOptionInfo.productOptionId,
+    )
+    const additionalPrice = option?.additionalPrice || 0
+    return sum + (info.discountedPrice + additionalPrice) * (item.quantity || 1)
   }, 0)
 
   // ③ 배송비: 할인가 합 기준 70,000원 이상이면 0원, 아니면 3,000원

@@ -111,12 +111,16 @@ const MemberCartList = () => {
 
   const totalSelectedPrice = cartItems
     .filter((item) => selectedCartItemIds.includes(item.cartItemId))
-    .reduce(
-      (sum, item) =>
-        sum +
-        item.productOptionInfo.productInfo.discountedPrice * (quantities[item.cartItemId] || 1),
-      0,
-    )
+    .reduce((sum, item) => {
+      const info = item.productOptionInfo.productInfo
+      const option = info.productOptions.find(
+        (opt) => opt.productOptionId === item.productOptionInfo.productOptionId,
+      )
+      const additionalPrice = option?.additionalPrice || 0
+      const quantity = quantities[item.cartItemId] || 1
+      const itemPrice = (info.discountedPrice + additionalPrice) * quantity
+      return sum + itemPrice
+    }, 0)
 
   const totalShippingFee = selectedCartItemIds.length === 0 || totalSelectedPrice < 70000 ? 3000 : 0
   const totalPayment = totalSelectedPrice + totalShippingFee
@@ -326,19 +330,26 @@ const MemberCartList = () => {
                 </CTableDataCell>
                 <CTableDataCell>
                   {typeof info.price === 'number'
-                    ? (info.price * (quantities[item.cartItemId] || 1)).toLocaleString() + '원'
+                    ? (
+                        (info.price + (option?.additionalPrice || 0)) *
+                        (quantities[item.cartItemId] || 1)
+                      ).toLocaleString() + '원'
                     : '가격 없음'}
                 </CTableDataCell>
 
                 <CTableDataCell>
                   {typeof info.discountedPrice === 'number' && info.discountedPrice !== info.price
-                    ? (info.discountedPrice * (quantities[item.cartItemId] || 1)).toLocaleString() +
-                      '원'
+                    ? (
+                        (info.discountedPrice + (option?.additionalPrice || 0)) *
+                        (quantities[item.cartItemId] || 1)
+                      ).toLocaleString() + '원'
                     : '-'}
                 </CTableDataCell>
 
                 <CTableDataCell>
-                  {info.discountedPrice * (quantities[item.cartItemId] || 1) >= 70000
+                  {(info.discountedPrice + (option?.additionalPrice || 0)) *
+                    (quantities[item.cartItemId] || 1) >=
+                  70000
                     ? '0원'
                     : '3,000원'}
                 </CTableDataCell>

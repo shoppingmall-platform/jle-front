@@ -86,6 +86,47 @@ const ProductDetail = () => {
     return Math.min(...matchedOptions.map((o) => o.stockQuantity))
   }
 
+  // 선택된 옵션의 추가금 가져오기
+  const getSelectedAdditionalPrice = () => {
+    if (!product) return 0
+
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    if (hasOnlyNoneOption) {
+      return product.productOptions[0].additionalPrice || 0
+    }
+
+    if (Object.keys(selectedOptions).length === 0) {
+      return 0
+    }
+
+    const matchedOption = product.productOptions.find((option) => {
+      const selectedSet = new Set(
+        Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
+      )
+      const optionSet = new Set(
+        option.productOptionDetails.map(
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
+        ),
+      )
+      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
+    })
+
+    return matchedOption ? matchedOption.additionalPrice || 0 : 0
+  }
+
+  // 최종 가격 계산 (기본 가격 + 추가금)
+  const getFinalPrice = () => {
+    if (!product) return 0
+    return product.price + getSelectedAdditionalPrice()
+  }
+
+  const getFinalDiscountedPrice = () => {
+    if (!product) return 0
+    return product.discountedPrice + getSelectedAdditionalPrice()
+  }
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -341,10 +382,12 @@ const ProductDetail = () => {
                     <CCardText className="text-muted small">{product.simpleDescription}</CCardText>
                     <CCardText>{product.summaryDescription}</CCardText>
 
+                    {/* 기본 가격 표시 */}
                     <div className="mt-3">
+                      <div className="small text-muted mb-1">기본 가격</div>
                       {product.discountedPrice < product.price ? (
                         <>
-                          <span className="fw-bold text-danger fs-4">
+                          <span className="fw-bold text-danger fs-5">
                             {formatPrice(product.discountedPrice)}
                           </span>
                           <span className="text-muted text-decoration-line-through ms-2 small">
@@ -352,9 +395,34 @@ const ProductDetail = () => {
                           </span>
                         </>
                       ) : (
-                        <span className="fw-bold fs-4">{formatPrice(product.price)}</span>
+                        <span className="fw-bold fs-5">{formatPrice(product.price)}</span>
                       )}
                     </div>
+
+                    {/* 최종 가격 표시 (옵션 선택 후) */}
+                    {Object.keys(selectedOptions).length > 0 &&
+                      getSelectedAdditionalPrice() > 0 && (
+                        <div className="mt-3 p-3 bg-light rounded">
+                          <div className="small text-muted mb-1">
+                            옵션 추가금: +{formatPrice(getSelectedAdditionalPrice())}
+                          </div>
+                          <div className="d-flex align-items-center">
+                            <span className="small text-muted me-2">최종 가격:</span>
+                            {product.discountedPrice < product.price ? (
+                              <>
+                                <span className="fw-bold text-danger fs-4">
+                                  {formatPrice(getFinalDiscountedPrice())}
+                                </span>
+                                <span className="text-muted text-decoration-line-through ms-2">
+                                  {formatPrice(getFinalPrice())}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="fw-bold fs-4">{formatPrice(getFinalPrice())}</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                     {Object.entries(optionTypes).map(([type, values]) => (
                       <div className="mt-4" key={type}>

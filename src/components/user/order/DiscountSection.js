@@ -18,19 +18,28 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
   // 1) 상품별 할인합 계산
   // ─────────────────────────────────────────────────────────────
 
-  // 상품 총 원가 합 (price × quantity)
+  // 상품 총 원가 합 ((price + additionalPrice) × quantity)
   const totalOriginalSum = orderItems.reduce((sum, item) => {
     const info = item.productOptionInfo.productInfo
-    return sum + (info.price || 0) * (item.quantity || 1)
+    const option = info.productOptions.find(
+      (opt) => opt.productOptionId === item.productOptionInfo.productOptionId,
+    )
+    const additionalPrice = option?.additionalPrice || 0
+    return sum + (info.price + additionalPrice) * (item.quantity || 1)
   }, 0)
 
-  // 상품 총 할인가 합 (discountedPrice × quantity)
+  // 상품 총 할인가 합 ((discountedPrice + additionalPrice) × quantity)
   const totalDiscountedSum = orderItems.reduce((sum, item) => {
     const info = item.productOptionInfo.productInfo
-    return sum + (info.discountedPrice || 0) * (item.quantity || 1)
+    const option = info.productOptions.find(
+      (opt) => opt.productOptionId === item.productOptionInfo.productOptionId,
+    )
+    const additionalPrice = option?.additionalPrice || 0
+    return sum + (info.discountedPrice + additionalPrice) * (item.quantity || 1)
   }, 0)
 
   // 상품별 할인 합계 = (price − discountedPrice) × quantity
+  // 주의: additionalPrice는 할인 전후 동일하므로 제외
   const productDiscountSum = totalOriginalSum - totalDiscountedSum
 
   const shippingFee = totalDiscountedSum >= 70000 ? 0 : 3000

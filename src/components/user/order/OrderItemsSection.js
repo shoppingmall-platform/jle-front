@@ -28,13 +28,15 @@ const OrderItemsSection = ({ orderItems = [], onItemsDiscountChange }) => {
           const { cartItemId, productOptionInfo, quantity } = item
           const { productInfo, productOptionId } = productOptionInfo
 
-          const originalPrice = productInfo.price || 0
-          const discountedPrice = productInfo.discountedPrice || 0
-          const itemDiscount = (originalPrice - discountedPrice) * (quantity || 1)
-
           const optionObj = productInfo.productOptions.find(
             (opt) => opt.productOptionId === productOptionId,
           )
+          const additionalPrice = optionObj?.additionalPrice || 0
+
+          const originalPrice = (productInfo.price || 0) + additionalPrice
+          const discountedPrice = (productInfo.discountedPrice || 0) + additionalPrice
+          const itemDiscount = (productInfo.price - productInfo.discountedPrice) * (quantity || 1)
+
           const optionDetails = (optionObj?.productOptionDetails || [])
             .map((d) => `${d.productOptionType}: ${d.productOptionDetailName}`)
             .join(' / ')
@@ -60,6 +62,11 @@ const OrderItemsSection = ({ orderItems = [], onItemsDiscountChange }) => {
                     {optionDetails && (
                       <div className="text-muted small" style={{ marginBottom: '0.25rem' }}>
                         ({optionDetails})
+                      </div>
+                    )}
+                    {additionalPrice > 0 && (
+                      <div className="text-info small" style={{ marginBottom: '0.25rem' }}>
+                        옵션 추가금: +{additionalPrice.toLocaleString()}원
                       </div>
                     )}
 
