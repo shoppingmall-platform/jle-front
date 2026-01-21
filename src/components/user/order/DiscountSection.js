@@ -91,7 +91,7 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
 
   // 쿠폰 이름 포맷팅
   const formatCouponName = (coupon) => {
-    if (coupon.couponType === 'PERCENT') {
+    if (coupon.couponType === 'RATE') {
       return `${coupon.couponName} (${coupon.discountAmount}% 할인)`
     } else {
       return `${coupon.couponName} (₩${coupon.discountAmount.toLocaleString()} 할인)`
@@ -105,7 +105,7 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
       return 0
     }
 
-    if (coupon.couponType === 'PERCENT') {
+    if (coupon.couponType === 'RATE') {
       // 할인율 쿠폰
       const discount = Math.floor(orderAmount * (coupon.discountAmount / 100))
       // 최대 할인금액 제한
@@ -115,7 +115,8 @@ const DiscountSection = ({ orderItems = [], onDiscountChange }) => {
       return discount
     } else {
       // 정액 할인 쿠폰
-      return coupon.discountAmount
+      // ⚠️ 쿠폰 할인액이 상품 금액을 초과할 수 없음 (배송비는 쿠폰 적용 대상 아님!)
+      return Math.min(coupon.discountAmount, orderAmount)
     }
   }
 

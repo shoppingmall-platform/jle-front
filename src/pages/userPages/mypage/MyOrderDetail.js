@@ -93,7 +93,7 @@ const MyOrderDetail = () => {
 
     // orderStatus가 PAYMENT_COMPLETED이고
     // deliveryStatus가 배송 중 이전이면 취소 가능
-    const isPaymentCompleted = order.orderStatus === '결제진행'
+    const isPaymentCompleted = order.orderStatus === '결제 완료'
     const notShipping = !['SHIPPING', 'DELIVERED'].includes(order.orderStatus)
 
     return isPaymentCompleted && notShipping

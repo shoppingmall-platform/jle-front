@@ -16,6 +16,22 @@ export const createOrder = async (orderData) => {
   }
 }
 
+// 결제 test 승인 API -> 이걸로 사용 중
+export const confirmPaymentTest = async ({ paymentKey, orderId, amount }) => {
+  try {
+    const response = await api.post('/order/v1/payments/confirm', {
+      paymentKey,
+      orderId,
+      amount,
+    })
+    console.log('✅ 결제 승인 성공:', response)
+    return response.data
+  } catch (error) {
+    console.error('❌ 결제 승인 실패:', error)
+    throw error
+  }
+}
+
 // 결제 승인 API
 export const confirmPayment = async ({ paymentKey, orderId, amount }) => {
   try {
@@ -139,6 +155,7 @@ export const updateOrderStatus = async (orderId, orderStatus) => {
 export default {
   // 사용자용
   createOrder,
+  confirmPaymentTest,
   confirmPayment,
   getMyOrders,
   getMyOrderDetail,

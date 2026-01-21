@@ -28,6 +28,28 @@ const CouponList = () => {
 
   const couponCheckbox = useCheckboxSelection(couponList, 'couponId')
 
+  // ⭐ 쿠폰 상태 판별 함수
+  const getCouponStatus = (coupon) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const endDate = new Date(coupon.couponEndDate)
+    endDate.setHours(23, 59, 59, 999)
+
+    if (endDate < today) {
+      return { text: '⏰ 만료됨', color: 'secondary' }
+    }
+
+    const startDate = new Date(coupon.couponStartDate)
+    startDate.setHours(0, 0, 0, 0)
+
+    if (startDate > today) {
+      return { text: '⏳ 대기 중', color: 'warning' }
+    }
+
+    return { text: '✅ 사용 가능', color: 'success' }
+  }
+
   const handleSearch = async () => {
     const params = {
       couponName: couponName || '', // 빈 문자열이면 전체 검색
@@ -57,9 +79,23 @@ const CouponList = () => {
 
       alert('✅ 삭제가 완료되었습니다.')
     } catch (err) {
-      alert('❌ 삭제 중 오류가 발생했습니다.')
+      console.error('쿠폰 삭제 실패:', err)
+
+      // 외래키 제약 조건 에러 체크
+      if (
+        err.response?.data?.message?.includes('foreign key') ||
+        err.response?.data?.message?.includes('constraint') ||
+        err.message?.includes('foreign key')
+      ) {
+        alert(
+          '❌ 이 쿠폰을 이미 발급받은 회원이 있어 삭제할 수 없습니다.\n\n회원이 사용하거나 만료될 때까지 기다려주세요.',
+        )
+      } else {
+        alert('❌ 삭제 중 오류가 발생했습니다.\n\n' + (err.response?.data?.message || err.message))
+      }
     }
   }
+
   const handleBulkDelete = async () => {
     const idsToDelete = couponCheckbox.selectedItems
     if (idsToDelete.length === 0) return alert('삭제할 항목을 선택해주세요.')
@@ -67,14 +103,31 @@ const CouponList = () => {
     if (!window.confirm(`${idsToDelete.length}개 쿠폰을 삭제하시겠습니까?`)) return
 
     try {
+      const failedIds = []
+
       for (const id of idsToDelete) {
-        await deleteCoupon(id)
+        try {
+          await deleteCoupon(id)
+        } catch (err) {
+          console.error(`쿠폰 ${id} 삭제 실패:`, err)
+          failedIds.push(id)
+        }
       }
 
-      setCouponList((prev) => prev.filter((c) => !idsToDelete.includes(c.couponId)))
+      setCouponList((prev) =>
+        prev.filter((c) => !idsToDelete.includes(c.couponId) || failedIds.includes(c.couponId)),
+      )
       couponCheckbox.clearSelection()
-      alert('✅ 일괄 삭제가 완료되었습니다.')
+
+      if (failedIds.length === 0) {
+        alert('✅ 일괄 삭제가 완료되었습니다.')
+      } else {
+        alert(
+          `⚠️ ${idsToDelete.length - failedIds.length}개 삭제 완료\n${failedIds.length}개 삭제 실패\n\n일부 쿠폰은 회원이 발급받아 삭제할 수 없습니다.`,
+        )
+      }
     } catch (e) {
+      console.error('일괄 삭제 실패:', e)
       alert('❌ 일괄 삭제 중 오류 발생')
     }
   }
@@ -145,36 +198,52 @@ const CouponList = () => {
                 <th>할인</th>
                 <th>시작일</th>
                 <th>종료일</th>
+                <th>상태</th>
                 <th>관리</th>
               </tr>
             </thead>
             <tbody className="table-body">
-              {couponList.map((coupon) => (
-                <tr key={coupon.couponId}>
-                  <td>
-                    <CFormCheck
-                      checked={couponCheckbox.selectedItems.includes(coupon.couponId)}
-                      onChange={() => couponCheckbox.handleSelectItem(coupon.couponId)}
-                    />
-                  </td>
-                  <td>{coupon.couponName}</td>
-                  <td>
-                    {coupon.couponType === 'PERCENT'
-                      ? `${coupon.discountAmount}%`
-                      : `${coupon.discountAmount.toLocaleString()}원`}
-                  </td>
-                  <td>{coupon.couponStartDate}</td>
-                  <td>{coupon.couponEndDate}</td>
-                  <td>
-                    <CButton size="sm" color="info" onClick={() => handleViewDetails(coupon)}>
-                      상세보기
-                    </CButton>{' '}
-                    <CButton size="sm" color="danger" onClick={() => handleDelete(coupon.couponId)}>
-                      삭제
-                    </CButton>
-                  </td>
-                </tr>
-              ))}
+              {couponList.map((coupon) => {
+                const status = getCouponStatus(coupon)
+
+                return (
+                  <tr key={coupon.couponId}>
+                    <td>
+                      <CFormCheck
+                        checked={couponCheckbox.selectedItems.includes(coupon.couponId)}
+                        onChange={() => couponCheckbox.handleSelectItem(coupon.couponId)}
+                      />
+                    </td>
+                    <td>{coupon.couponName}</td>
+                    <td>
+                      {coupon.couponType === 'RATE' || coupon.couponType === 'PERCENT'
+                        ? `${coupon.discountAmount}%`
+                        : `${coupon.discountAmount.toLocaleString()}원`}
+                    </td>
+                    <td>{coupon.couponStartDate}</td>
+                    <td>{coupon.couponEndDate}</td>
+                    <td>
+                      <span className={`badge bg-${status.color}`}>{status.text}</span>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-outline-secondary me-2"
+                        style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
+                        onClick={() => handleViewDetails(coupon)}
+                      >
+                        상세
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
+                        onClick={() => handleDelete(coupon.couponId)}
+                      >
+                        삭제
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
           <CButton color="danger" size="sm" onClick={handleBulkDelete}>
@@ -201,8 +270,8 @@ const CouponList = () => {
                   ? selectedCoupon.maxDiscountPrice.toLocaleString() + '원'
                   : '-'}
               </p>
-              <p>설명: {selectedCoupon.comment}</p>
-              <p>발급 여부: {selectedCoupon.isIssued ? '발급됨' : '미발급'}</p>
+
+              <p>상태: {getCouponStatus(selectedCoupon).text}</p>
             </div>
           )}
         </CModalBody>

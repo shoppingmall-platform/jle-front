@@ -1,7 +1,7 @@
 // src/pages/userPages/order/Success.js
 import React, { useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { confirmPayment } from '@/apis/order/orderApis'
+import { confirmPayment, confirmPaymentTest } from '@/apis/order/orderApis'
 import { CButton, CCard, CCardBody, CAlert, CSpinner, CRow, CCol } from '@coreui/react'
 
 export function SuccessPage() {
@@ -30,7 +30,7 @@ export function SuccessPage() {
 
     try {
       // 백엔드로 결제 승인 요청
-      await confirmPayment({
+      await confirmPaymentTest({
         paymentKey,
         orderId,
         amount: Number(amount),

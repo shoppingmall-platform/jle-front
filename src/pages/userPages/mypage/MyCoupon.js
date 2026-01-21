@@ -34,11 +34,16 @@ const MyCoupon = () => {
     }))
   }
 
+  // MyCoupon.js - fetchCoupons 함수 수정
+
   const fetchCoupons = async () => {
     try {
       setLoading(true)
       const data = await couponApi.getMyCoupons()
-      setCoupons(data || [])
+
+      // ⭐ ACTIVE 쿠폰만 필터링 (USED, EXPIRED 제외)
+      const activeCoupons = (data || []).filter((coupon) => coupon.status === 'ACTIVE')
+      setCoupons(activeCoupons)
     } catch (error) {
       setAlertMsg('쿠폰 정보를 불러오는 중 문제가 발생했습니다.')
     } finally {
@@ -110,7 +115,7 @@ const MyCoupon = () => {
                     <CTableRow>
                       <CTableDataCell>{coupon.couponName}</CTableDataCell>
                       <CTableDataCell>
-                        {coupon.couponType === 'PERCENT'
+                        {coupon.couponType === 'RATE'
                           ? `${coupon.discountAmount}%`
                           : `${coupon.discountAmount.toLocaleString()}원`}
                       </CTableDataCell>
@@ -136,6 +141,11 @@ const MyCoupon = () => {
                         <CCollapse visible={visibleDetails[coupon.memberCouponId]}>
                           <div className="p-3 text-start bg-light">
                             <strong>설명:</strong> {coupon.comment || '없음'} <br />
+                            <strong>최소 주문금액:</strong>{' '}
+                            {coupon.minOrderPrice
+                              ? `${coupon.minOrderPrice.toLocaleString()}원`
+                              : '제한 없음'}{' '}
+                            <br />
                             <strong>최대 할인금액:</strong>{' '}
                             {coupon.maxDiscountPrice
                               ? `${coupon.maxDiscountPrice.toLocaleString()}원`
