@@ -69,3 +69,5 @@ jobs:
           script: |
             sudo chown -R www-data:www-data /var/www/jle
             sudo chmod -R 755 /var/www/jle
+
+            
