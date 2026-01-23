@@ -1,6 +1,6 @@
 import React from 'react'
 import { CButton } from '@coreui/react'
-import { updateCartItem } from '@/apis/member/cartApis'
+import { updateCartItem, addToCart } from '@/apis/member/cartApis'
 import useGuestCartStore from '@/store/member/guestCartStore'
 
 const OptionChange = ({
@@ -15,7 +15,7 @@ const OptionChange = ({
   onUpdateSuccess,
   isGuest = false,
 }) => {
-  const { updateOption } = useGuestCartStore()
+  const { updateOption, addToCart: addToGuestCart } = useGuestCartStore()
   const buildOptionTypes = (options) => {
     const grouped = {}
     options.forEach((option) => {
@@ -83,6 +83,56 @@ const OptionChange = ({
     }
   }
 
+  const handleAdd = async () => {
+    // 선택된 옵션 조합에 해당하는 productOptionId 찾기
+    const selectedSet = new Set(
+      Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
+    )
+
+    const matchedOption = productOptions.find((option) => {
+      const optionSet = new Set(
+        option.productOptionDetails.map(
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
+        ),
+      )
+      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
+    })
+
+    if (!matchedOption) {
+      alert('⚠️ 해당 옵션 조합이 존재하지 않습니다.')
+      return
+    }
+
+    if (isGuest) {
+      // ✅ 비회원일 경우 - 게스트 장바구니에 추가
+      addToGuestCart({
+        ...matchedOption,
+        quantity,
+      })
+      alert('✅ 장바구니에 추가되었습니다.')
+      onUpdateSuccess?.(matchedOption)
+      onClose()
+    } else {
+      // ✅ 회원일 경우 - 장바구니 추가 API 호출
+      const payload = [
+        {
+          productOptionId: matchedOption.productOptionId,
+          quantity,
+        },
+      ]
+      console.log('🛒 장바구니 추가 요청 데이터:', payload)
+
+      try {
+        await addToCart(payload)
+        alert('✅ 장바구니에 추가되었습니다.')
+        onUpdateSuccess?.(matchedOption)
+        onClose()
+      } catch (error) {
+        alert('❌ 추가 실패. 다시 시도해주세요.')
+      }
+    }
+  }
+
   return (
     <div
       style={{
@@ -133,7 +183,7 @@ const OptionChange = ({
       ))}
 
       <div className="d-flex justify-content-end mt-3">
-        <CButton size="sm" color="dark" className="me-2">
+        <CButton size="sm" color="dark" className="me-2" onClick={handleAdd}>
           추가
         </CButton>
         <CButton size="sm" color="primary" onClick={handleUpdate}>

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import {
   CContainer,
@@ -12,19 +12,120 @@ import {
   CBadge,
 } from '@coreui/react'
 import { getProductDetail } from '@/apis/product/productApis'
-import { addToCart } from '@/apis/member/cartApis'
+import { addToCart, getCartItems } from '@/apis/member/cartApis'
 import useAddToCart from '@/hooks/useAddToCart'
 import { formatPrice } from '@/utils/utils'
 import 'react-quill/dist/quill.snow.css'
 
 const ProductDetail = () => {
   const { productId } = useParams()
+  const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [selectedImage, setSelectedImage] = useState('')
   const [selectedOptions, setSelectedOptions] = useState({})
   const [optionTypes, setOptionTypes] = useState({})
   const [quantity, setQuantity] = useState(1)
   const { handleAddToCart } = useAddToCart()
+
+  // 선택된 옵션의 재고 확인
+  const getSelectedOptionStock = () => {
+    if (!product) return null
+
+    // "없음" 옵션 처리
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    if (hasOnlyNoneOption) {
+      return product.productOptions[0].stockQuantity
+    }
+
+    // 옵션 미선택 시
+    if (Object.keys(selectedOptions).length === 0) {
+      return null
+    }
+
+    // 선택된 옵션 조합 찾기
+    const matchedOption = product.productOptions.find((option) => {
+      const selectedSet = new Set(
+        Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
+      )
+      const optionSet = new Set(
+        option.productOptionDetails.map(
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
+        ),
+      )
+      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
+    })
+
+    return matchedOption ? matchedOption.stockQuantity : null
+  }
+
+  // 품절 여부 확인
+  const isOutOfStock = () => {
+    const stock = getSelectedOptionStock()
+    return stock !== null && stock === 0
+  }
+
+  // 재고 부족 확인
+  const isStockInsufficient = () => {
+    const stock = getSelectedOptionStock()
+    return stock !== null && stock < quantity
+  }
+
+  // 개별 옵션의 재고 확인 (품절 옵션 표시용)
+  const getOptionStock = (type, value) => {
+    if (!product) return 999
+
+    const matchedOptions = product.productOptions.filter((option) => {
+      return option.productOptionDetails.some(
+        (d) => d.productOptionType === type && d.productOptionDetailName === value,
+      )
+    })
+
+    if (matchedOptions.length === 0) return 0
+    return Math.min(...matchedOptions.map((o) => o.stockQuantity))
+  }
+
+  // 선택된 옵션의 추가금 가져오기
+  const getSelectedAdditionalPrice = () => {
+    if (!product) return 0
+
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    if (hasOnlyNoneOption) {
+      return product.productOptions[0].additionalPrice || 0
+    }
+
+    if (Object.keys(selectedOptions).length === 0) {
+      return 0
+    }
+
+    const matchedOption = product.productOptions.find((option) => {
+      const selectedSet = new Set(
+        Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
+      )
+      const optionSet = new Set(
+        option.productOptionDetails.map(
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
+        ),
+      )
+      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
+    })
+
+    return matchedOption ? matchedOption.additionalPrice || 0 : 0
+  }
+
+  // 최종 가격 계산 (기본 가격 + 추가금)
+  const getFinalPrice = () => {
+    if (!product) return 0
+    return product.price + getSelectedAdditionalPrice()
+  }
+
+  const getFinalDiscountedPrice = () => {
+    if (!product) return 0
+    return product.discountedPrice + getSelectedAdditionalPrice()
+  }
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -46,11 +147,30 @@ const ProductDetail = () => {
   const onClickAddToCart = async () => {
     if (!product) return
 
-    if (Object.keys(selectedOptions).length === 0) {
+    // “없음” 옵션 예외 처리: product.productOptions가 딱 하나이고 이름이 “없음”인 경우
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    // selectedOptions가 비어 있고, “없음” 옵션 예외도 아닐 때만 경고
+    if (Object.keys(selectedOptions).length === 0 && !hasOnlyNoneOption) {
       alert('옵션을 선택해주세요!')
       return
     }
 
+    // 품절 확인
+    if (isOutOfStock()) {
+      alert('품절된 상품입니다.')
+      return
+    }
+
+    // 재고 부족 확인
+    if (isStockInsufficient()) {
+      const stock = getSelectedOptionStock()
+      alert(`재고가 부족합니다. (재고: ${stock}개)`)
+      return
+    }
+
+    // matchedOption 계산 (selectedOptions가 비어 있어도 “없음” 옵션의 details가 []이므로 매칭됨)
     const matchedOption = product.productOptions.find((option) => {
       const selectedSet = new Set(
         Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
@@ -94,6 +214,105 @@ const ProductDetail = () => {
     setSelectedOptions((prev) => ({ ...prev, [type]: value }))
   }
 
+  const handleDirectPurchase = async () => {
+    if (!product) return
+
+    // "없음" 옵션 예외 처리
+    const hasOnlyNoneOption =
+      product.productOptions.length === 1 && product.productOptions[0].productOptionName === '없음'
+
+    // 옵션 선택 확인
+    if (Object.keys(selectedOptions).length === 0 && !hasOnlyNoneOption) {
+      alert('옵션을 선택해주세요!')
+      return
+    }
+
+    // 품절 확인
+    if (isOutOfStock()) {
+      alert('품절된 상품입니다.')
+      return
+    }
+
+    // 재고 부족 확인
+    if (isStockInsufficient()) {
+      const stock = getSelectedOptionStock()
+      alert(`재고가 부족합니다. (재고: ${stock}개)`)
+      return
+    }
+
+    // 선택된 옵션 조합 찾기
+    const matchedOption = product.productOptions.find((option) => {
+      const selectedSet = new Set(
+        Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
+      )
+      const optionSet = new Set(
+        option.productOptionDetails.map(
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
+        ),
+      )
+      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
+    })
+
+    if (!matchedOption) {
+      alert('해당 옵션 조합이 존재하지 않습니다.')
+      return
+    }
+
+    // 장바구니에 임시 추가
+    const payload = [
+      {
+        productOptionId: matchedOption.productOptionId,
+        quantity,
+      },
+    ]
+
+    try {
+      console.log('🛒 바로 구매 - 장바구니 추가:', payload)
+      const result = await addToCart(payload)
+      console.log('✅ 장바구니 추가 결과:', result)
+
+      // 짧은 딜레이 (서버 반영 대기)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // 장바구니 전체 조회
+      console.log('📦 장바구니 전체 조회 시작...')
+      const cartData = await getCartItems()
+      console.log('📦 장바구니 조회 결과:', cartData)
+
+      if (!cartData.cartItems || cartData.cartItems.length === 0) {
+        alert('장바구니가 비어있습니다.')
+        return
+      }
+
+      // 방금 추가한 productOptionId와 일치하는 항목 찾기
+      const targetOptionId = matchedOption.productOptionId
+      console.log('🔍 찾을 productOptionId:', targetOptionId)
+
+      // productOptionId로 매칭 (가장 정확)
+      const addedItem = cartData.cartItems.find(
+        (item) => item.productOptionInfo?.productOptionId === targetOptionId,
+      )
+
+      if (!addedItem) {
+        console.error('❌ 추가한 상품을 장바구니에서 찾을 수 없습니다.')
+        console.log('📋 장바구니 항목들:', cartData.cartItems)
+        alert('주문 페이지 이동에 실패했습니다.')
+        return
+      }
+
+      const cartItemId = addedItem.cartItemId
+      console.log('🎯 찾은 장바구니 항목:', addedItem)
+      console.log('🎯 최종 cartItemId:', cartItemId)
+
+      // 주문 페이지로 이동
+      navigate(`/order?cartItems=${cartItemId}`)
+    } catch (error) {
+      console.error('❌ 바로 구매 실패:', error)
+      console.error('❌ 에러 상세:', error.response?.data || error.message)
+      alert('주문 페이지 이동에 실패했습니다.')
+    }
+  }
+
   if (!product) {
     return (
       <CContainer className="text-center mt-5">
@@ -125,7 +344,7 @@ const ProductDetail = () => {
                     borderRadius: '6px',
                   }}
                 />
-                <div className="d-flex justify-content-start mt-3 overflow-x-auto">
+                <div className="d-flex justify-content-center mt-3">
                   {images.map((img, idx) => (
                     <CImage
                       key={idx}
@@ -163,10 +382,12 @@ const ProductDetail = () => {
                     <CCardText className="text-muted small">{product.simpleDescription}</CCardText>
                     <CCardText>{product.summaryDescription}</CCardText>
 
+                    {/* 기본 가격 표시 */}
                     <div className="mt-3">
+                      <div className="small text-muted mb-1">기본 가격</div>
                       {product.discountedPrice < product.price ? (
                         <>
-                          <span className="fw-bold text-danger fs-4">
+                          <span className="fw-bold text-danger fs-5">
                             {formatPrice(product.discountedPrice)}
                           </span>
                           <span className="text-muted text-decoration-line-through ms-2 small">
@@ -174,48 +395,142 @@ const ProductDetail = () => {
                           </span>
                         </>
                       ) : (
-                        <span className="fw-bold fs-4">{formatPrice(product.price)}</span>
+                        <span className="fw-bold fs-5">{formatPrice(product.price)}</span>
                       )}
                     </div>
+
+                    {/* 최종 가격 표시 (옵션 선택 후) */}
+                    {Object.keys(selectedOptions).length > 0 &&
+                      getSelectedAdditionalPrice() > 0 && (
+                        <div className="mt-3 p-3 bg-light rounded">
+                          <div className="small text-muted mb-1">
+                            옵션 추가금: +{formatPrice(getSelectedAdditionalPrice())}
+                          </div>
+                          <div className="d-flex align-items-center">
+                            <span className="small text-muted me-2">최종 가격:</span>
+                            {product.discountedPrice < product.price ? (
+                              <>
+                                <span className="fw-bold text-danger fs-4">
+                                  {formatPrice(getFinalDiscountedPrice())}
+                                </span>
+                                <span className="text-muted text-decoration-line-through ms-2">
+                                  {formatPrice(getFinalPrice())}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="fw-bold fs-4">{formatPrice(getFinalPrice())}</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                     {Object.entries(optionTypes).map(([type, values]) => (
                       <div className="mt-4" key={type}>
                         <h6 className="fw-semibold">{type}</h6>
                         <div className="d-flex flex-wrap">
-                          {values.map((value) => (
-                            <CButton
-                              key={value}
-                              color={selectedOptions[type] === value ? 'dark' : 'light'}
-                              className="me-2 mb-2"
-                              onClick={() => handleSelectOption(type, value)}
-                            >
-                              {value}
-                            </CButton>
-                          ))}
+                          {values.map((value) => {
+                            const optionStock = getOptionStock(type, value)
+                            const isSoldOut = optionStock === 0
+
+                            return (
+                              <CButton
+                                key={value}
+                                color={selectedOptions[type] === value ? 'dark' : 'light'}
+                                className="me-2 mb-2"
+                                onClick={() => handleSelectOption(type, value)}
+                                disabled={isSoldOut}
+                              >
+                                {value}
+                                {isSoldOut && (
+                                  <CBadge
+                                    color="danger"
+                                    className="ms-2"
+                                    style={{ fontSize: '0.7em' }}
+                                  >
+                                    품절
+                                  </CBadge>
+                                )}
+                              </CButton>
+                            )
+                          })}
                         </div>
                         {!selectedOptions[type] && (
                           <div className="text-danger mt-1 small">[필수] 옵션을 선택해 주세요</div>
                         )}
                       </div>
                     ))}
+
+                    {/* 선택된 옵션의 재고 표시 */}
+                    {Object.keys(selectedOptions).length > 0 && (
+                      <div className="mt-3">
+                        {isOutOfStock() ? (
+                          <CBadge color="danger" className="p-2">
+                            😢 현재 품절된 상품입니다
+                          </CBadge>
+                        ) : (
+                          <div className="d-flex align-items-center gap-2">
+                            <span className="text-muted">재고:</span>
+                            <span className="fw-bold">{getSelectedOptionStock()}개</span>
+                            {isStockInsufficient() && (
+                              <CBadge color="warning">
+                                재고 부족 (최대 {getSelectedOptionStock()}개)
+                              </CBadge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="mt-3">
                     <h6 className="fw-semibold">수량</h6>
                     <input
                       type="number"
                       min="1"
+                      max={getSelectedOptionStock() || 999}
                       value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      onChange={(e) => {
+                        const newQty = Number(e.target.value)
+                        const stock = getSelectedOptionStock()
+
+                        if (stock && newQty > stock) {
+                          alert(`재고가 부족합니다. (재고: ${stock}개)`)
+                          setQuantity(stock)
+                        } else {
+                          setQuantity(newQty)
+                        }
+                      }}
+                      disabled={isOutOfStock()}
                       style={{ width: '80px', padding: '4px', textAlign: 'center' }}
                     />
+                    {Object.keys(selectedOptions).length > 0 && getSelectedOptionStock() && (
+                      <small className="text-muted ms-2">(최대 {getSelectedOptionStock()}개)</small>
+                    )}
                   </div>
 
                   <div className="mt-4">
-                    <CButton color="dark" className="w-100 mb-2" onClick={onClickAddToCart}>
-                      장바구니에 담기
+                    <CButton
+                      color="dark"
+                      className="w-100 mb-2"
+                      onClick={onClickAddToCart}
+                      disabled={isOutOfStock() || isStockInsufficient()}
+                    >
+                      {isOutOfStock()
+                        ? '품절'
+                        : isStockInsufficient()
+                          ? '재고 부족'
+                          : '장바구니에 담기'}
                     </CButton>
-                    <CButton color="danger" className="w-100">
-                      바로 구매하기
+                    <CButton
+                      color="danger"
+                      className="w-100"
+                      onClick={handleDirectPurchase}
+                      disabled={isOutOfStock() || isStockInsufficient()}
+                    >
+                      {isOutOfStock()
+                        ? '품절'
+                        : isStockInsufficient()
+                          ? '재고 부족'
+                          : '바로 구매하기'}
                     </CButton>
                   </div>
                 </div>

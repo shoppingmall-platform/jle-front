@@ -36,7 +36,7 @@ const CouponAdd = () => {
     }
     const newCoupon = {
       couponName,
-      couponType: discountType === '할인율' ? 'PERCENT' : 'FIXED',
+      couponType: discountType === '할인율' ? 'RATE' : 'FIXED',
       amount: Number(discountValue),
       minOrderPrice: hasMinOrderPrice ? Number(minOrderPrice) : 0,
       maxDiscountPrice: discountType === '할인율' ? Number(maxDiscountAmount) : 0,
@@ -206,14 +206,14 @@ const CouponAdd = () => {
                 <td className="text-center table-header">발급 방식</td>
                 <td colSpan="4">
                   <div className="d-flex align-items-center gap-4">
-                    <CFormCheck
+                    {/* <CFormCheck
                       type="radio"
                       name="issueType"
                       value="auto"
                       label="자동 발급"
                       checked={issueType === 'auto'}
                       onChange={(e) => setIssueType(e.target.value)}
-                    />
+                    /> */}
                     <CFormCheck
                       type="radio"
                       name="issueType"

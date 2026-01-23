@@ -12,8 +12,15 @@ const normalizeOptionList = (data) => {
 
 export const getOptionList = async (params) => {
   try {
-    const response = await api.get('/product/v1/options', { params }) // ✅ 핵심
+    const response = await api.get('/product/v1/options', params)
     console.log('getOptionList response:', response)
+
+    // response가 없거나 에러인 경우
+    if (!response || response.status >= 400) {
+      console.error('getOptionList failed:', response)
+      return []
+    }
+
     return normalizeOptionList(response.data) // ✅ 배열 보장
   } catch (error) {
     console.error('getOptionList error:', error)

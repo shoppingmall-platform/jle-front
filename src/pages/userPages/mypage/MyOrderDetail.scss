@@ -1,0 +1,17 @@
+.my-order-detail {
+  .text-primary {
+    color: #0d6efd !important;
+  }
+
+  .table {
+    td,
+    th {
+      vertical-align: middle;
+    }
+  }
+
+  hr {
+    margin: 1rem 0;
+    opacity: 0.3;
+  }
+}

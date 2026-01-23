@@ -31,17 +31,25 @@ export default function Signup() {
           ...agreementData,
         }
 
+        // 회원가입
         const res = await registerMember(signupRequestBody)
         console.log('✅ 회원가입 성공', res)
+
+        // 성공 페이지로 이동
         setActiveStep((prev) => prev + 1)
       } catch (error) {
-        alert('회원가입에 실패했습니다. 다시 시도해주세요.')
-        console.error(error)
+        console.error('❌ 회원가입 실패:', error)
+
+        // 에러 메시지 상세하게 표시
+        const errorMessage = error.response?.data?.message || error.message || '알 수 없는 오류'
+        alert(`회원가입에 실패했습니다.\n${errorMessage}\n\n다시 시도해주세요.`)
+
+        // ⚠️ 여기서는 setActiveStep을 호출하지 않음 = 현재 페이지 유지
       } finally {
         setIsSubmitting(false)
       }
     } else if (activeStep === 2) {
-      // ✅ Finish 단계면 바로 로그인으로 이동
+      // ✅ Finish 단계면 로그인 페이지로 이동
       navigate('/login')
     } else {
       setActiveStep((prev) => prev + 1)
@@ -89,9 +97,19 @@ export default function Signup() {
                       style={{ height: '100%' }}
                     >
                       <h4 className="mt-5 mb-3">🎉 회원가입을 축하드립니다!</h4>
-                      <p className="mt-5 mb-4">지금 바로 쇼핑을 시작해보세요.</p>
-                      <CButton color="dark" className="w-100" onClick={() => navigate('/')}>
-                        쇼핑하러 가기
+                      <p className="mt-3 mb-5 text-muted">
+                        가입하신 계정으로 로그인하여
+                        <br />
+                        다양한 서비스를 이용해보세요.
+                      </p>
+                      <CButton
+                        color="dark"
+                        size="lg"
+                        className="w-100"
+                        onClick={() => navigate('/login')}
+                        style={{ padding: '12px' }}
+                      >
+                        로그인하러 가기
                       </CButton>
                     </div>
                   )}

@@ -13,6 +13,11 @@ const Profile = React.lazy(() => import('@/pages/userPages/mypage/Profile'))
 const Coupon = React.lazy(() => import('@/pages/userPages/mypage/MyCoupon'))
 const AddressList = React.lazy(() => import('@/pages/userPages/mypage/address/AddressList'))
 const AddressAdd = React.lazy(() => import('@/pages/userPages/mypage/address/AddressAdd'))
+const MyOrderList = React.lazy(() => import('@/pages/userPages/mypage/MyOrderList'))
+const MyOrderDetail = React.lazy(() => import('@/pages/userPages/mypage/MyOrderDetail'))
+const Order = React.lazy(() => import('@/pages/userPages/order/Order'))
+const Success = React.lazy(() => import('@/pages/userPages/order/Success'))
+const Fail = React.lazy(() => import('@/pages/userPages/order/Fail'))
 
 export const userRouter = [
   { path: '/', element: Home },
@@ -27,4 +32,9 @@ export const userRouter = [
   { path: '/mypage/coupon', element: Coupon },
   { path: '/mypage/address', element: AddressList },
   { path: '/mypage/address/add', element: AddressAdd },
+  { path: '/mypage/orders', element: MyOrderList },
+  { path: '/mypage/orders/:orderId', element: MyOrderDetail },
+  { path: '/order', element: Order },
+  { path: '/order/success', element: Success },
+  { path: '/order/fail', element: Fail },
 ]

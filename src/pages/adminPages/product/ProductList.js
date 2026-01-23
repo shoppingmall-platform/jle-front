@@ -16,13 +16,7 @@ import { React, useState } from 'react'
 import useCheckboxSelection from '@/hooks/useCheckboxSelection'
 import DateRangePicker from '@/components/admin/DateRangePicker'
 import CategoryPicker from '@/components/admin/product/CategoryPicker'
-import { getProductList } from '@/apis/product/productApis'
-
-const data = {
-  total: 5,
-  sold: 3,
-  unsold: 2,
-}
+import { getProductList, deleteProducts } from '@/apis/product/productApis'
 
 const ProductList = () => {
   const [startDate, setStartDate] = useState(null)
@@ -32,6 +26,14 @@ const ProductList = () => {
   const [searchKeyword, setSearchKeyword] = useState('')
   const [page, setPage] = useState(0)
   const [size, setSize] = useState(20)
+  const [showDeleted, setShowDeleted] = useState('all') // 'all', 'active', 'deleted'
+
+  // ✅ 통계 데이터 state 추가
+  const [statistics, setStatistics] = useState({
+    total: 0,
+    sold: 0,
+    unsold: 0,
+  })
 
   const fetchProducts = async () => {
     try {
@@ -61,13 +63,72 @@ const ProductList = () => {
             : '-',
           category: `${product.categoryId}`,
           note: '-',
+          // ✅ 판매 상태 추가 (백엔드 응답에 있다면 사용, 없으면 기본값)
+          isSelling: product.isSelling ?? true,
+          // ✅ 삭제 상태 추가
+          isDeleted: product.deleted || product.isDeleted || false,
         }))
-        setProductData(formattedProductData)
+
+        // ✅ 삭제 상태에 따른 필터링
+        let filteredData = formattedProductData
+        if (showDeleted === 'active') {
+          filteredData = formattedProductData.filter((p) => !p.isDeleted)
+        } else if (showDeleted === 'deleted') {
+          filteredData = formattedProductData.filter((p) => p.isDeleted)
+        }
+
+        setProductData(filteredData)
+
+        // ✅ 통계 계산 (전체 데이터 기준)
+        const total = formattedProductData.length
+        const active = formattedProductData.filter((p) => !p.isDeleted).length
+        const deleted = formattedProductData.filter((p) => p.isDeleted).length
+
+        setStatistics({
+          total,
+          sold: active,
+          unsold: deleted,
+        })
       } else {
         setProductData([])
+        setStatistics({ total: 0, sold: 0, unsold: 0 })
       }
     } catch (error) {
       console.error('❌ 상품 목록 조회 실패:', error)
+      setProductData([])
+      setStatistics({ total: 0, sold: 0, unsold: 0 })
+    }
+  }
+
+  // 상품 삭제 핸들러
+  const handleDeleteProducts = async () => {
+    if (productCheckbox.selectedItems.length === 0) {
+      alert('삭제할 상품을 선택해주세요.')
+      return
+    }
+
+    const confirmMessage = `선택한 ${productCheckbox.selectedItems.length}개의 상품을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+    if (!window.confirm(confirmMessage)) {
+      return
+    }
+
+    try {
+      const result = await deleteProducts(productCheckbox.selectedItems)
+
+      if (result.failed > 0) {
+        alert(`처리 완료\n성공: ${result.succeeded}개\n실패: ${result.failed}개`)
+      } else {
+        alert(`선택한 ${result.succeeded}개의 상품이 성공적으로 삭제되었습니다.`)
+      }
+
+      // 목록 새로고침
+      fetchProducts()
+
+      // 체크박스 초기화
+      productCheckbox.handleSelectItem([])
+    } catch (error) {
+      console.error('❌ 상품 삭제 처리 오류:', error)
+      alert('상품 삭제 처리 중 오류가 발생했습니다.\n' + error.message)
     }
   }
 
@@ -79,6 +140,7 @@ const ProductList = () => {
         <h3>상품 목록</h3>
       </CRow>
 
+      {/* ✅ 통계 카드 - 실제 데이터 반영 */}
       <CCard className="mb-4">
         <CCardBody>
           <div>
@@ -91,9 +153,9 @@ const ProductList = () => {
                   alignItems: 'center',
                 }}
               >
-                <span>전체: {data.total}건</span>
-                <span>판매함: {data.sold}건</span>
-                <span>판매안함: {data.unsold}건</span>
+                <span>전체: {statistics.total}건</span>
+                <span className="text-success">판매중: {statistics.sold}건</span>
+                <span className="text-danger">삭제됨: {statistics.unsold}건</span>
               </div>
             </CRow>
           </div>
@@ -173,6 +235,20 @@ const ProductList = () => {
               <span className="fw-bold">총 {productData.length}개</span>
             </CCol>
             <CCol md="6" className="d-flex justify-content-end gap-2">
+              <CFormSelect
+                size="sm"
+                style={{ width: 'auto' }}
+                value={showDeleted}
+                onChange={(e) => {
+                  setShowDeleted(e.target.value)
+                  // 필터 변경 시 자동으로 다시 조회
+                  setTimeout(() => fetchProducts(), 0)
+                }}
+              >
+                <option value="all">전체 상품</option>
+                <option value="active">판매중만</option>
+                <option value="deleted">삭제됨만</option>
+              </CFormSelect>
               <CFormSelect size="sm" style={{ width: 'auto' }}>
                 <option>등록일 순</option>
                 <option>상품명 순</option>
@@ -191,12 +267,13 @@ const ProductList = () => {
           </CRow>
 
           <div className="my-3">
-            <CButton className="custom-button">진열함</CButton>
-            <CButton className="custom-button">진열안함</CButton>
-            <CButton className="custom-button">판매함</CButton>
-            <CButton className="custom-button">판매안함</CButton>
-            <CButton className="custom-button">삭제</CButton>
-            <CButton className="custom-button">복사</CButton>
+            <CButton
+              className="custom-button"
+              onClick={handleDeleteProducts}
+              disabled={productCheckbox.selectedItems.length === 0}
+            >
+              삭제
+            </CButton>
           </div>
 
           <table className="table">
@@ -214,12 +291,18 @@ const ProductList = () => {
                 <th>상품명</th>
                 <th>판매가</th>
                 <th>할인가</th>
-                <th>비고</th>
+                <th>상태</th>
               </tr>
             </thead>
             <tbody className="table-body">
               {productData.map((product, index) => (
-                <tr key={product.productCode}>
+                <tr
+                  key={product.productCode}
+                  style={{
+                    opacity: product.isDeleted ? 0.5 : 1,
+                    backgroundColor: product.isDeleted ? '#f8f9fa' : 'transparent',
+                  }}
+                >
                   <td>
                     <input
                       type="checkbox"
@@ -229,10 +312,19 @@ const ProductList = () => {
                   </td>
                   <td>{index + 1}</td>
                   <td>{product.productCode}</td>
-                  <td>{product.productName}</td>
+                  <td>
+                    {product.productName}
+                    {product.isDeleted}
+                  </td>
                   <td>{product.salePrice}</td>
                   <td>{product.discountPrice}</td>
-                  <td>{product.note}</td>
+                  <td>
+                    {product.isDeleted ? (
+                      <span className="badge bg-danger">삭제됨</span>
+                    ) : (
+                      <span className="badge bg-success">판매중</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

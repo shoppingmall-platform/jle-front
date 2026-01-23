@@ -34,11 +34,16 @@ const MyCoupon = () => {
     }))
   }
 
+  // MyCoupon.js - fetchCoupons 함수 수정
+
   const fetchCoupons = async () => {
     try {
       setLoading(true)
       const data = await couponApi.getMyCoupons()
-      setCoupons(data || [])
+
+      // ⭐ ACTIVE 쿠폰만 필터링 (USED, EXPIRED 제외)
+      const activeCoupons = (data || []).filter((coupon) => coupon.status === 'ACTIVE')
+      setCoupons(activeCoupons)
     } catch (error) {
       setAlertMsg('쿠폰 정보를 불러오는 중 문제가 발생했습니다.')
     } finally {
@@ -48,19 +53,29 @@ const MyCoupon = () => {
 
   const handleCodeSubmit = async (e) => {
     e.preventDefault()
-    if (!/^[a-zA-Z0-9]{10,35}$/.test(codeInput)) {
-      setAlertMsg('올바른 쿠폰 번호를 입력해주세요. (10~35자 영문/숫자)')
+
+    // 빈 값 체크
+    if (!codeInput || codeInput.trim() === '') {
+      setAlertMsg('쿠폰 번호를 입력해주세요.')
+      return
+    }
+
+    // 4~35자 영문/숫자만 허용
+    if (!/^[a-zA-Z0-9]{4,35}$/.test(codeInput)) {
+      setAlertMsg('올바른 쿠폰 번호를 입력해주세요. (4~35자 영문/숫자)')
       return
     }
 
     try {
       setAlertMsg('쿠폰 인증 요청 중...')
       const result = await couponApi.issueMyCoupon(codeInput)
+      console.log('✅ 쿠폰 발급 결과:', result)
       setAlertMsg(result?.message || '쿠폰이 성공적으로 발급되었습니다.')
       setCodeInput('')
       fetchCoupons() // 쿠폰 목록 갱신
     } catch (error) {
-      setAlertMsg('쿠폰 인증 중 오류가 발생했습니다.')
+      console.error('❌ 쿠폰 발급 실패:', error)
+      setAlertMsg(error?.response?.data?.message || '쿠폰 인증 중 오류가 발생했습니다.')
     }
   }
 
@@ -75,14 +90,14 @@ const MyCoupon = () => {
       {/* ✅ 쿠폰 목록 */}
       <CCard className="mb-5">
         <CCardBody>
-          <CTable hover responsive>
+          <CTable hover responsive className="text-center align-middle">
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>쿠폰명</CTableHeaderCell>
-                <CTableHeaderCell>할인</CTableHeaderCell>
-                <CTableHeaderCell>최소주문</CTableHeaderCell>
-                <CTableHeaderCell>유효기간</CTableHeaderCell>
-                <CTableHeaderCell></CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '30%' }}>쿠폰명</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '15%' }}>할인</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '15%' }}>최소주문</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '30%' }}>유효기간</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>상세</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
@@ -100,7 +115,7 @@ const MyCoupon = () => {
                     <CTableRow>
                       <CTableDataCell>{coupon.couponName}</CTableDataCell>
                       <CTableDataCell>
-                        {coupon.couponeType === 'PERCENT'
+                        {coupon.couponType === 'RATE'
                           ? `${coupon.discountAmount}%`
                           : `${coupon.discountAmount.toLocaleString()}원`}
                       </CTableDataCell>
@@ -108,7 +123,8 @@ const MyCoupon = () => {
                         {coupon.minOrderPrice?.toLocaleString() || 0}원 이상
                       </CTableDataCell>
                       <CTableDataCell>
-                        {coupon.issuedAt} ~ {coupon.expiredAt}
+                        {coupon.couponStartDate || coupon.issuedAt || '-'} ~{' '}
+                        {coupon.couponEndDate || coupon.expiredAt || '-'}
                       </CTableDataCell>
                       <CTableDataCell>
                         <CButton
@@ -121,10 +137,15 @@ const MyCoupon = () => {
                       </CTableDataCell>
                     </CTableRow>
                     <CTableRow>
-                      <CTableDataCell colSpan={6} className="p-0">
+                      <CTableDataCell colSpan={5} className="p-0">
                         <CCollapse visible={visibleDetails[coupon.memberCouponId]}>
                           <div className="p-3 text-start bg-light">
                             <strong>설명:</strong> {coupon.comment || '없음'} <br />
+                            <strong>최소 주문금액:</strong>{' '}
+                            {coupon.minOrderPrice
+                              ? `${coupon.minOrderPrice.toLocaleString()}원`
+                              : '제한 없음'}{' '}
+                            <br />
                             <strong>최대 할인금액:</strong>{' '}
                             {coupon.maxDiscountPrice
                               ? `${coupon.maxDiscountPrice.toLocaleString()}원`
@@ -166,7 +187,7 @@ const MyCoupon = () => {
           </CForm>
 
           <small className="d-block text-center mt-2 text-muted">
-            반드시 쇼핑몰에서 발행한 쿠폰번호만 입력해주세요. (10~35자 일련번호 ‘-’ 제외)
+            반드시 쇼핑몰에서 발행한 쿠폰번호만 입력해주세요.
           </small>
 
           {alertMsg && (

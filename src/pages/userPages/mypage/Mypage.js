@@ -21,22 +21,10 @@ const Mypage = () => {
       path: '/mypage/orders',
     },
     {
-      key: 'WISHLIST',
-      title: '관심상품',
-      description: '찜한 상품 목록을 확인할 수 있습니다.',
-      path: '/mypage/wishlist',
-    },
-    {
       key: 'PROFILE',
       title: '회원정보',
       description: '회원정보 및 배송지를 수정할 수 있습니다.',
       path: '/mypage/profile',
-    },
-    {
-      key: 'SETTINGS',
-      title: '설정',
-      description: '알림 및 보안 설정을 변경할 수 있습니다.',
-      path: '/mypage/settings',
     },
     {
       key: 'COUPON',
@@ -55,12 +43,6 @@ const Mypage = () => {
   return (
     <CContainer className="mt-5 mb-5 text-center" style={{ maxWidth: '1000px' }}>
       <h4 className="mb-5">마이페이지</h4>
-      <CCard className="mb-4" style={{ minHeight: '150px' }}>
-        적립금
-      </CCard>
-      <CCard className="mb-4" style={{ minHeight: '150px' }}>
-        주문처리 현황
-      </CCard>
       <CRow className="g-3">
         {menuItems.map((item) => (
           <CCol key={item.key} xs={6} md={3}>

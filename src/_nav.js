@@ -77,11 +77,6 @@ const _nav = [
         name: '회원조회',
         to: 'customers/list',
       },
-      {
-        component: CNavItem,
-        name: '회원관리',
-        to: 'customers/manage',
-      },
     ],
   },
   {
@@ -94,11 +89,6 @@ const _nav = [
         component: CNavItem,
         name: '주문목록',
         to: 'orders/list',
-      },
-      {
-        component: CNavItem,
-        name: '주문취소',
-        to: 'orders/cancel',
       },
     ],
   },

@@ -27,7 +27,7 @@ const DiscountAdd = () => {
   const [discountValue, setDiscountValue] = useState('')
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
-  const [scopeType, setScopeType] = useState('0')
+  const [scopeType, setScopeType] = useState('1') // 기본값: 특정상품
 
   const [productData, setProductData] = useState([])
   const [selectedProducts, setSelectedProducts] = useState([])
@@ -216,7 +216,7 @@ const DiscountAdd = () => {
                       name="scopeType"
                       value="0"
                       label="전체상품"
-                      checked={scopeType === '전체상품'}
+                      checked={scopeType === '0'}
                       onChange={handleScopeChange}
                     />
                     <CFormCheck
@@ -224,7 +224,7 @@ const DiscountAdd = () => {
                       name="scopeType"
                       value="1"
                       label="특정상품"
-                      checked={scopeType === '특정상품'}
+                      checked={scopeType === '1'}
                       onChange={handleScopeChange}
                     />
                     <CFormCheck
@@ -232,7 +232,7 @@ const DiscountAdd = () => {
                       name="scopeType"
                       value="2"
                       label="특정분류"
-                      checked={scopeType === '특정분류'}
+                      checked={scopeType === '2'}
                       onChange={handleScopeChange}
                     />
                   </div>
@@ -306,8 +306,8 @@ const DiscountAdd = () => {
         </CCardBody>
       </CCard>
       <div className="button-group">
-        <CButton color="primary" onClick={handleRegister}>
-          저장{' '}
+        <CButton color="primary" onClick={handleRegister} disabled={loading}>
+          {loading ? '저장 중...' : '저장'}
         </CButton>
       </div>
     </div>
