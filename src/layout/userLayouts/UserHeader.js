@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   CContainer,
   CNavbar,
@@ -18,39 +18,49 @@ import {
   CCol,
   CBadge,
   CImage,
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilCart, cilUser, cilMenu } from '@coreui/icons'
-import logo from '/public/logo.jpeg'
-import { getCategories } from '@/apis/product/categoryApis'
-import { getTags } from '@/apis/product/tagApis'
-import { useCategoryStore } from '@/store/product/categoryStore'
-import { authStore } from '@/store/auth/authStore'
+} from "@coreui/react";
+import CIcon from "@coreui/icons-react";
+import { cilCart, cilUser, cilMenu } from "@coreui/icons";
+import logo from "/public/logo.jpeg";
+import { getCategories } from "@/apis/product/categoryApis";
+import { getTags } from "@/apis/product/tagApis";
+import { useCategoryStore } from "@/store/product/categoryStore";
+import { authStore } from "@/store/auth/authStore";
 
 const Header = () => {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(false);
 
-  const selectCategory = useCategoryStore((state) => state.selectCategory)
+  const selectCategory = useCategoryStore((state) => state.selectCategory);
 
-  const isLogin = authStore((state) => state.isLogin())
-  const logout = authStore((state) => state.logout)
-  const userInfo = authStore((state) => state.userInfo)
+  const isLogin = authStore((state) => state.isLogin());
+  const logout = authStore((state) => state.logout);
+  const userInfo = authStore((state) => state.userInfo);
 
-  const [categories, setCategories] = useState([])
-  const [tags, setTags] = useState([]) // ✅ tags 상태 추가
+  const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]); // ✅ tags 상태 추가
 
   useEffect(() => {
     const fetchCategoriesAndTags = async () => {
-      const categoryData = await getCategories()
-      const tagData = await getTags()
-      if (categoryData) setCategories(categoryData)
-      if (tagData) setTags(tagData) // ✅ tag 정보도 가져오기
-    }
-    fetchCategoriesAndTags()
-  }, [])
+      try {
+        const categoryData = await getCategories();
+        const tagData = await getTags();
+        if (categoryData && Array.isArray(categoryData)) {
+          setCategories(categoryData);
+        }
+        if (tagData && Array.isArray(tagData)) {
+          setTags(tagData);
+        }
+      } catch (error) {
+        console.error("카테고리/태그 로딩 실패:", error);
+        setCategories([]);
+        setTags([]);
+      }
+    };
+    fetchCategoriesAndTags();
+  }, []);
 
-  const mainCategories = categories.filter((c) => c.categoryLevel === 1)
-  const subCategories = categories.filter((c) => c.categoryLevel === 2)
+  const mainCategories = categories.filter((c) => c.categoryLevel === 1);
+  const subCategories = categories.filter((c) => c.categoryLevel === 2);
 
   return (
     <>
@@ -75,9 +85,9 @@ const Header = () => {
                     <Link
                       to="#"
                       onClick={(e) => {
-                        e.preventDefault()
-                        if (window.confirm('로그아웃 하시겠습니까?')) {
-                          logout()
+                        e.preventDefault();
+                        if (window.confirm("로그아웃 하시겠습니까?")) {
+                          logout();
                         }
                       }}
                       className="text-black me-3"
@@ -108,7 +118,26 @@ const Header = () => {
       <div className="bg-white py-4 text-center">
         <CContainer>
           <Link to="/">
-            <CImage fluid align="center" src={logo} width={'240px'} />
+            <CImage
+              fluid
+              align="center"
+              src={logo}
+              style={{
+                maxWidth: "176px", // PC: 원본 크기
+                width: "100%", // 모바일: 반응형
+              }}
+              className="d-none d-md-block mx-auto" // PC용
+            />
+            <CImage
+              fluid
+              align="center"
+              src={logo}
+              style={{
+                maxWidth: "140px", // 모바일: 더 작게
+                width: "100%",
+              }}
+              className="d-block d-md-none mx-auto" // 모바일용
+            />
           </Link>
         </CContainer>
       </div>
@@ -128,85 +157,61 @@ const Header = () => {
       </div>
 
       {/* Main navigation */}
-      <CNavbar expand="lg" colorScheme="light" className="bg-white border-bottom">
+      <CNavbar
+        expand="lg"
+        colorScheme="light"
+        className="bg-white border-bottom p-0"
+      >
         <CContainer>
           <CNavbarToggler
-            aria-label="Toggle navigation"
-            aria-expanded={visible}
+            className="ms-2 my-2 border-0" // 햄버거 버튼 테두리도 제거해서 깔끔하게
             onClick={() => setVisible(!visible)}
           >
             <CIcon icon={cilMenu} />
           </CNavbarToggler>
 
           <CCollapse className="navbar-collapse" visible={visible}>
-            <div className="d-flex flex-wrap justify-content-center w-100">
-              {/* ✅ Tag 버튼 먼저 추가 */}
-              {tags.map((tag) => (
-                <CDropdown key={`tag-${tag.tagId}`} className="mx-2">
-                  <CDropdownToggle
-                    color="light"
-                    caret={false}
-                    className="text-dark fw-bold px-3 py-2"
+            {/* py-4로 위아래 여백을 충분히 주어 시원하게 배치 */}
+            <div className="d-flex flex-wrap justify-content-center w-100 py-4 gap-3">
+              {/* ✅ Tag: 회색 바탕 제거, 얇은 테두리만 추가 */}
+              {Array.isArray(tags) &&
+                tags.map((tag) => (
+                  <Link
+                    key={`tag-${tag.tagId}`}
+                    to={`/tag/${tag.tagName}`}
+                    onClick={() => selectCategory(tag.tagName)}
+                    className="text-decoration-none px-3 py-1 text-dark fw-normal border rounded-pill"
+                    style={{
+                      fontSize: "0.85rem",
+                      letterSpacing: "-0.5px", // 자간을 좁혀서 더 세련되게
+                      borderColor: "#eee", // 아주 연한 테두리
+                    }}
                   >
-                    {/* 수정 필요 */}
-                    <Link
-                      to={`/tag/${tag.tagName}`}
-                      className="text-dark text-decoration-none"
-                      onClick={() => selectCategory(tag.tagName)}
-                    >
-                      {tag.tagName}
-                    </Link>
-                  </CDropdownToggle>
-                </CDropdown>
+                    {tag.tagName}
+                  </Link>
+                ))}
+
+              {/* ✅ Category: 테두리 없이 텍스트만 깔끔하게 나열 */}
+              {mainCategories.map((mainCat) => (
+                <Link
+                  key={mainCat.categoryId}
+                  to={`/category/${mainCat.categoryId}`}
+                  onClick={() => selectCategory(mainCat.categoryName)}
+                  className="text-decoration-none px-3 py-1 text-dark fw-bold"
+                  style={{
+                    fontSize: "0.9rem",
+                    textTransform: "uppercase", // 영문일 경우 대문자로 변환해 깔끔함 강조
+                  }}
+                >
+                  {mainCat.categoryName}
+                </Link>
               ))}
-
-              {/* ✅ 기존 Category 렌더링 */}
-              {mainCategories.map((mainCat) => {
-                const children = subCategories.filter(
-                  (subCat) => subCat.parentCategoryId === mainCat.categoryId,
-                )
-
-                return (
-                  <CDropdown key={mainCat.categoryId} className="mx-2">
-                    <CDropdownToggle
-                      color="light"
-                      caret={false}
-                      className="text-dark fw-bold px-3 py-2"
-                    >
-                      <Link
-                        to={`/category/${mainCat.categoryId}`}
-                        className="text-dark text-decoration-none"
-                        onClick={() => selectCategory(mainCat.categoryName)}
-                      >
-                        {mainCat.categoryName}
-                      </Link>
-                    </CDropdownToggle>
-
-                    {/* ✅ 중분류가 있을 때만 드롭다운 메뉴 표시 */}
-                    {children.length > 0 && (
-                      <CDropdownMenu>
-                        {children.map((subCat) => (
-                          <CDropdownItem key={subCat.categoryId}>
-                            <Link
-                              to={`/category/${subCat.categoryId}`}
-                              className="dropdown-item"
-                              onClick={() => selectCategory(subCat.categoryName)}
-                            >
-                              {subCat.categoryName}
-                            </Link>
-                          </CDropdownItem>
-                        ))}
-                      </CDropdownMenu>
-                    )}
-                  </CDropdown>
-                )
-              })}
             </div>
           </CCollapse>
         </CContainer>
       </CNavbar>
     </>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
 import {
   CContainer,
   CRow,
@@ -12,13 +12,13 @@ import {
   CCarousel,
   CCarouselItem,
   CCarouselCaption,
-} from '@coreui/react'
-import { useQuery } from '@tanstack/react-query'
-import { getCategoryProductList } from '@/apis/product/productApis'
-import { formatPrice } from '@/utils/utils'
+} from "@coreui/react";
+import { useQuery } from "@tanstack/react-query";
+import { getCategoryProductList } from "@/apis/product/productApis";
+import { formatPrice } from "@/utils/utils";
 
 const Home = () => {
-  const categoryId = 0
+  const categoryId = 0;
   // 실제 구현 시에는 서버에서 데이터를 가져오거나 useEffect로 데이터를 가져옵니다
   // const bestProducts = getHomeProducts('best', 4)
   // const newProducts = getHomeProducts('new', 4)
@@ -29,21 +29,30 @@ const Home = () => {
     isBestProductsLoading,
     isBestProductsError,
   } = useQuery({
-    queryKey: ['bestProducts'],
+    queryKey: ["bestProducts"],
     queryFn: () =>
-      getCategoryProductList(categoryId, { tagName: '추천상품' }, { page: 0, size: 4 }),
+      getCategoryProductList(
+        categoryId,
+        { tagName: "추천상품" },
+        { page: 0, size: 4 }
+      ),
     enabled: categoryId !== undefined && categoryId !== null,
-  })
+  });
 
   const {
     data: newProducts = [],
     isNewProductsLoading,
     isNewProductsError,
   } = useQuery({
-    queryKey: ['newProducts'],
-    queryFn: () => getCategoryProductList(categoryId, { tagName: '신상품' }, { page: 0, size: 4 }),
+    queryKey: ["newProducts"],
+    queryFn: () =>
+      getCategoryProductList(
+        categoryId,
+        { tagName: "신상품" },
+        { page: 0, size: 4 }
+      ),
     enabled: categoryId !== undefined && categoryId !== null,
-  })
+  });
 
   // const {
   //   data: saleProducts = [],
@@ -61,11 +70,18 @@ const Home = () => {
       {isBestProductsLoading ? (
         <p className="text-center">로딩 중...</p>
       ) : isBestProductsError ? (
-        <p className="text-center text-danger">상품 정보를 불러오지 못했습니다.</p>
+        <p className="text-center text-danger">
+          상품 정보를 불러오지 못했습니다.
+        </p>
       ) : (
         <CContainer className="mb-5 mt-5">
           <h3 className="text-center mb-4">WEEKLY BEST</h3>
-          <CRow xs={{ cols: 1 }} md={{ cols: 2 }} lg={{ cols: 4 }} className="g-4">
+          <CRow
+            xs={{ cols: 2 }}
+            md={{ cols: 3 }}
+            lg={{ cols: 4 }}
+            className="g-4"
+          >
             {bestProducts.length > 0 ? (
               bestProducts.map((product) => (
                 <CCol key={product.productId}>
@@ -74,18 +90,37 @@ const Home = () => {
                       <div className="position-relative">
                         <CCardImage
                           orientation="top"
-                          src={product.thumbnailPath || '/placeholder.svg?height=300&width=300'}
-                          style={{ height: '300px', objectFit: 'cover' }}
+                          src={
+                            product.thumbnailPath ||
+                            "/placeholder.svg?height=300&width=300"
+                          }
+                          style={{
+                            height: "200px", // 모바일 기본
+                            objectFit: "cover",
+                          }}
+                          className="d-block d-md-none" // 모바일용
+                        />
+                        <CCardImage
+                          orientation="top"
+                          src={
+                            product.thumbnailPath ||
+                            "/placeholder.svg?height=300&width=300"
+                          }
+                          style={{
+                            height: "300px", // PC용
+                            objectFit: "cover",
+                          }}
+                          className="d-none d-md-block" // PC용
                         />
                         {product.discountedPrice !== product.price &&
-                          product.discountInfo?.discountType === '할인금액' && (
+                          product.discountInfo?.discountType === "할인금액" && (
                             <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
                               {product.discountInfo.discountValue}원 OFF
                             </span>
                           )}
 
                         {product.discountedPrice !== product.price &&
-                          product.discountInfo?.discountType === '할인율' && (
+                          product.discountInfo?.discountType === "할인율" && (
                             <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
                               {product.discountInfo.discountValue}% OFF
                             </span>
@@ -93,20 +128,28 @@ const Home = () => {
                       </div>
                     </Link>
                     <CCardBody>
-                      <CCardTitle className="h6">{product.productName}</CCardTitle>
+                      <CCardTitle className="h6">
+                        {product.productName}
+                      </CCardTitle>
                       <CCardText className="small text-muted">
-                        {product.tag.map((tag) => tag.productTagName).join(', ')}
+                        {product.tag
+                          .map((tag) => tag.productTagName)
+                          .join(", ")}
                       </CCardText>
                       <div className="d-flex align-items-center">
                         {product.discountedPrice !== product.price ? (
                           <>
-                            <span className="fw-bold">{formatPrice(product.discountedPrice)}</span>
+                            <span className="fw-bold">
+                              {formatPrice(product.discountedPrice)}
+                            </span>
                             <span className="text-muted text-decoration-line-through ms-2 small">
                               {formatPrice(product.price)}
                             </span>
                           </>
                         ) : (
-                          <span className="fw-bold">{formatPrice(product.price)}</span>
+                          <span className="fw-bold">
+                            {formatPrice(product.price)}
+                          </span>
                         )}
                       </div>
                     </CCardBody>
@@ -127,11 +170,18 @@ const Home = () => {
         isNewProductsLoading ? (
           <p className="text-center">로딩 중...</p>
         ) : isNewProductsError ? (
-          <p className="text-center text-danger">상품 정보를 불러오지 못했습니다.</p>
+          <p className="text-center text-danger">
+            상품 정보를 불러오지 못했습니다.
+          </p>
         ) : (
           <CContainer className="mb-5">
             <h3 className="text-center mb-4">NEW ARRIVALS</h3>
-            <CRow xs={{ cols: 1 }} md={{ cols: 2 }} lg={{ cols: 4 }} className="g-4">
+            <CRow
+              xs={{ cols: 2 }}
+              md={{ cols: 3 }}
+              lg={{ cols: 4 }}
+              className="g-4"
+            >
               {newProducts.length > 0 ? (
                 newProducts.map((product) => (
                   <CCol key={product.productId}>
@@ -140,18 +190,38 @@ const Home = () => {
                         <div className="position-relative">
                           <CCardImage
                             orientation="top"
-                            src={product.thumbnailPath || '/placeholder.svg?height=300&width=300'}
-                            style={{ height: '300px', objectFit: 'cover' }}
+                            src={
+                              product.thumbnailPath ||
+                              "/placeholder.svg?height=300&width=300"
+                            }
+                            style={{
+                              height: "200px", // 모바일용
+                              objectFit: "cover",
+                            }}
+                            className="d-block d-md-none"
+                          />
+                          <CCardImage
+                            orientation="top"
+                            src={
+                              product.thumbnailPath ||
+                              "/placeholder.svg?height=300&width=300"
+                            }
+                            style={{
+                              height: "300px", // PC용
+                              objectFit: "cover",
+                            }}
+                            className="d-none d-md-block"
                           />
                           {product.discountedPrice !== product.price &&
-                            product.discountInfo?.discountType === '할인금액' && (
+                            product.discountInfo?.discountType ===
+                              "할인금액" && (
                               <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
                                 {product.discountInfo.discountValue}원 OFF
                               </span>
                             )}
 
                           {product.discountedPrice !== product.price &&
-                            product.discountInfo?.discountType === '할인율' && (
+                            product.discountInfo?.discountType === "할인율" && (
                               <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
                                 {product.discountInfo.discountValue}% OFF
                               </span>
@@ -159,9 +229,13 @@ const Home = () => {
                         </div>
                       </Link>
                       <CCardBody>
-                        <CCardTitle className="h6">{product.productName}</CCardTitle>
+                        <CCardTitle className="h6">
+                          {product.productName}
+                        </CCardTitle>
                         <CCardText className="small text-muted">
-                          {product.tag.map((tag) => tag.productTagName).join(', ')}
+                          {product.tag
+                            .map((tag) => tag.productTagName)
+                            .join(", ")}
                         </CCardText>
                         <div className="d-flex align-items-center">
                           {product.discountedPrice !== product.price ? (
@@ -174,7 +248,9 @@ const Home = () => {
                               </span>
                             </>
                           ) : (
-                            <span className="fw-bold">{formatPrice(product.price)}</span>
+                            <span className="fw-bold">
+                              {formatPrice(product.price)}
+                            </span>
                           )}
                         </div>
                       </CCardBody>
@@ -183,7 +259,9 @@ const Home = () => {
                 ))
               ) : (
                 <CCol>
-                  <p className="text-center">해당 카테고리에 상품이 없습니다.</p>
+                  <p className="text-center">
+                    해당 카테고리에 상품이 없습니다.
+                  </p>
                 </CCol>
               )}
             </CRow>
@@ -241,7 +319,7 @@ const Home = () => {
       </CContainer> */
       }
     </>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

@@ -1,5 +1,5 @@
-import { useApi } from '@/apis/index'
-const api = useApi()
+import { useApi } from "@/apis/index";
+const api = useApi();
 
 /**
  * @returns 
@@ -13,12 +13,12 @@ const api = useApi()
 export const getTags = async () => {
   try {
     // http://localhost:8090/v1/categories
-    const response = await api.get('/public/v1/products/tags')
-    console.log(response)
-    return response.data
+    const response = await api.get("/public/v1/products/tags");
+    console.log(response);
+    return response.data;
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
-}
+};
 
-export default { getTags }
+export default { getTags };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import {
   CContainer,
   CCard,
@@ -16,156 +16,266 @@ import {
   CAlert,
   CListGroup,
   CListGroupItem,
-} from '@coreui/react'
-import couponApi from '@/apis/promotion/couponApis'
+  CRow,
+  CCol,
+  CBadge,
+} from "@coreui/react";
+import couponApi from "@/apis/promotion/couponApis";
 
 const MyCoupon = () => {
-  const [coupons, setCoupons] = useState([])
-  const [visibleDetails, setVisibleDetails] = useState({})
-  const [codeInput, setCodeInput] = useState('')
-  const [alertMsg, setAlertMsg] = useState(null)
-  const [showGuide, setShowGuide] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [coupons, setCoupons] = useState([]);
+  const [visibleDetails, setVisibleDetails] = useState({});
+  const [codeInput, setCodeInput] = useState("");
+  const [alertMsg, setAlertMsg] = useState(null);
+  const [showGuide, setShowGuide] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const toggleDetails = (id) => {
     setVisibleDetails((prev) => ({
       ...prev,
       [id]: !prev[id],
-    }))
-  }
+    }));
+  };
 
   // MyCoupon.js - fetchCoupons 함수 수정
 
   const fetchCoupons = async () => {
     try {
-      setLoading(true)
-      const data = await couponApi.getMyCoupons()
+      setLoading(true);
+      const data = await couponApi.getMyCoupons();
 
       // ⭐ ACTIVE 쿠폰만 필터링 (USED, EXPIRED 제외)
-      const activeCoupons = (data || []).filter((coupon) => coupon.status === 'ACTIVE')
-      setCoupons(activeCoupons)
+      const activeCoupons = (data || []).filter(
+        (coupon) => coupon.status === "ACTIVE"
+      );
+      setCoupons(activeCoupons);
     } catch (error) {
-      setAlertMsg('쿠폰 정보를 불러오는 중 문제가 발생했습니다.')
+      setAlertMsg("쿠폰 정보를 불러오는 중 문제가 발생했습니다.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCodeSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // 빈 값 체크
-    if (!codeInput || codeInput.trim() === '') {
-      setAlertMsg('쿠폰 번호를 입력해주세요.')
-      return
+    if (!codeInput || codeInput.trim() === "") {
+      setAlertMsg("쿠폰 번호를 입력해주세요.");
+      return;
     }
 
     // 4~35자 영문/숫자만 허용
     if (!/^[a-zA-Z0-9]{4,35}$/.test(codeInput)) {
-      setAlertMsg('올바른 쿠폰 번호를 입력해주세요. (4~35자 영문/숫자)')
-      return
+      setAlertMsg("올바른 쿠폰 번호를 입력해주세요. (4~35자 영문/숫자)");
+      return;
     }
 
     try {
-      setAlertMsg('쿠폰 인증 요청 중...')
-      const result = await couponApi.issueMyCoupon(codeInput)
-      console.log('✅ 쿠폰 발급 결과:', result)
-      setAlertMsg(result?.message || '쿠폰이 성공적으로 발급되었습니다.')
-      setCodeInput('')
-      fetchCoupons() // 쿠폰 목록 갱신
+      setAlertMsg("쿠폰 인증 요청 중...");
+      const result = await couponApi.issueMyCoupon(codeInput);
+      console.log("✅ 쿠폰 발급 결과:", result);
+      setAlertMsg(result?.message || "쿠폰이 성공적으로 발급되었습니다.");
+      setCodeInput("");
+      fetchCoupons(); // 쿠폰 목록 갱신
     } catch (error) {
-      console.error('❌ 쿠폰 발급 실패:', error)
-      setAlertMsg(error?.response?.data?.message || '쿠폰 인증 중 오류가 발생했습니다.')
+      console.error("❌ 쿠폰 발급 실패:", error);
+      setAlertMsg(
+        error?.response?.data?.message || "쿠폰 인증 중 오류가 발생했습니다."
+      );
     }
-  }
+  };
 
   useEffect(() => {
-    fetchCoupons()
-  }, [])
+    fetchCoupons();
+  }, []);
 
   return (
-    <CContainer className="mt-5 mb-5 text-center" style={{ maxWidth: '1000px' }}>
+    <CContainer
+      className="mt-5 mb-5 text-center"
+      style={{ maxWidth: "1000px" }}
+    >
       <h4 className="mb-5">마이 쿠폰</h4>
 
       {/* ✅ 쿠폰 목록 */}
       <CCard className="mb-5">
         <CCardBody>
-          <CTable hover responsive className="text-center align-middle">
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell style={{ width: '30%' }}>쿠폰명</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '15%' }}>할인</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '15%' }}>최소주문</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '30%' }}>유효기간</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '10%' }}>상세</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {loading ? (
+          {/* ========== PC 버전 (테이블) ========== */}
+          <div className="d-none d-md-block">
+            <CTable hover responsive className="text-center align-middle">
+              <CTableHead>
                 <CTableRow>
-                  <CTableDataCell colSpan={5}>로딩 중...</CTableDataCell>
+                  <CTableHeaderCell style={{ width: "30%" }}>
+                    쿠폰명
+                  </CTableHeaderCell>
+                  <CTableHeaderCell style={{ width: "15%" }}>
+                    할인
+                  </CTableHeaderCell>
+                  <CTableHeaderCell style={{ width: "15%" }}>
+                    최소주문
+                  </CTableHeaderCell>
+                  <CTableHeaderCell style={{ width: "30%" }}>
+                    유효기간
+                  </CTableHeaderCell>
+                  <CTableHeaderCell style={{ width: "10%" }}>
+                    상세
+                  </CTableHeaderCell>
                 </CTableRow>
-              ) : coupons.length === 0 ? (
-                <CTableRow>
-                  <CTableDataCell colSpan={5}>보유한 쿠폰이 없습니다.</CTableDataCell>
-                </CTableRow>
-              ) : (
-                coupons.map((coupon) => (
-                  <React.Fragment key={coupon.memberCouponId}>
-                    <CTableRow>
-                      <CTableDataCell>{coupon.couponName}</CTableDataCell>
-                      <CTableDataCell>
-                        {coupon.couponType === 'RATE'
-                          ? `${coupon.discountAmount}%`
-                          : `${coupon.discountAmount.toLocaleString()}원`}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {coupon.minOrderPrice?.toLocaleString() || 0}원 이상
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {coupon.couponStartDate || coupon.issuedAt || '-'} ~{' '}
-                        {coupon.couponEndDate || coupon.expiredAt || '-'}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CButton
-                          size="sm"
-                          color="primary"
-                          onClick={() => toggleDetails(coupon.memberCouponId)}
-                        >
-                          {visibleDetails[coupon.memberCouponId] ? '닫기' : '상세'}
-                        </CButton>
-                      </CTableDataCell>
-                    </CTableRow>
-                    <CTableRow>
-                      <CTableDataCell colSpan={5} className="p-0">
-                        <CCollapse visible={visibleDetails[coupon.memberCouponId]}>
-                          <div className="p-3 text-start bg-light">
-                            <strong>설명:</strong> {coupon.comment || '없음'} <br />
-                            <strong>최소 주문금액:</strong>{' '}
-                            {coupon.minOrderPrice
-                              ? `${coupon.minOrderPrice.toLocaleString()}원`
-                              : '제한 없음'}{' '}
-                            <br />
-                            <strong>최대 할인금액:</strong>{' '}
-                            {coupon.maxDiscountPrice
-                              ? `${coupon.maxDiscountPrice.toLocaleString()}원`
-                              : '제한 없음'}{' '}
-                            <br />
-                            <strong>상태:</strong>{' '}
-                            {coupon.status === 'ACTIVE'
-                              ? '사용 가능'
-                              : coupon.status === 'EXPIRED'
-                                ? '만료됨'
-                                : '삭제됨'}
-                          </div>
-                        </CCollapse>
-                      </CTableDataCell>
-                    </CTableRow>
-                  </React.Fragment>
-                ))
-              )}
-            </CTableBody>
-          </CTable>
+              </CTableHead>
+              <CTableBody>
+                {loading ? (
+                  <CTableRow>
+                    <CTableDataCell colSpan={5}>로딩 중...</CTableDataCell>
+                  </CTableRow>
+                ) : coupons.length === 0 ? (
+                  <CTableRow>
+                    <CTableDataCell colSpan={5}>
+                      보유한 쿠폰이 없습니다.
+                    </CTableDataCell>
+                  </CTableRow>
+                ) : (
+                  coupons.map((coupon) => (
+                    <React.Fragment key={coupon.memberCouponId}>
+                      <CTableRow>
+                        <CTableDataCell>{coupon.couponName}</CTableDataCell>
+                        <CTableDataCell>
+                          {coupon.couponType === "RATE"
+                            ? `${coupon.discountAmount}%`
+                            : `${coupon.discountAmount.toLocaleString()}원`}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {coupon.minOrderPrice?.toLocaleString() || 0}원 이상
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {coupon.couponStartDate || coupon.issuedAt || "-"} ~{" "}
+                          {coupon.couponEndDate || coupon.expiredAt || "-"}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            onClick={() => toggleDetails(coupon.memberCouponId)}
+                          >
+                            {visibleDetails[coupon.memberCouponId]
+                              ? "닫기"
+                              : "상세"}
+                          </CButton>
+                        </CTableDataCell>
+                      </CTableRow>
+                      <CTableRow>
+                        <CTableDataCell colSpan={5} className="p-0">
+                          <CCollapse
+                            visible={visibleDetails[coupon.memberCouponId]}
+                          >
+                            <div className="p-3 text-start bg-light">
+                              <strong>설명:</strong> {coupon.comment || "없음"}{" "}
+                              <br />
+                              <strong>최소 주문금액:</strong>{" "}
+                              {coupon.minOrderPrice
+                                ? `${coupon.minOrderPrice.toLocaleString()}원`
+                                : "제한 없음"}{" "}
+                              <br />
+                              <strong>최대 할인금액:</strong>{" "}
+                              {coupon.maxDiscountPrice
+                                ? `${coupon.maxDiscountPrice.toLocaleString()}원`
+                                : "제한 없음"}{" "}
+                              <br />
+                              <strong>상태:</strong>{" "}
+                              {coupon.status === "ACTIVE"
+                                ? "사용 가능"
+                                : coupon.status === "EXPIRED"
+                                  ? "만료됨"
+                                  : "삭제됨"}
+                            </div>
+                          </CCollapse>
+                        </CTableDataCell>
+                      </CTableRow>
+                    </React.Fragment>
+                  ))
+                )}
+              </CTableBody>
+            </CTable>
+          </div>
+
+          {/* ========== 모바일 버전 (카드) ========== */}
+          <div className="d-block d-md-none">
+            {loading ? (
+              <div className="text-center py-4">로딩 중...</div>
+            ) : coupons.length === 0 ? (
+              <CAlert color="info">보유한 쿠폰이 없습니다.</CAlert>
+            ) : (
+              coupons.map((coupon) => (
+                <CCard key={coupon.memberCouponId} className="mb-3 border">
+                  <CCardBody className="p-3">
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <h6 className="mb-0">{coupon.couponName}</h6>
+                      <CBadge color="success">사용가능</CBadge>
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <span className="text-muted small">할인</span>
+                        <strong className="text-danger">
+                          {coupon.couponType === "RATE"
+                            ? `${coupon.discountAmount}%`
+                            : `${coupon.discountAmount.toLocaleString()}원`}
+                        </strong>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <span className="text-muted small">최소주문</span>
+                        <span className="small">
+                          {coupon.minOrderPrice?.toLocaleString() || 0}원 이상
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="small text-muted mb-2">
+                      <div>
+                        시작: {coupon.couponStartDate || coupon.issuedAt || "-"}
+                      </div>
+                      <div>
+                        종료: {coupon.couponEndDate || coupon.expiredAt || "-"}
+                      </div>
+                    </div>
+
+                    <CButton
+                      size="sm"
+                      color="primary"
+                      variant="outline"
+                      className="w-100"
+                      onClick={() => toggleDetails(coupon.memberCouponId)}
+                    >
+                      {visibleDetails[coupon.memberCouponId]
+                        ? "닫기"
+                        : "상세보기"}
+                    </CButton>
+
+                    <CCollapse visible={visibleDetails[coupon.memberCouponId]}>
+                      <div className="mt-3 p-2 bg-light rounded small">
+                        <div className="mb-1">
+                          <strong>설명:</strong> {coupon.comment || "없음"}
+                        </div>
+                        <div className="mb-1">
+                          <strong>최대 할인:</strong>{" "}
+                          {coupon.maxDiscountPrice
+                            ? `${coupon.maxDiscountPrice.toLocaleString()}원`
+                            : "제한 없음"}
+                        </div>
+                        <div>
+                          <strong>상태:</strong>{" "}
+                          {coupon.status === "ACTIVE"
+                            ? "사용 가능"
+                            : coupon.status === "EXPIRED"
+                              ? "만료됨"
+                              : "삭제됨"}
+                        </div>
+                      </div>
+                    </CCollapse>
+                  </CCardBody>
+                </CCard>
+              ))
+            )}
+          </div>
         </CCardBody>
       </CCard>
 
@@ -174,9 +284,12 @@ const MyCoupon = () => {
         <CCardBody className="d-flex flex-column align-items-center">
           <h6 className="mt-3 mb-3 align-self-start">쿠폰인증번호 등록하기</h6>
 
-          <CForm className="d-flex gap-2 justify-content-center" onSubmit={handleCodeSubmit}>
+          <CForm
+            className="d-flex gap-2 justify-content-center"
+            onSubmit={handleCodeSubmit}
+          >
             <CFormInput
-              style={{ maxWidth: '300px' }}
+              style={{ maxWidth: "300px" }}
               placeholder="쿠폰번호 입력"
               value={codeInput}
               onChange={(e) => setCodeInput(e.target.value)}
@@ -209,35 +322,40 @@ const MyCoupon = () => {
               className="text-decoration-none"
               onClick={() => setShowGuide(!showGuide)}
             >
-              {showGuide ? '닫기 ▲' : '펼치기 ▼'}
+              {showGuide ? "닫기 ▲" : "펼치기 ▼"}
             </CButton>
           </div>
           <CCollapse visible={showGuide}>
             <CListGroup className="text-start">
               <CListGroupItem>
-                1. 쇼핑몰에서 발행한 종이쿠폰/시리얼쿠폰/모바일쿠폰 인증번호 등록 시 온라인쿠폰으로
-                발급됩니다.
+                1. 쇼핑몰에서 발행한 종이쿠폰/시리얼쿠폰/모바일쿠폰 인증번호
+                등록 시 온라인쿠폰으로 발급됩니다.
               </CListGroupItem>
               <CListGroupItem>
-                2. 쿠폰은 주문 시 1회에 한해 적용되며, 1회 사용 시 재사용이 불가능합니다.
+                2. 쿠폰은 주문 시 1회에 한해 적용되며, 1회 사용 시 재사용이
+                불가능합니다.
               </CListGroupItem>
               <CListGroupItem>
-                3. 쿠폰은 특정 상품에만 적용될 수 있으며, 구매 시점에 따라 사용 제한이 있을 수
-                있습니다.
+                3. 쿠폰은 특정 상품에만 적용될 수 있으며, 구매 시점에 따라 사용
+                제한이 있을 수 있습니다.
               </CListGroupItem>
               <CListGroupItem>
-                4. 특정한 종이쿠폰/시리얼쿠폰/모바일쿠폰은 1회만 사용 가능합니다.
+                4. 특정한 종이쿠폰/시리얼쿠폰/모바일쿠폰은 1회만 사용
+                가능합니다.
               </CListGroupItem>
-              <CListGroupItem>5. 배송비 할인쿠폰은 '기본배송' 상품에만 적용됩니다.</CListGroupItem>
               <CListGroupItem>
-                6. 전체 배송비 할인쿠폰은 '기본배송', '개별배송', '업체배송' 상품에 모두 적용됩니다.
+                5. 배송비 할인쿠폰은 '기본배송' 상품에만 적용됩니다.
+              </CListGroupItem>
+              <CListGroupItem>
+                6. 전체 배송비 할인쿠폰은 '기본배송', '개별배송', '업체배송'
+                상품에 모두 적용됩니다.
               </CListGroupItem>
             </CListGroup>
           </CCollapse>
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default MyCoupon
+export default MyCoupon;
