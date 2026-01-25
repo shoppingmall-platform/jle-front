@@ -1,7 +1,7 @@
-import React from 'react'
-import { CButton } from '@coreui/react'
-import { updateCartItem, addToCart } from '@/apis/member/cartApis'
-import useGuestCartStore from '@/store/member/guestCartStore'
+import React from "react";
+import { CButton } from "@coreui/react";
+import { updateCartItem, addToCart } from "@/apis/member/cartApis";
+import useGuestCartStore from "@/store/member/guestCartStore";
 
 const OptionChange = ({
   top,
@@ -14,42 +14,49 @@ const OptionChange = ({
   onClose,
   onUpdateSuccess,
   isGuest = false,
+  isModal = false, // ← 모달 모드 추가
 }) => {
-  const { updateOption, addToCart: addToGuestCart } = useGuestCartStore()
+  const { updateOption, addToCart: addToGuestCart } = useGuestCartStore();
   const buildOptionTypes = (options) => {
-    const grouped = {}
+    const grouped = {};
     options.forEach((option) => {
-      option.productOptionDetails.forEach(({ productOptionType, productOptionDetailName }) => {
-        if (!grouped[productOptionType]) grouped[productOptionType] = new Set()
-        grouped[productOptionType].add(productOptionDetailName)
-      })
-    })
+      option.productOptionDetails.forEach(
+        ({ productOptionType, productOptionDetailName }) => {
+          if (!grouped[productOptionType])
+            grouped[productOptionType] = new Set();
+          grouped[productOptionType].add(productOptionDetailName);
+        }
+      );
+    });
     return Object.entries(grouped).reduce((acc, [type, values]) => {
-      acc[type] = Array.from(values)
-      return acc
-    }, {})
-  }
+      acc[type] = Array.from(values);
+      return acc;
+    }, {});
+  };
 
-  const optionTypes = buildOptionTypes(productOptions)
+  const optionTypes = buildOptionTypes(productOptions);
 
   const handleUpdate = async () => {
     // 선택된 옵션 조합에 해당하는 productOptionId 찾기
     const selectedSet = new Set(
-      Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
-    )
+      Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`)
+    );
 
     const matchedOption = productOptions.find((option) => {
       const optionSet = new Set(
         option.productOptionDetails.map(
-          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
-        ),
-      )
-      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
-    })
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`
+        )
+      );
+      return (
+        selectedSet.size === optionSet.size &&
+        [...selectedSet].every((v) => optionSet.has(v))
+      );
+    });
 
     if (!matchedOption) {
-      alert('⚠️ 해당 옵션 조합이 존재하지 않습니다.')
-      return
+      alert("⚠️ 해당 옵션 조합이 존재하지 않습니다.");
+      return;
     }
 
     if (isGuest) {
@@ -57,10 +64,10 @@ const OptionChange = ({
       updateOption(cartItemId, {
         ...matchedOption,
         quantity,
-      })
-      alert('✅ 옵션이 변경되었습니다.')
-      onUpdateSuccess?.(matchedOption)
-      onClose()
+      });
+      alert("✅ 옵션이 변경되었습니다.");
+      onUpdateSuccess?.(matchedOption);
+      onClose();
     } else {
       // ✅ 회원일 경우
       const payload = [
@@ -69,38 +76,41 @@ const OptionChange = ({
           productOptionId: matchedOption.productOptionId,
           quantity,
         },
-      ]
-      console.log('🛒 옵션 변경 요청 데이터:', payload)
+      ];
+      console.log("🛒 옵션 변경 요청 데이터:", payload);
 
       try {
-        await updateCartItem(payload)
-        alert('✅ 장바구니 항목이 변경되었습니다.')
-        onUpdateSuccess?.(matchedOption)
-        onClose()
+        await updateCartItem(payload);
+        alert("✅ 장바구니 항목이 변경되었습니다.");
+        onUpdateSuccess?.(matchedOption);
+        onClose();
       } catch (error) {
-        alert('❌ 변경 실패. 다시 시도해주세요.')
+        alert("❌ 변경 실패. 다시 시도해주세요.");
       }
     }
-  }
+  };
 
   const handleAdd = async () => {
     // 선택된 옵션 조합에 해당하는 productOptionId 찾기
     const selectedSet = new Set(
-      Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`),
-    )
+      Object.entries(selectedOptions).map(([type, val]) => `${type}:${val}`)
+    );
 
     const matchedOption = productOptions.find((option) => {
       const optionSet = new Set(
         option.productOptionDetails.map(
-          (d) => `${d.productOptionType}:${d.productOptionDetailName}`,
-        ),
-      )
-      return selectedSet.size === optionSet.size && [...selectedSet].every((v) => optionSet.has(v))
-    })
+          (d) => `${d.productOptionType}:${d.productOptionDetailName}`
+        )
+      );
+      return (
+        selectedSet.size === optionSet.size &&
+        [...selectedSet].every((v) => optionSet.has(v))
+      );
+    });
 
     if (!matchedOption) {
-      alert('⚠️ 해당 옵션 조합이 존재하지 않습니다.')
-      return
+      alert("⚠️ 해당 옵션 조합이 존재하지 않습니다.");
+      return;
     }
 
     if (isGuest) {
@@ -108,10 +118,10 @@ const OptionChange = ({
       addToGuestCart({
         ...matchedOption,
         quantity,
-      })
-      alert('✅ 장바구니에 추가되었습니다.')
-      onUpdateSuccess?.(matchedOption)
-      onClose()
+      });
+      alert("✅ 장바구니에 추가되었습니다.");
+      onUpdateSuccess?.(matchedOption);
+      onClose();
     } else {
       // ✅ 회원일 경우 - 장바구니 추가 API 호출
       const payload = [
@@ -119,49 +129,61 @@ const OptionChange = ({
           productOptionId: matchedOption.productOptionId,
           quantity,
         },
-      ]
-      console.log('🛒 장바구니 추가 요청 데이터:', payload)
+      ];
+      console.log("🛒 장바구니 추가 요청 데이터:", payload);
 
       try {
-        await addToCart(payload)
-        alert('✅ 장바구니에 추가되었습니다.')
-        onUpdateSuccess?.(matchedOption)
-        onClose()
+        await addToCart(payload);
+        alert("✅ 장바구니에 추가되었습니다.");
+        onUpdateSuccess?.(matchedOption);
+        onClose();
       } catch (error) {
-        alert('❌ 추가 실패. 다시 시도해주세요.')
+        alert("❌ 추가 실패. 다시 시도해주세요.");
       }
     }
-  }
+  };
 
   return (
     <div
-      style={{
-        position: 'absolute',
-        top,
-        left,
-        zIndex: 1000,
-        background: 'white',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
-        padding: '1rem',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        minWidth: '200px',
-      }}
+      style={
+        isModal
+          ? {
+              // 모달 안에서는 position 없이
+              background: "white",
+              borderRadius: "4px",
+              padding: "1rem",
+            }
+          : {
+              // 기존 팝업 스타일
+              position: "absolute",
+              top,
+              left,
+              zIndex: 1000,
+              background: "white",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              padding: "1rem",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              minWidth: "200px",
+            }
+      }
     >
-      <div style={{ textAlign: 'right' }}>
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '1.2rem',
-            cursor: 'pointer',
-          }}
-        >
-          &times;
-        </button>
-      </div>
+      {!isModal && (
+        <div style={{ textAlign: "right" }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: "1.2rem",
+              cursor: "pointer",
+            }}
+          >
+            &times;
+          </button>
+        </div>
+      )}
 
       {Object.entries(optionTypes).map(([type, values]) => (
         <div key={type} className="mt-2">
@@ -171,7 +193,7 @@ const OptionChange = ({
               <CButton
                 key={value}
                 size="sm"
-                color={selectedOptions[type] === value ? 'dark' : 'light'}
+                color={selectedOptions[type] === value ? "dark" : "light"}
                 className="me-2 mb-2"
                 onClick={() => handleSelectOption(type, value)}
               >
@@ -191,7 +213,7 @@ const OptionChange = ({
         </CButton>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default OptionChange
+export default OptionChange;
