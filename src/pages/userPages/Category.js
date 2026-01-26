@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link } from "react-router-dom";
 import {
   CContainer,
   CRow,
@@ -8,35 +8,42 @@ import {
   CCardBody,
   CCardTitle,
   CCardText,
-} from '@coreui/react'
-import { useQuery } from '@tanstack/react-query'
-import { getCategoryProductList } from '@/apis/product/productApis'
-import { formatPrice } from '@/utils/utils'
-import { useCategoryStore } from '@/store/product/categoryStore'
+} from "@coreui/react";
+import { useQuery } from "@tanstack/react-query";
+import { getCategoryProductList } from "@/apis/product/productApis";
+import { formatPrice } from "@/utils/utils";
+import { useCategoryStore } from "@/store/product/categoryStore";
 
 const Category = () => {
-  const { categoryId } = useParams()
-  const selectedCategory = useCategoryStore((state) => state.selectedCategory)
+  const { categoryId } = useParams();
+  const selectedCategory = useCategoryStore((state) => state.selectedCategory);
   const {
     data: categoryProducts = [],
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['categoryProducts', categoryId],
+    queryKey: ["categoryProducts", categoryId],
     queryFn: () => getCategoryProductList(categoryId, {}, { page: 0, size: 8 }),
     enabled: !!categoryId,
-  })
+  });
 
   return (
     <CContainer className="mb-5 mt-5">
-      <h3 className="text-center mb-4">{selectedCategory.toUpperCase()} CATEGORY</h3>
+      <h3 className="text-center mb-4">{selectedCategory.toUpperCase()}</h3>
 
       {isLoading ? (
         <p className="text-center">로딩 중...</p>
       ) : isError ? (
-        <p className="text-center text-danger">상품 정보를 불러오지 못했습니다.</p>
+        <p className="text-center text-danger">
+          상품 정보를 불러오지 못했습니다.
+        </p>
       ) : (
-        <CRow xs={{ cols: 1 }} md={{ cols: 2 }} lg={{ cols: 4 }} className="g-4">
+        <CRow
+          xs={{ cols: 2 }}
+          md={{ cols: 3 }}
+          lg={{ cols: 4 }}
+          className="g-4"
+        >
           {categoryProducts.length > 0 ? (
             categoryProducts.map((product) => (
               <CCol key={product.productId}>
@@ -45,18 +52,37 @@ const Category = () => {
                     <div className="position-relative">
                       <CCardImage
                         orientation="top"
-                        src={product.thumbnailPath || '/placeholder.svg?height=300&width=300'}
-                        style={{ height: '300px', objectFit: 'cover' }}
+                        src={
+                          product.thumbnailPath ||
+                          "/placeholder.svg?height=300&width=300"
+                        }
+                        style={{
+                          height: "200px", // 모바일용
+                          objectFit: "cover",
+                        }}
+                        className="d-block d-md-none"
+                      />
+                      <CCardImage
+                        orientation="top"
+                        src={
+                          product.thumbnailPath ||
+                          "/placeholder.svg?height=300&width=300"
+                        }
+                        style={{
+                          height: "300px", // PC용
+                          objectFit: "cover",
+                        }}
+                        className="d-none d-md-block"
                       />
                       {product.discountedPrice !== product.price &&
-                        product.discountInfo?.discountType === '할인금액' && (
+                        product.discountInfo?.discountType === "할인금액" && (
                           <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
                             {product.discountInfo.discountValue}원 OFF
                           </span>
                         )}
 
                       {product.discountedPrice !== product.price &&
-                        product.discountInfo?.discountType === '할인율' && (
+                        product.discountInfo?.discountType === "할인율" && (
                           <span className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 small">
                             {product.discountInfo.discountValue}% OFF
                           </span>
@@ -64,20 +90,26 @@ const Category = () => {
                     </div>
                   </Link>
                   <CCardBody>
-                    <CCardTitle className="h6">{product.productName}</CCardTitle>
+                    <CCardTitle className="h6">
+                      {product.productName}
+                    </CCardTitle>
                     <CCardText className="small text-muted">
-                      {product.tag.map((tag) => tag.productTagName).join(', ')}
+                      {product.tag.map((tag) => tag.productTagName).join(", ")}
                     </CCardText>
                     <div className="d-flex align-items-center">
                       {product.discountedPrice !== product.price ? (
                         <>
-                          <span className="fw-bold">{formatPrice(product.discountedPrice)}</span>
+                          <span className="fw-bold">
+                            {formatPrice(product.discountedPrice)}
+                          </span>
                           <span className="text-muted text-decoration-line-through ms-2 small">
                             {formatPrice(product.price)}
                           </span>
                         </>
                       ) : (
-                        <span className="fw-bold">{formatPrice(product.price)}</span>
+                        <span className="fw-bold">
+                          {formatPrice(product.price)}
+                        </span>
                       )}
                     </div>
                   </CCardBody>
@@ -92,7 +124,7 @@ const Category = () => {
         </CRow>
       )}
     </CContainer>
-  )
-}
+  );
+};
 
-export default Category
+export default Category;

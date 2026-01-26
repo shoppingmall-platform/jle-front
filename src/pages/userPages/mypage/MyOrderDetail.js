@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   CContainer,
   CCard,
@@ -15,44 +15,44 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-} from '@coreui/react'
-import { getMyOrderDetail, cancelOrder } from '@/apis/order/orderApis'
+} from "@coreui/react";
+import { getMyOrderDetail, cancelOrder } from "@/apis/order/orderApis";
 
 const MyOrderDetail = () => {
-  const { orderId } = useParams()
-  const navigate = useNavigate()
+  const { orderId } = useParams();
+  const navigate = useNavigate();
 
-  const [order, setOrder] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [cancelling, setCancelling] = useState(false)
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
       try {
-        setLoading(true)
-        console.log('📦 주문 상세 조회:', orderId)
-        const response = await getMyOrderDetail(orderId)
-        console.log('✅ 주문 상세 응답:', response)
-        setOrder(response)
+        setLoading(true);
+        console.log("📦 주문 상세 조회:", orderId);
+        const response = await getMyOrderDetail(orderId);
+        console.log("✅ 주문 상세 응답:", response);
+        setOrder(response);
       } catch (error) {
-        console.error('❌ 주문 상세 조회 실패:', error)
-        alert('주문 정보를 불러오는데 실패했습니다.')
+        console.error("❌ 주문 상세 조회 실패:", error);
+        alert("주문 정보를 불러오는데 실패했습니다.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (orderId) {
-      fetchOrderDetail()
+      fetchOrderDetail();
     }
-  }, [orderId])
+  }, [orderId]);
 
   if (loading) {
     return (
       <CContainer className="my-order-detail mt-5 mb-5">
         <div className="text-center py-5">로딩 중...</div>
       </CContainer>
-    )
+    );
   }
 
   if (!order) {
@@ -60,70 +60,78 @@ const MyOrderDetail = () => {
       <CContainer className="my-order-detail mt-5 mb-5">
         <div className="text-center py-5">주문 정보를 찾을 수 없습니다.</div>
       </CContainer>
-    )
+    );
   }
 
   // 주문 상태 뱃지 색상
   const getStatusColor = (status) => {
     const statusMap = {
-      PAYMENT_COMPLETED: 'info',
-      SHIPPING: 'warning',
-      DELIVERED: 'success',
-      PAYMENT_FAILED: 'danger',
-      ORDER_CANCELLED: 'danger',
-    }
-    return statusMap[status] || 'secondary'
-  }
+      PAYMENT_COMPLETED: "info",
+      SHIPPING: "warning",
+      DELIVERED: "success",
+      PAYMENT_FAILED: "danger",
+      ORDER_CANCELLED: "danger",
+    };
+    return statusMap[status] || "secondary";
+  };
 
   // 주문 상태 텍스트 변환
   const getOrderStatusText = (status) => {
     const statusMap = {
-      PAYMENT_COMPLETED: '결제 완료',
-      SHIPPING: '배송 중',
-      DELIVERED: '배송 완료',
-      PAYMENT_FAILED: '결제 실패',
-      ORDER_CANCELLED: '주문 취소',
-    }
-    return statusMap[status] || status
-  }
+      PAYMENT_COMPLETED: "결제 완료",
+      SHIPPING: "배송 중",
+      DELIVERED: "배송 완료",
+      PAYMENT_FAILED: "결제 실패",
+      ORDER_CANCELLED: "주문 취소",
+    };
+    return statusMap[status] || status;
+  };
 
   // 주문 취소 가능 여부 확인
   const canCancelOrder = () => {
-    if (!order) return false
+    if (!order) return false;
 
     // orderStatus가 PAYMENT_COMPLETED이고
     // deliveryStatus가 배송 중 이전이면 취소 가능
-    const isPaymentCompleted = order.orderStatus === '결제 완료'
-    const notShipping = !['SHIPPING', 'DELIVERED'].includes(order.orderStatus)
+    const isPaymentCompleted = order.orderStatus === "결제 완료";
+    const notShipping = !["SHIPPING", "DELIVERED"].includes(order.orderStatus);
 
-    return isPaymentCompleted && notShipping
-  }
+    return isPaymentCompleted && notShipping;
+  };
 
   // 주문 취소 처리
   const handleCancelOrder = async () => {
-    if (!confirm('정말 주문을 취소하시겠습니까?')) {
-      return
+    if (!confirm("정말 주문을 취소하시겠습니까?")) {
+      return;
     }
 
     try {
-      setCancelling(true)
-      await cancelOrder(orderId)
-      alert('주문이 취소되었습니다.')
-      navigate('/mypage/orders') // 주문 목록으로 이동
+      setCancelling(true);
+      await cancelOrder(orderId);
+      alert("주문이 취소되었습니다.");
+      navigate("/mypage/orders"); // 주문 목록으로 이동
     } catch (error) {
-      console.error('주문 취소 실패:', error)
-      alert('주문 취소에 실패했습니다: ' + (error.message || '알 수 없는 오류'))
+      console.error("주문 취소 실패:", error);
+      alert(
+        "주문 취소에 실패했습니다: " + (error.message || "알 수 없는 오류")
+      );
     } finally {
-      setCancelling(false)
+      setCancelling(false);
     }
-  }
+  };
 
   return (
-    <CContainer className="my-order-detail mt-5 mb-5" style={{ maxWidth: '900px' }}>
+    <CContainer
+      className="my-order-detail mt-5 mb-5"
+      style={{ maxWidth: "900px" }}
+    >
       {/* 헤더 */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h4>{order.orderTitle}</h4>
-        <CBadge color={getStatusColor(order.orderStatus)} className="fs-6 px-3 py-2">
+        <CBadge
+          color={getStatusColor(order.orderStatus)}
+          className="fs-6 px-3 py-2"
+        >
           {order.orderStatus}
         </CBadge>
       </div>
@@ -136,56 +144,134 @@ const MyOrderDetail = () => {
       <CCard className="mb-4">
         <CCardHeader className="fw-semibold">주문 상품</CCardHeader>
         <CCardBody>
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell style={{ width: '50%' }}>상품명</CTableHeaderCell>
-                <CTableHeaderCell className="text-center" style={{ width: '15%' }}>
-                  수량
-                </CTableHeaderCell>
-                <CTableHeaderCell className="text-center" style={{ width: '20%' }}>
-                  할인
-                </CTableHeaderCell>
-                <CTableHeaderCell className="text-end" style={{ width: '15%' }}>
-                  금액
-                </CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {order.products &&
-                order.products.map((product, idx) => (
-                  <CTableRow key={idx}>
-                    <CTableDataCell>
-                      <div>
-                        <strong>{product.productInfo.productName}</strong>
-                      </div>
-                      {product.productInfo.options && product.productInfo.options.length > 0 && (
-                        <div className="text-muted small">
-                          {product.productInfo.options.map((opt) => opt.optionName).join(' / ')}
+          {/* ========== PC 버전 (테이블) ========== */}
+          <div className="d-none d-md-block">
+            <CTable hover responsive>
+              <CTableHead>
+                <CTableRow>
+                  <CTableHeaderCell style={{ width: "50%" }}>
+                    상품명
+                  </CTableHeaderCell>
+                  <CTableHeaderCell
+                    className="text-center"
+                    style={{ width: "15%" }}
+                  >
+                    수량
+                  </CTableHeaderCell>
+                  <CTableHeaderCell
+                    className="text-center"
+                    style={{ width: "20%" }}
+                  >
+                    할인
+                  </CTableHeaderCell>
+                  <CTableHeaderCell
+                    className="text-end"
+                    style={{ width: "15%" }}
+                  >
+                    금액
+                  </CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {order.products &&
+                  order.products.map((product, idx) => (
+                    <CTableRow key={idx}>
+                      <CTableDataCell>
+                        <div>
+                          <strong>{product.productInfo.productName}</strong>
+                        </div>
+                        {product.productInfo.options &&
+                          product.productInfo.options.length > 0 && (
+                            <div className="text-muted small">
+                              {product.productInfo.options
+                                .map((opt) => opt.optionName)
+                                .join(" / ")}
+                            </div>
+                          )}
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {product.quantity}개
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {product.discountType === "AMOUNT" &&
+                          product.discountValue > 0 && (
+                            <span className="text-danger">
+                              -{product.discountValue.toLocaleString()}원
+                            </span>
+                          )}
+                        {product.discountType === "RATE" &&
+                          product.discountValue > 0 && (
+                            <span className="text-danger">
+                              -{product.discountValue}%
+                            </span>
+                          )}
+                        {(!product.discountType ||
+                          product.discountValue === 0) && (
+                          <span className="text-muted">-</span>
+                        )}
+                      </CTableDataCell>
+                      <CTableDataCell className="text-end">
+                        {product.price?.toLocaleString()}원
+                      </CTableDataCell>
+                    </CTableRow>
+                  ))}
+              </CTableBody>
+            </CTable>
+          </div>
+
+          {/* ========== 모바일 버전 (카드) ========== */}
+          <div className="d-block d-md-none">
+            {order.products && order.products.length > 0 ? (
+              order.products.map((product, idx) => (
+                <CCard key={idx} className="mb-3 border">
+                  <CCardBody className="p-3">
+                    <div className="fw-bold mb-1">
+                      {product.productInfo.productName}
+                    </div>
+                    {product.productInfo.options &&
+                      product.productInfo.options.length > 0 && (
+                        <div className="text-muted small mb-2">
+                          {product.productInfo.options
+                            .map((opt) => opt.optionName)
+                            .join(" / ")}
                         </div>
                       )}
-                    </CTableDataCell>
-                    <CTableDataCell className="text-center">{product.quantity}개</CTableDataCell>
-                    <CTableDataCell className="text-center">
-                      {product.discountType === 'AMOUNT' && product.discountValue > 0 && (
-                        <span className="text-danger">
-                          -{product.discountValue.toLocaleString()}원
-                        </span>
-                      )}
-                      {product.discountType === 'RATE' && product.discountValue > 0 && (
-                        <span className="text-danger">-{product.discountValue}%</span>
-                      )}
-                      {(!product.discountType || product.discountValue === 0) && (
-                        <span className="text-muted">-</span>
-                      )}
-                    </CTableDataCell>
-                    <CTableDataCell className="text-end">
-                      {product.price?.toLocaleString()}원
-                    </CTableDataCell>
-                  </CTableRow>
-                ))}
-            </CTableBody>
-          </CTable>
+
+                    <div className="d-flex justify-content-between align-items-center mt-2">
+                      <div className="small">
+                        <span className="text-muted">수량:</span>{" "}
+                        {product.quantity}개
+                      </div>
+                      <div className="small">
+                        {product.discountType === "AMOUNT" &&
+                          product.discountValue > 0 && (
+                            <span className="text-danger">
+                              할인: -{product.discountValue.toLocaleString()}원
+                            </span>
+                          )}
+                        {product.discountType === "RATE" &&
+                          product.discountValue > 0 && (
+                            <span className="text-danger">
+                              할인: -{product.discountValue}%
+                            </span>
+                          )}
+                      </div>
+                    </div>
+
+                    <div className="text-end mt-2">
+                      <strong className="text-primary">
+                        {product.price?.toLocaleString()}원
+                      </strong>
+                    </div>
+                  </CCardBody>
+                </CCard>
+              ))
+            ) : (
+              <div className="text-center text-muted">
+                주문 상품이 없습니다.
+              </div>
+            )}
+          </div>
         </CCardBody>
       </CCard>
 
@@ -245,7 +331,9 @@ const MyOrderDetail = () => {
               <span className="text-muted">배송비</span>
             </CCol>
             <CCol xs={6} className="text-end">
-              {order.shippingFee === 0 ? '무료' : `+${order.shippingFee.toLocaleString()}원`}
+              {order.shippingFee === 0
+                ? "무료"
+                : `+${order.shippingFee.toLocaleString()}원`}
             </CCol>
           </CRow>
 
@@ -298,7 +386,11 @@ const MyOrderDetail = () => {
 
       {/* 버튼 */}
       <div className="d-flex justify-content-between mb-4">
-        <CButton color="secondary" variant="outline" onClick={() => navigate('/mypage/orders')}>
+        <CButton
+          color="secondary"
+          variant="outline"
+          onClick={() => navigate("/mypage/orders")}
+        >
           목록으로
         </CButton>
 
@@ -311,12 +403,12 @@ const MyOrderDetail = () => {
               onClick={handleCancelOrder}
               disabled={cancelling}
             >
-              {cancelling ? '취소 중...' : '주문 취소'}
+              {cancelling ? "취소 중..." : "주문 취소"}
             </CButton>
           )}
 
           {/* 배송 완료 후 교환/반품 */}
-          {order.orderStatus === 'DELIVERED' && (
+          {order.orderStatus === "DELIVERED" && (
             <>
               <CButton color="warning" variant="outline">
                 교환 신청
@@ -329,7 +421,7 @@ const MyOrderDetail = () => {
         </div>
       </div>
     </CContainer>
-  )
-}
+  );
+};
 
-export default MyOrderDetail
+export default MyOrderDetail;
